@@ -1,0 +1,116 @@
+
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { userService } from '../services/user';
+import toast from 'react-hot-toast';
+
+const currencies = ['USD', 'EUR', 'GBP', 'INR', 'NPR', 'CAD', 'AUD', 'JPY', 'CNY'];
+
+export function SettingsPage() {
+  const { user, isLoading, checkAuth } = useAuth();
+  const [name, setName] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [timezone, setTimezone] = useState('UTC');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '');
+      setCurrency(user.currency || 'USD');
+      setTimezone(user.timezone || 'UTC');
+    }
+  }, [user]);
+
+  const timezones = useMemo(() => {
+    try {
+      return Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : ['UTC'];
+    } catch {
+      return ['UTC'];
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      await userService.updateProfile({ name, currency, timezone });
+      await checkAuth();
+      toast.success('Settings updated');
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Failed to update settings';
+      toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-600">Manage your account preferences</p>
+      </div>
+
+      <div className="card">
+        <form onSubmit={handleSubmit} className="card-body space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              className="mt-1 input input-bordered w-full"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              className="mt-1 input input-bordered w-full bg-gray-50"
+              value={user?.email || ''}
+              disabled
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Currency</label>
+              <select
+                className="mt-1 select select-bordered w-full"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                disabled={isLoading}
+              >
+                {currencies.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Timezone</label>
+              <select
+                className="mt-1 select select-bordered w-full"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                disabled={isLoading}
+              >
+                {timezones.map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button type="submit" className="btn btn-primary" disabled={saving || isLoading}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
