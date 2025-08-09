@@ -35,7 +35,7 @@ export function LoanCard({ loan, onChange, onViewSchedule }: LoanCardProps) {
   };
 
   return (
-    <div className="card relative">
+    <div className="card relative transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <div className="card-body">
         <div className="flex items-start justify-between">
           <div className="min-w-0">
