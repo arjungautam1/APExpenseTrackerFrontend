@@ -14,7 +14,6 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
     name: '',
     type: 'stocks' as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other',
     amountInvested: '',
-    currentValue: '',
     purchaseDate: new Date().toISOString().split('T')[0],
     quantity: '',
     symbol: '',
@@ -38,7 +37,6 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
         name: formData.name.trim(),
         type: formData.type,
         amountInvested: parseFloat(formData.amountInvested),
-        currentValue: parseFloat(formData.currentValue),
         purchaseDate: formData.purchaseDate,
         ...(formData.quantity && { quantity: parseFloat(formData.quantity) }),
         ...(formData.symbol.trim() && { symbol: formData.symbol.trim().toUpperCase() }),
@@ -158,26 +156,6 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
               </div>
             </div>
 
-            {/* Current Value */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Value *
-              </label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="number"
-                  name="currentValue"
-                  value={formData.currentValue}
-                  onChange={handleChange}
-                  required
-                  step="0.01"
-                  min="0"
-                  className="input pl-10"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
 
             {/* Purchase Date */}
             <div>
@@ -252,32 +230,6 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
               />
             </div>
 
-            {/* Performance Preview */}
-            {formData.amountInvested && formData.currentValue && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Performance Preview</h4>
-                {(() => {
-                  const invested = parseFloat(formData.amountInvested) || 0;
-                  const current = parseFloat(formData.currentValue) || 0;
-                  const gainLoss = current - invested;
-                  const percentage = invested === 0 ? 0 : (gainLoss / invested) * 100;
-                  
-                  return (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Gain/Loss:</span>
-                      <div className="text-right">
-                        <p className={`font-medium ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {gainLoss >= 0 ? '+' : ''}${gainLoss.toFixed(2)}
-                        </p>
-                        <p className={`text-sm ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {percentage >= 0 ? '+' : ''}{percentage.toFixed(2)}%
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
 
             {/* Submit Buttons */}
             <div className="flex space-x-3 pt-4">

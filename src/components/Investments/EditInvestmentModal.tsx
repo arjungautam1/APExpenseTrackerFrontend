@@ -16,7 +16,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
     name: investment.name,
     type: investment.type,
     amountInvested: investment.amountInvested.toString(),
-    currentValue: investment.currentValue.toString(),
+    currentValue: investment.currentValue?.toString() || '',
     purchaseDate: investment.purchaseDate.split('T')[0], // Convert to YYYY-MM-DD format
     quantity: investment.quantity?.toString() || '',
     symbol: investment.symbol || '',
@@ -40,7 +40,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
         name: formData.name.trim(),
         type: formData.type,
         amountInvested: parseFloat(formData.amountInvested),
-        currentValue: parseFloat(formData.currentValue),
+        ...(formData.currentValue ? { currentValue: parseFloat(formData.currentValue) } : { currentValue: undefined }),
         purchaseDate: formData.purchaseDate,
         ...(formData.quantity ? { quantity: parseFloat(formData.quantity) } : { quantity: undefined }),
         ...(formData.symbol.trim() ? { symbol: formData.symbol.trim().toUpperCase() } : { symbol: undefined }),
@@ -163,7 +163,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
             {/* Current Value */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Value *
+                Current Value (Optional)
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -172,7 +172,6 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   name="currentValue"
                   value={formData.currentValue}
                   onChange={handleChange}
-                  required
                   step="0.01"
                   min="0"
                   className="input pl-10"

@@ -51,7 +51,7 @@ export interface Investment {
   name: string;
   type: 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other';
   amountInvested: number;
-  currentValue: number;
+  currentValue?: number;
   purchaseDate: string;
   quantity?: number;
   symbol?: string;

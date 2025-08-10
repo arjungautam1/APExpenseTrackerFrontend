@@ -5,7 +5,7 @@ export interface CreateInvestmentData {
   name: string;
   type: 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other';
   amountInvested: number;
-  currentValue: number;
+  currentValue?: number;
   purchaseDate: string;
   quantity?: number;
   symbol?: string;
@@ -123,9 +123,9 @@ export class InvestmentService {
       quantity: investment.quantity,
       symbol: investment.symbol,
       platform: investment.platform,
-      gainLoss: investment.gainLoss || investment.currentValue - investment.amountInvested,
+      gainLoss: investment.gainLoss || (investment.currentValue ? investment.currentValue - investment.amountInvested : 0),
       gainLossPercentage: investment.gainLossPercentage || 
-        (investment.amountInvested === 0 ? 0 : ((investment.currentValue - investment.amountInvested) / investment.amountInvested) * 100),
+        (investment.currentValue && investment.amountInvested > 0 ? ((investment.currentValue - investment.amountInvested) / investment.amountInvested) * 100 : 0),
       createdAt: investment.createdAt,
       updatedAt: investment.updatedAt
     };
@@ -146,9 +146,9 @@ export class InvestmentService {
       quantity: investment.quantity,
       symbol: investment.symbol,
       platform: investment.platform,
-      gainLoss: investment.gainLoss || investment.currentValue - investment.amountInvested,
+      gainLoss: investment.gainLoss || (investment.currentValue ? investment.currentValue - investment.amountInvested : 0),
       gainLossPercentage: investment.gainLossPercentage || 
-        (investment.amountInvested === 0 ? 0 : ((investment.currentValue - investment.amountInvested) / investment.amountInvested) * 100),
+        (investment.currentValue && investment.amountInvested > 0 ? ((investment.currentValue - investment.amountInvested) / investment.amountInvested) * 100 : 0),
       createdAt: investment.createdAt,
       updatedAt: investment.updatedAt
     };

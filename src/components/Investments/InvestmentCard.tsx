@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreHorizontal, Edit, Trash2, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, Calendar } from 'lucide-react';
 import { Investment } from '../../types';
 import { investmentService } from '../../services/investment';
 import { EditInvestmentModal } from './EditInvestmentModal';
@@ -25,9 +25,6 @@ export function InvestmentCard({ investment, onUpdate, onDelete }: InvestmentCar
     }).format(amount);
   };
 
-  const formatPercentage = (percentage: number) => {
-    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(2)}%`;
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -89,9 +86,6 @@ export function InvestmentCard({ investment, onUpdate, onDelete }: InvestmentCar
     onUpdate();
   };
 
-  const gainLoss = investment.gainLoss ?? (investment.currentValue - investment.amountInvested);
-  const gainLossPercentage = investment.gainLossPercentage ?? 
-    (investment.amountInvested === 0 ? 0 : (gainLoss / investment.amountInvested) * 100);
 
   return (
     <>
@@ -151,33 +145,16 @@ export function InvestmentCard({ investment, onUpdate, onDelete }: InvestmentCar
           {/* Investment Values */}
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Invested:</span>
-              <span className="font-medium">{formatCurrency(investment.amountInvested)}</span>
+              <span className="text-sm text-gray-600">Amount Invested:</span>
+              <span className="font-semibold text-lg text-blue-600">{formatCurrency(investment.amountInvested)}</span>
             </div>
             
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Current Value:</span>
-              <span className="font-medium">{formatCurrency(investment.currentValue)}</span>
-            </div>
-            
-            <div className="flex justify-between items-center py-2 border-t border-gray-100">
-              <span className="text-sm text-gray-600">Gain/Loss:</span>
-              <div className="text-right">
-                <div className={`flex items-center ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {gainLoss >= 0 ? (
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 mr-1" />
-                  )}
-                  <span className="font-semibold">
-                    {gainLoss >= 0 ? '+' : ''}{formatCurrency(gainLoss)}
-                  </span>
-                </div>
-                <div className={`text-sm ${gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatPercentage(gainLossPercentage)}
-                </div>
+            {investment.currentValue && (
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Current Value:</span>
+                <span className="font-medium">{formatCurrency(investment.currentValue)}</span>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Additional Info */}

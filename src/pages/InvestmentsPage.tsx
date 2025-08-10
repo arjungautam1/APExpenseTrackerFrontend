@@ -122,7 +122,7 @@ export function InvestmentsPage() {
 
       {/* Investment Statistics */}
       {stats && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-8">
           <div className="card">
             <div className="card-body">
               <div className="flex items-center">
@@ -151,55 +151,11 @@ export function InvestmentsPage() {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Current Value</h3>
+                  <h3 className="text-sm font-medium text-gray-500">Total Investments</h3>
                   <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(stats.totalCurrentValue)}
+                    {stats.totalInvestments}
                   </p>
-                  <p className="text-sm text-gray-500">Market value</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className={`w-10 h-10 ${stats.totalGainLoss >= 0 ? 'bg-green-100' : 'bg-red-100'} rounded-lg flex items-center justify-center`}>
-                    {stats.totalGainLoss >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-600" />
-                    )}
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Total Gain/Loss</h3>
-                  <p className={`text-2xl font-bold ${stats.totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stats.totalGainLoss >= 0 ? '+' : ''}{formatCurrency(stats.totalGainLoss)}
-                  </p>
-                  <p className={`text-sm ${stats.totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPercentage(stats.totalGainLossPercentage)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-body">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-purple-600" />
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Portfolio Return</h3>
-                  <p className={`text-2xl font-bold ${stats.totalGainLossPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPercentage(stats.totalGainLossPercentage)}
-                  </p>
-                  <p className="text-sm text-gray-500">Overall performance</p>
+                  <p className="text-sm text-gray-500">Portfolio items</p>
                 </div>
               </div>
             </div>
