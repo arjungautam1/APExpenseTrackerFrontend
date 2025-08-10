@@ -3,7 +3,7 @@ import { Transaction, ApiResponse, PaginatedResponse } from '../types';
 
 export interface CreateTransactionData {
   amount: number;
-  type: 'income' | 'expense' | 'transfer';
+  type: 'income' | 'expense' | 'transfer' | 'investment';
   categoryId: string;
   description?: string;
   date?: string;
@@ -16,10 +16,12 @@ export interface UpdateTransactionData extends Partial<CreateTransactionData> {}
 export interface TransactionFilters {
   page?: number;
   limit?: number;
-  type?: 'income' | 'expense' | 'transfer';
+  type?: 'income' | 'expense' | 'transfer' | 'investment';
   categoryId?: string;
   startDate?: string;
   endDate?: string;
+  month?: string; // YYYY-MM format
+  year?: string; // YYYY format
 }
 
 export interface TransactionStats {
@@ -87,8 +89,8 @@ export class TransactionService {
       userId: transaction.userId,
       amount: transaction.amount,
       type: transaction.type,
-      categoryId: transaction.categoryId._id || transaction.categoryId,
-      category: transaction.categoryId._id ? {
+      categoryId: transaction.categoryId?._id || transaction.categoryId,
+      category: transaction.categoryId && transaction.categoryId._id ? {
         id: transaction.categoryId._id,
         name: transaction.categoryId.name,
         type: transaction.categoryId.type,

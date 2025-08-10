@@ -158,8 +158,15 @@ export class InvestmentService {
     await apiService.delete(`/investments/${id}`);
   }
 
-  async getInvestmentStats(): Promise<InvestmentStats> {
-    const response = await apiService.get<ApiResponse<any>>('/investments/stats');
+  async getInvestmentStats(startDate?: string, endDate?: string): Promise<InvestmentStats> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/investments/stats?${queryString}` : '/investments/stats';
+    
+    const response = await apiService.get<ApiResponse<any>>(url);
     const stats = response.data.data;
     
     // Map MongoDB _id to id for investments in topPerforming and worstPerforming

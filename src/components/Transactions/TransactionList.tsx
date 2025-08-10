@@ -57,6 +57,8 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       t.type === 'income'
                         ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                        : t.type === 'investment'
+                        ? 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20'
                         : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
                     }`}
                   >
@@ -67,10 +69,14 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
               <div className="flex flex-col items-end gap-2">
                 <p
                   className={`text-base font-semibold ${
-                    t.type === 'income' ? 'text-green-600' : 'text-red-600'
+                    t.type === 'income' 
+                      ? 'text-green-600' 
+                      : t.type === 'investment'
+                      ? 'text-purple-600'
+                      : 'text-red-600'
                   }`}
                 >
-                  {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                  {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : '-'}{formatCurrency(t.amount)}
                 </p>
                 <div className="flex items-center gap-2">
                   {onEdit && (
@@ -134,6 +140,8 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
                     className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                       t.type === 'income'
                         ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                        : t.type === 'investment'
+                        ? 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20'
                         : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
                     }`}
                   >
@@ -143,10 +151,14 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
                 <td className="px-4 py-3 align-middle text-right">
                   <span
                     className={`text-sm font-semibold ${
-                      t.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      t.type === 'income' 
+                        ? 'text-green-600' 
+                        : t.type === 'investment'
+                        ? 'text-purple-600'
+                        : 'text-red-600'
                     }`}
                   >
-                    {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                    {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : '-'}{formatCurrency(t.amount)}
                   </span>
                 </td>
                 <td className="px-4 py-3 align-middle text-right">

@@ -19,11 +19,31 @@ export function TransactionsPage() {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
+      
+      // Convert month/year filters to date ranges
+      let startDate = filters.startDate;
+      let endDate = filters.endDate;
+      
+      if (filters.month && filters.year) {
+        startDate = `${filters.year}-${filters.month}-01`;
+        const lastDay = new Date(parseInt(filters.year), parseInt(filters.month), 0).getDate();
+        endDate = `${filters.year}-${filters.month}-${lastDay}`;
+      } else if (filters.year) {
+        startDate = `${filters.year}-01-01`;
+        endDate = `${filters.year}-12-31`;
+      } else if (filters.month) {
+        // If only month is selected, use current year
+        const currentYear = new Date().getFullYear();
+        startDate = `${currentYear}-${filters.month}-01`;
+        const lastDay = new Date(currentYear, parseInt(filters.month), 0).getDate();
+        endDate = `${currentYear}-${filters.month}-${lastDay}`;
+      }
+      
       const res = await transactionService.getTransactions({
         type: filters.type,
         categoryId: filters.categoryId,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
+        startDate,
+        endDate,
         limit: 20,
         page: 1
       });
@@ -39,7 +59,7 @@ export function TransactionsPage() {
   useEffect(() => {
     fetchTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.type, filters.categoryId, filters.startDate, filters.endDate]);
+  }, [filters.type, filters.categoryId, filters.startDate, filters.endDate, filters.month, filters.year]);
 
   const clearFilters = () => setFilters({});
 
@@ -70,7 +90,7 @@ export function TransactionsPage() {
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-        <p className="text-gray-600">Manage your income and expenses</p>
+        <p className="text-gray-600">Manage your income, expenses, and investments</p>
       </div>
 
       <div className="space-y-6">

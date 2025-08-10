@@ -16,7 +16,7 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     amount: '',
-    type: 'expense' as 'income' | 'expense' | 'transfer',
+    type: 'expense' as 'income' | 'expense' | 'transfer' | 'investment',
     categoryId: '',
     description: '',
     date: new Date().toISOString().split('T')[0]
@@ -39,7 +39,11 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const fetched = await categoryService.getCategories(formData.type === 'income' ? 'income' : 'expense');
+        if (formData.type === 'transfer') {
+          setCategories([]);
+          return;
+        }
+        const fetched = await categoryService.getCategories(formData.type);
         setCategories(fetched);
       } catch (e) {
         toast.error('Failed to load categories');
@@ -97,7 +101,7 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
               <div className="flex space-x-4">
-                {(['expense','income'] as const).map((t) => (
+                {(['expense','income','investment','transfer'] as const).map((t) => (
                   <label key={t} className="flex items-center">
                     <input
                       type="radio"

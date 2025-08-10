@@ -97,11 +97,26 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
     try {
       let processed: Blob = file;
       const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic');
+      
       if (isHeic) {
-        const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
-        processed = Array.isArray(converted) ? converted[0] : converted;
+        // Show conversion message
+        toast.loading('Converting HEIC image to JPEG format...', { duration: 5000 });
+        
+        try {
+          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+          processed = Array.isArray(converted) ? converted[0] : converted;
+          
+          // Dismiss loading toast and show success
+          toast.dismiss();
+          toast.success('HEIC image converted successfully to JPEG');
+        } catch (conversionError) {
+          // Dismiss loading toast and show error
+          toast.dismiss();
+          toast.error('Failed to convert HEIC image. Please try a different image or convert it manually.');
+          return;
+        }
       } else if (!file.type.startsWith('image/')) {
-        toast.error('Please upload an image');
+        toast.error('Please upload an image file (JPEG, PNG, HEIC, etc.)');
         return;
       }
 
@@ -114,7 +129,8 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       };
       reader.readAsDataURL(processed);
     } catch (err) {
-      toast.error('Failed to process HEIC image');
+      console.error('File processing error:', err);
+      toast.error('Failed to process image. Please try again with a different file.');
     }
   };
 
@@ -142,6 +158,12 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       }
       
       setResult(data);
+      
+      // Auto-fill the date if extracted from receipt
+      if (data.date) {
+        setSelectedDate(data.date);
+      }
+      
       toast.success('Details extracted successfully');
     } catch (error: any) {
       console.error('Scan error:', error);
@@ -223,85 +245,153 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
           <div className="flex min-h-screen items-center justify-center p-4">
             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={close} />
 
-            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Scan Bill</h3>
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900">Scan Bill & Extract Details</h3>
                 <button onClick={close} className="text-gray-400 hover:text-gray-600">
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
-                {!imagePreview ? (
-                  <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400">
-                    <input type="file" accept="image/*" onChange={onFileChange} className="hidden" />
-                    <Upload className="h-8 w-8 mx-auto text-gray-400" />
-                    <p className="mt-2 text-gray-700 font-medium">Upload a bill photo</p>
-                    <p className="text-sm text-gray-500">PNG, JPG up to ~5MB</p>
-                  </label>
-                ) : (
-                  <div>
-                    <img src={imagePreview} alt="Preview" className="w-full rounded-lg border" />
-                    <div className="flex justify-between mt-3">
-                      <button onClick={() => { setImagePreview(null); setImageBase64(null); setResult(null); }} className="btn-secondary">Change</button>
-                      <button onClick={handleScan} disabled={scanning} className="btn-primary flex items-center">
-                        {scanning ? (
-                          <>
-                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                            Scanning...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" /> Analyze
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {result && (
-                  <div className="mt-2 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Amount</p><p className="font-semibold">{result.amount ?? '-'}</p></div></div>
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Type</p><p className="font-semibold capitalize">{result.transactionType || '—'}</p></div></div>
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Currency</p><p className="font-semibold">{result.currency || '—'}</p></div></div>
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Date</p><p className="font-semibold">{result.date || '—'}</p></div></div>
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Merchant</p><p className="font-semibold">{result.merchant || '—'}</p></div></div>
-                      <div className="card"><div className="card-body py-3"><p className="text-sm text-gray-500">Category</p><p className="font-semibold">{result.categoryName || '—'}</p></div></div>
-                    </div>
-                    <div className="card">
-                      <div className="card-body py-3">
-                        <p className="text-sm text-gray-500">Description</p>
-                        <p className="font-semibold break-words">{result.description || '—'}</p>
+              <div className="flex h-[calc(85vh-80px)]">
+                {/* Left Side - Image Upload & Preview */}
+                <div className="w-1/2 p-4 border-r border-gray-200 overflow-y-auto">
+                  {!imagePreview ? (
+                    <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 transition-colors">
+                      <input type="file" accept="image/*" onChange={onFileChange} className="hidden" />
+                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-3" />
+                      <p className="text-base text-gray-700 font-medium mb-1">Upload a bill photo</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, HEIC up to ~5MB</p>
+                    </label>
+                  ) : (
+                    <div className="flex flex-col h-full">
+                      <div className="flex-1 overflow-y-auto">
+                        <div className="relative mb-3">
+                          <img src={imagePreview} alt="Preview" className="w-full h-auto rounded-lg border shadow-sm" />
+                          <div className="absolute top-2 right-2">
+                            <button 
+                              onClick={() => { setImagePreview(null); setImageBase64(null); setResult(null); }}
+                              className="bg-white/90 backdrop-blur-sm rounded-full p-1.5 text-gray-600 hover:text-gray-800 shadow-sm"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 pt-3">
+                        <button 
+                          onClick={handleScan} 
+                          disabled={scanning} 
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {scanning ? (
+                            <>
+                              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                              Analyzing image...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" /> 
+                              Analyze Bill
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
+                  )}
+                </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                      <select className="select select-bordered w-full" value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)}>
-                        <option value="">Select category</option>
-                        {categories.map(c => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
+                {/* Right Side - Analysis Results */}
+                <div className="w-1/2 p-4 overflow-y-auto">
+                  {!result ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center text-gray-500">
+                        <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                        <p className="text-base font-medium">Upload and analyze a bill</p>
+                        <p className="text-xs">Extracted details will appear here</p>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Header */}
+                      <div className="text-center pb-3 border-b border-gray-200">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-1">Extracted Details</h4>
+                        <p className="text-xs text-gray-600">Review and edit the information below</p>
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                      <input
-                        type="date"
-                        className="input input-bordered w-full"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                      />
+                      {/* Key Details Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
+                          <p className="text-xs font-medium text-green-700 mb-1">Amount</p>
+                          <p className="text-lg font-bold text-green-800">${result.amount ?? '0.00'}</p>
+                        </div>
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
+                          <p className="text-xs font-medium text-blue-700 mb-1">Type</p>
+                          <p className="text-sm font-semibold text-blue-800 capitalize">{result.transactionType || 'expense'}</p>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg border">
+                          <p className="text-xs font-medium text-gray-600 mb-1">Currency</p>
+                          <p className="text-sm font-semibold text-gray-800">{result.currency || 'USD'}</p>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg border">
+                          <p className="text-xs font-medium text-gray-600 mb-1">Date</p>
+                          <p className="text-sm font-semibold text-gray-800">{result.date || 'Not detected'}</p>
+                        </div>
+                      </div>
+
+                      {/* Merchant & Description */}
+                      <div className="space-y-3">
+                        <div className="bg-gray-50 p-3 rounded-lg border">
+                          <p className="text-xs font-medium text-gray-600 mb-1">Merchant</p>
+                          <p className="text-sm font-semibold text-gray-800">{result.merchant || 'Not detected'}</p>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg border">
+                          <p className="text-xs font-medium text-gray-600 mb-1">Description</p>
+                          <p className="text-sm font-semibold text-gray-800 break-words">{result.description || 'Not detected'}</p>
+                        </div>
+                      </div>
+
+                      {/* Form Fields */}
+                      <div className="space-y-3 pt-3 border-t border-gray-200">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                          <select 
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value={selectedCategoryId} 
+                            onChange={(e) => setSelectedCategoryId(e.target.value)}
+                          >
+                            <option value="">Select category</option>
+                            {categories.map(c => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {result.date && (
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Transaction Date</label>
+                            <input
+                              type="date"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              value={selectedDate}
+                              onChange={(e) => setSelectedDate(e.target.value)}
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Date extracted from receipt: {result.date}</p>
+                          </div>
+                        )}
+
+                        <button 
+                          onClick={handleCreate} 
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={!canCreate}
+                        >
+                          <span className="mr-2">✓</span>
+                          Create {result.transactionType === 'income' ? 'Income' : 'Expense'}
+                        </button>
+                      </div>
                     </div>
-
-                    <button onClick={handleCreate} className="btn btn-primary w-full" disabled={!canCreate}>
-                      Create {result.transactionType === 'income' ? 'Income' : 'Expense'}
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

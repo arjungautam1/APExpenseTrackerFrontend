@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, DollarSign, Calendar, Tag, FileText, X } from 'lucide-react';
+import { Plus, DollarSign, Calendar, Tag, FileText, X, TrendingUp, TrendingDown, Building } from 'lucide-react';
 import { transactionService } from '../../services/transaction';
 import { categoryService } from '../../services/category';
+import { investmentService } from '../../services/investment';
 import { Category } from '../../types';
 import toast from 'react-hot-toast';
 
@@ -16,15 +17,18 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     amount: '',
-    type: 'expense' as 'income' | 'expense',
+    type: 'expense' as 'income' | 'expense' | 'investment',
     categoryId: '',
     description: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    // Investment specific fields
+    investmentType: 'other' as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other',
+    platform: ''
   });
 
   // Fetch categories when modal opens or type changes
   useEffect(() => {
-    if (isModalOpen) {
+    if (isModalOpen && (formData.type === 'income' || formData.type === 'expense')) {
       fetchCategories();
     }
   }, [isModalOpen, formData.type]);
@@ -33,8 +37,12 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
     try {
       console.log('Fetching categories for type:', formData.type);
       const fetchedCategories = await categoryService.getCategories(formData.type);
-      console.log('Fetched categories:', fetchedCategories);
-      setCategories(fetchedCategories);
+      // Filter out Investment category from expenses
+      const filteredCategories = fetchedCategories.filter(cat => 
+        !(formData.type === 'expense' && cat.name === 'Investment')
+      );
+      console.log('Fetched categories:', filteredCategories);
+      setCategories(filteredCategories);
     } catch (error: any) {
       console.error('Failed to fetch categories:', error);
       console.error('Categories error response:', error.response?.data);
@@ -56,17 +64,50 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
     setIsLoading(true);
 
     try {
-      const transactionData = {
-        amount: parseFloat(formData.amount),
-        type: formData.type,
-        categoryId: formData.categoryId,
-        description: formData.description.trim() || undefined,
-        date: formData.date
-      };
+      if (formData.type === 'investment') {
+        // First, get the investment transaction category
+        const investmentCategories = await categoryService.getCategories('investment');
+        const investmentCategory = investmentCategories.find(cat => cat.name === 'Investment Transaction');
+        
+        if (!investmentCategory) {
+          toast.error('Investment category not found. Please contact support.');
+          return;
+        }
 
-      await transactionService.createTransaction(transactionData);
-      
-      toast.success(`${formData.type === 'income' ? 'Income' : 'Expense'} added successfully!`);
+        // Create both investment and transaction
+        const [investmentData, transactionData] = await Promise.all([
+          // Create investment record
+          investmentService.createInvestment({
+            name: formData.description.trim() || 'Quick Investment',
+            type: formData.investmentType,
+            amountInvested: parseFloat(formData.amount),
+            purchaseDate: formData.date,
+            platform: formData.platform.trim() || 'Quick Add'
+          }),
+          // Create transaction record
+          transactionService.createTransaction({
+            amount: parseFloat(formData.amount),
+            type: 'investment',
+            categoryId: investmentCategory.id,
+            description: formData.description.trim() || 'Investment',
+            date: formData.date
+          })
+        ]);
+
+        toast.success('Investment added successfully!');
+      } else {
+        // Create transaction for income/expense
+        const transactionData = {
+          amount: parseFloat(formData.amount),
+          type: formData.type,
+          categoryId: formData.categoryId,
+          description: formData.description.trim() || undefined,
+          date: formData.date
+        };
+
+        await transactionService.createTransaction(transactionData);
+        toast.success(`${formData.type === 'income' ? 'Income' : 'Expense'} added successfully!`);
+      }
       
       // Reset form
       setFormData({
@@ -74,24 +115,19 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
         type: 'expense',
         categoryId: '',
         description: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        investmentType: 'other',
+        platform: ''
       });
       
       setIsModalOpen(false);
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (error: any) {
-      console.error('Failed to create transaction:', error);
+      console.error('Failed to create:', error);
       console.log('Error response:', error.response?.data);
-      console.log('Transaction data sent:', {
-        amount: parseFloat(formData.amount),
-        type: formData.type,
-        categoryId: formData.categoryId,
-        description: formData.description,
-        date: formData.date
-      });
       
-      let message = 'Failed to add transaction';
+      let message = `Failed to add ${formData.type}`;
       if (error.response?.data?.message) {
         message = error.response.data.message;
       } else if (error.response?.data?.errors) {
@@ -148,34 +184,48 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
               </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                {/* Transaction Type */}
+                {/* Transaction Type Tabs */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transaction Type
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Type
                   </label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="type"
-                        value="expense"
-                        checked={formData.type === 'expense'}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Expense</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="type"
-                        value="income"
-                        checked={formData.type === 'income'}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                      />
-                      <span className="ml-2 text-sm text-gray-700">Income</span>
-                    </label>
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, type: 'expense', categoryId: '' }))}
+                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        formData.type === 'expense'
+                          ? 'bg-white text-red-600 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <TrendingDown className="h-4 w-4 mr-1" />
+                      Expense
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, type: 'income', categoryId: '' }))}
+                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        formData.type === 'income'
+                          ? 'bg-white text-green-600 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      Income
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, type: 'investment', categoryId: '' }))}
+                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        formData.type === 'investment'
+                          ? 'bg-white text-purple-600 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <Building className="h-4 w-4 mr-1" />
+                      Investment
+                    </button>
                   </div>
                 </div>
 
@@ -200,29 +250,56 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   </div>
                 </div>
 
-                {/* Category */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
-                  </label>
-                  <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <select
-                      name="categoryId"
-                      value={formData.categoryId}
-                      onChange={handleChange}
-                      required
-                      className="input pl-10"
-                    >
-                      <option value="">Select a category</option>
-                      {filteredCategories.map(category => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                {/* Category for Income/Expense */}
+                {formData.type !== 'investment' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category
+                    </label>
+                    <div className="relative">
+                      <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <select
+                        name="categoryId"
+                        value={formData.categoryId}
+                        onChange={handleChange}
+                        required
+                        className="input pl-10"
+                      >
+                        <option value="">Select a category</option>
+                        {filteredCategories.map(category => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Investment Type */}
+                {formData.type === 'investment' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Investment Type
+                    </label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <select
+                        name="investmentType"
+                        value={formData.investmentType}
+                        onChange={handleChange}
+                        required
+                        className="input pl-10"
+                      >
+                        <option value="stocks">Stocks</option>
+                        <option value="mutual_funds">Mutual Funds</option>
+                        <option value="crypto">Cryptocurrency</option>
+                        <option value="real_estate">Real Estate</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
 
                 {/* Date */}
                 <div>
@@ -242,10 +319,27 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   </div>
                 </div>
 
+                {/* Platform for Investments */}
+                {formData.type === 'investment' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Platform (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="platform"
+                      value={formData.platform}
+                      onChange={handleChange}
+                      className="input"
+                      placeholder="e.g., Robinhood, Fidelity, Vanguard"
+                    />
+                  </div>
+                )}
+
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description (Optional)
+                    {formData.type === 'investment' ? 'Investment Name' : 'Description (Optional)'}
                   </label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -255,7 +349,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                       onChange={handleChange}
                       rows={3}
                       className="input pl-10 resize-none"
-                      placeholder="Add a note about this transaction..."
+                      placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction...'}
                     />
                   </div>
                 </div>
@@ -275,7 +369,9 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                     className={`btn flex-1 ${
                       formData.type === 'expense' 
                         ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500' 
-                        : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                        : formData.type === 'income'
+                        ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                        : 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {isLoading ? (
@@ -284,7 +380,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                         Adding...
                       </div>
                     ) : (
-                      `Add ${formData.type === 'expense' ? 'Expense' : 'Income'}`
+                      `Add ${formData.type === 'expense' ? 'Expense' : formData.type === 'income' ? 'Income' : 'Investment'}`
                     )}
                   </button>
                 </div>

@@ -114,11 +114,16 @@ export function Layout({ children }: LayoutProps) {
       <>
         {/* Logo */}
         <div className="flex h-16 items-center px-6 border-b border-gray-200">
-          <div className="flex items-center">
-            <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <BarChart3 className="h-5 w-5 text-white" />
+          <div className="flex items-center min-w-0">
+            <div className="h-10 w-10 bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
+              <BarChart3 className="h-6 w-6 text-white" />
             </div>
-            <span className="ml-2 text-xl font-semibold text-gray-900">AP Finance Tracker</span>
+            <div className="ml-3 min-w-0">
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-gray-900 leading-none">AP Finance</span>
+                <span className="text-sm font-medium text-primary-600 leading-none">Tracker</span>
+              </div>
+            </div>
           </div>
         </div>
 

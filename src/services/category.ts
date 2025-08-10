@@ -3,7 +3,7 @@ import { Category, ApiResponse } from '../types';
 
 export interface CreateCategoryData {
   name: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'investment';
   icon?: string;
   color?: string;
   parentCategoryId?: string;
@@ -12,7 +12,7 @@ export interface CreateCategoryData {
 export interface UpdateCategoryData extends Partial<Omit<CreateCategoryData, 'type'>> {}
 
 export class CategoryService {
-  async getCategories(type?: 'income' | 'expense'): Promise<Category[]> {
+  async getCategories(type?: 'income' | 'expense' | 'investment'): Promise<Category[]> {
     const params = new URLSearchParams();
     if (type) params.append('type', type);
     
