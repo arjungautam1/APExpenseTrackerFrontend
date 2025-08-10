@@ -23,7 +23,7 @@ export function SettingsPage() {
 
   const timezones = useMemo(() => {
     try {
-      return Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : ['UTC'];
+      return (Intl as any).supportedValuesOf ? (Intl as any).supportedValuesOf('timeZone') : ['UTC'];
     } catch {
       return ['UTC'];
     }
@@ -97,7 +97,7 @@ export function SettingsPage() {
                 onChange={(e) => setTimezone(e.target.value)}
                 disabled={isLoading}
               >
-                {timezones.map((tz) => (
+                {timezones.map((tz: string) => (
                   <option key={tz} value={tz}>{tz}</option>
                 ))}
               </select>

@@ -15,6 +15,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryUsage, setCategoryUsage] = useState<{[key: string]: number}>({});
   const [formData, setFormData] = useState({
     amount: '',
     type: 'expense' as 'income' | 'expense' | 'investment',
@@ -41,6 +42,25 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       const filteredCategories = fetchedCategories.filter(cat => 
         !(formData.type === 'expense' && cat.name === 'Investment')
       );
+
+      // Fetch category usage statistics
+      try {
+        const transactions = await transactionService.getTransactions({ limit: 100 });
+        const usage: {[key: string]: number} = {};
+        
+        transactions.data.forEach(transaction => {
+          // Use category.id if available, otherwise fall back to categoryId
+          const categoryId = transaction.category?.id || transaction.categoryId;
+          if (categoryId) {
+            usage[categoryId] = (usage[categoryId] || 0) + 1;
+          }
+        });
+        
+        setCategoryUsage(usage);
+      } catch (error) {
+        console.warn('Failed to load category usage statistics:', error);
+      }
+
       console.log('Fetched categories:', filteredCategories);
       setCategories(filteredCategories);
     } catch (error: any) {
@@ -153,7 +173,13 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
     if (onClose) onClose();
   };
 
-  const filteredCategories = categories.filter(cat => cat.type === formData.type);
+  const filteredCategories = categories
+    .filter(cat => cat.type === formData.type)
+    .sort((a, b) => {
+      const aUsage = categoryUsage[a.id] || 0;
+      const bUsage = categoryUsage[b.id] || 0;
+      return bUsage - aUsage; // Most used first
+    });
 
   return (
     <>

@@ -50,8 +50,10 @@ export function TransactionsPage() {
       
       if (filters.month && filters.year) {
         startDate = `${filters.year}-${filters.month}-01`;
-        const lastDay = new Date(parseInt(filters.year), parseInt(filters.month), 0).getDate();
-        endDate = `${filters.year}-${filters.month}-${lastDay}`;
+        // Get last day: go to first day of next month, then subtract 1 day
+        const nextMonth = new Date(parseInt(filters.year), parseInt(filters.month), 1);
+        const lastDay = new Date(nextMonth.getTime() - 24 * 60 * 60 * 1000).getDate();
+        endDate = `${filters.year}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
       } else if (filters.year) {
         startDate = `${filters.year}-01-01`;
         endDate = `${filters.year}-12-31`;
@@ -59,8 +61,10 @@ export function TransactionsPage() {
         // If only month is selected, use current year
         const currentYear = new Date().getFullYear();
         startDate = `${currentYear}-${filters.month}-01`;
-        const lastDay = new Date(currentYear, parseInt(filters.month), 0).getDate();
-        endDate = `${currentYear}-${filters.month}-${lastDay}`;
+        // Get last day: go to first day of next month, then subtract 1 day
+        const nextMonth = new Date(currentYear, parseInt(filters.month), 1);
+        const lastDay = new Date(nextMonth.getTime() - 24 * 60 * 60 * 1000).getDate();
+        endDate = `${currentYear}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
       }
       
       const res = await transactionService.getTransactions({

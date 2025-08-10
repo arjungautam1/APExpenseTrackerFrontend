@@ -1,0 +1,153 @@
+/* Modern styling for native HTML5 date inputs and selects */
+
+/* Custom dropdown arrow for selects */
+select.appearance-none {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  padding-right: 32px;
+}
+
+/* Modern native date input styling */
+input[type="date"] {
+  position: relative;
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  color: #374151;
+}
+
+/* Modern date input appearance */
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+  color: #374151;
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+  color: #6b7280;
+  padding: 0 2px;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #374151;
+  font-weight: 500;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Focus states for better UX */
+input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  color: #3b82f6;
+}
+
+/* Empty state styling - better placeholder handling */
+input[type="date"]:not(:focus):invalid {
+  color: #9ca3af;
+}
+
+input[type="date"]:focus:invalid {
+  color: #374151;
+}
+
+/* Hide datetime text when empty */
+input[type="date"]:not([value])::-webkit-datetime-edit {
+  color: transparent;
+}
+
+input[type="date"]:not([value]):before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+/* Firefox specific styles */
+input[type="date"]::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* Modern select styling for better consistency */
+select {
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+}
+
+/* Ensure consistent height across all inputs */
+input[type="date"], 
+select {
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+/* Better hover states */
+select:hover {
+  border-color: #d1d5db;
+}
+
+input[type="date"]:hover {
+  border-color: #d1d5db;
+}
+
+/* Consistent text styling */
+input[type="date"],
+select {
+  font-weight: 500;
+  color: #374151;
+}
+
+select option {
+  color: #374151;
+  font-weight: 400;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    right: 4px;
+  }
+  
+  select.appearance-none {
+    background-size: 16px 16px;
+    background-position: right 6px center;
+    padding-right: 28px;
+  }
+  
+  input[type="date"]:not([value]):before {
+    left: 32px;
+    font-size: 13px;
+  }
+}

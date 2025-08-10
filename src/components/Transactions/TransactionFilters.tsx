@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Tag, X, Filter, ChevronDown } from 'lucide-react';
+import { Calendar, Filter } from 'lucide-react';
 import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
 import { Category } from '../../types';
+import './NativeDateStyles.css';
 
 export interface TransactionFilterState {
   type?: 'income' | 'expense' | 'transfer' | 'investment';
@@ -42,12 +43,14 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
 
         // Fetch category usage statistics
         try {
-          const transactions = await transactionService.getTransactions({ limit: 1000 });
+          const transactions = await transactionService.getTransactions({ limit: 100 });
           const usage: {[key: string]: number} = {};
           
           transactions.data.forEach(transaction => {
-            if (transaction.categoryId) {
-              usage[transaction.categoryId] = (usage[transaction.categoryId] || 0) + 1;
+            // Use category.id if available, otherwise fall back to categoryId
+            const categoryId = transaction.category?.id || transaction.categoryId;
+            if (categoryId) {
+              usage[categoryId] = (usage[categoryId] || 0) + 1;
             }
           });
           
@@ -160,164 +163,152 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Filters</h3>
-            <p className="text-xs text-gray-500">
-              {getActiveFiltersCount()} active filter{getActiveFiltersCount() !== 1 ? 's' : ''}
-            </p>
+            {getActiveFiltersCount() > 0 && (
+              <p className="text-xs text-blue-600 font-medium">
+                {getActiveFiltersCount()} active filter{getActiveFiltersCount() !== 1 ? 's' : ''}
+              </p>
+            )}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          {onClear && getActiveFiltersCount() > 0 && (
-            <button 
-              onClick={onClear}
-              className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              Clear all
-            </button>
-          )}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
+        {onClear && getActiveFiltersCount() > 0 && (
+          <button 
+            onClick={onClear}
+            className="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
           >
-            <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            Clear All
           </button>
-        </div>
+        )}
       </div>
 
-      {/* Quick Filters - Always Visible */}
-      <div className="p-4 border-b border-gray-100">
-        <div className="flex flex-wrap gap-2">
-          {(['income', 'expense', 'investment', 'transfer'] as const).map((type) => (
-            <button
-              key={type}
-              onClick={() => onChange({ ...value, type: value.type === type ? undefined : type, categoryId: undefined })}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
-                value.type === type 
-                  ? getTypeColor(type)
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </button>
-          ))}
+      <div className="p-4 space-y-6">
+        {/* Transaction Types */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Transaction Type</label>
+          <div className="flex flex-wrap gap-2">
+            {(['income', 'expense', 'investment', 'transfer'] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => onChange({ ...value, type: value.type === type ? undefined : type, categoryId: undefined })}
+                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                  value.type === type 
+                    ? getTypeColor(type)
+                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Expanded Filters */}
-      {isExpanded && (
-        <div className="p-4 space-y-4">
-          {/* Category Filter - Compact & Colorful */}
-          {value.type && value.type !== 'transfer' && (
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                {value.type.charAt(0).toUpperCase() + value.type.slice(1)} Categories
-              </label>
-              <div className="flex flex-wrap gap-1.5">
+        {/* Date Filters */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Time Period</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {/* Month */}
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <select
+                name="month"
+                value={value.month || ''}
+                onChange={handleInput}
+                className="w-full pl-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
+              >
+                <option value="">Select Month</option>
+                {getMonthOptions().map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Year */}
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <select
+                name="year"
+                value={value.year || ''}
+                onChange={handleInput}
+                className="w-full pl-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
+              >
+                <option value="">Select Year</option>
+                {getYearOptions().map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Start Date */}
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <input
+                type="date"
+                name="startDate"
+                value={value.startDate || ''}
+                onChange={handleInput}
+                data-placeholder="From Date"
+                className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+              />
+            </div>
+
+            {/* End Date */}
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <input
+                type="date"
+                name="endDate"
+                value={value.endDate || ''}
+                onChange={handleInput}
+                min={value.startDate || undefined}
+                data-placeholder="To Date"
+                className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Categories - Only show when type is selected */}
+        {value.type && value.type !== 'transfer' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              {value.type.charAt(0).toUpperCase() + value.type.slice(1)} Categories
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => onChange({ ...value, categoryId: undefined })}
+                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                  !value.categoryId 
+                    ? getTypeColor(value.type || '')
+                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                All Categories
+              </button>
+              {getFilteredCategories().map((c) => (
                 <button
-                  onClick={() => onChange({ ...value, categoryId: undefined })}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-full border transition-all ${
-                    !value.categoryId 
-                      ? getTypeColor(value.type)
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  key={c.id}
+                  onClick={() => onChange({ ...value, categoryId: value.categoryId === c.id ? undefined : c.id })}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 ${
+                    value.categoryId === c.id 
+                      ? getTypeColor(value.type || '')
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  All
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: c.color || '#9CA3AF' }}
+                  />
+                  <span>{c.name}</span>
+                  {categoryUsage[c.id] && (
+                    <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-xs font-medium">
+                      {categoryUsage[c.id]}
+                    </span>
+                  )}
                 </button>
-                {getFilteredCategories().map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => onChange({ ...value, categoryId: value.categoryId === c.id ? undefined : c.id })}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5 ${
-                      value.categoryId === c.id 
-                        ? getTypeColor(value.type)
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div 
-                      className="w-2 h-2 rounded-full" 
-                      style={{ backgroundColor: c.color || '#9CA3AF' }}
-                    />
-                    <span>{c.name}</span>
-                    {categoryUsage[c.id] && (
-                      <span className="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs">
-                        {categoryUsage[c.id]}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Date Filters - Single Line */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Date Filters</label>
-            <div className="flex gap-2">
-              {/* Month */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <select
-                    name="month"
-                    value={value.month || ''}
-                    onChange={handleInput}
-                    className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Month</option>
-                    {getMonthOptions().map(({ value, label }) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              {/* Year */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                  <select
-                    name="year"
-                    value={value.year || ''}
-                    onChange={handleInput}
-                    className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <option value="">Year</option>
-                    {getYearOptions().map(({ value, label }) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Custom Range */}
-              <div className="flex items-center text-xs text-gray-400 px-1">or</div>
-              
-              <div className="flex-1 relative">
-                <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <input
-                  type="date"
-                  name="startDate"
-                  value={value.startDate || ''}
-                  onChange={handleInput}
-                  className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="From"
-                />
-              </div>
-              <div className="flex items-center text-xs text-gray-400">to</div>
-              <div className="flex-1 relative">
-                <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
-                <input
-                  type="date"
-                  name="endDate"
-                  value={value.endDate || ''}
-                  onChange={handleInput}
-                  className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  placeholder="To"
-                />
-              </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
