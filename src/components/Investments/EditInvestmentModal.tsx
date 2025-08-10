@@ -17,7 +17,14 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
     type: investment.type,
     amountInvested: investment.amountInvested.toString(),
     currentValue: investment.currentValue?.toString() || '',
-    purchaseDate: investment.purchaseDate.split('T')[0], // Convert to YYYY-MM-DD format
+    purchaseDate: (() => {
+      // Fix timezone issue by properly converting the date
+      const dateObj = new Date(investment.purchaseDate);
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    })(),
     quantity: investment.quantity?.toString() || '',
     symbol: investment.symbol || '',
     platform: investment.platform || ''

@@ -19,7 +19,14 @@ export function EmiScheduleModal({ loan, onClose }: EmiScheduleModalProps) {
       try {
         const res = await loanService.getSchedule(loan.id);
         setEmi(res.emi);
-        setRows(res.schedule.map((r) => ({ ...r, date: new Date(r.date).toISOString().substring(0, 10) })));
+        setRows(res.schedule.map((r) => {
+          // Fix timezone issue by properly converting the date
+          const dateObj = new Date(r.date);
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          return { ...r, date: `${year}-${month}-${day}` };
+        }));
       } finally {
         setLoading(false);
       }

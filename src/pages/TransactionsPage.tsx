@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { transactionService } from '../services/transaction';
 import { Transaction } from '../types';
 import { TransactionFilters, TransactionFilterState } from '../components/Transactions/TransactionFilters';
@@ -6,6 +6,9 @@ import { TransactionList } from '../components/Transactions/TransactionList';
 import { TransactionEditModal } from '../components/Transactions/TransactionEditModal';
 import { ConfirmDialog } from '../components/Common/ConfirmDialog';
 import toast from 'react-hot-toast';
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
 export function TransactionsPage() {
   const [filters, setFilters] = useState<TransactionFilterState>({});
@@ -15,6 +18,27 @@ export function TransactionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
+
+  // Calculate totals based on filtered transactions
+  const totals = useMemo(() => {
+    const income = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const expense = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const investment = transactions
+      .filter(t => t.type === 'investment')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const transfer = transactions
+      .filter(t => t.type === 'transfer')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    return { income, expense, investment, transfer };
+  }, [transactions]);
 
   const fetchTransactions = async () => {
     try {
@@ -87,22 +111,48 @@ export function TransactionsPage() {
   };
 
   return (
-    <div className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-        <p className="text-gray-600">Manage your income, expenses, and investments</p>
+    <div className="px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <TransactionFilters value={filters} onChange={setFilters} onClear={clearFilters} />
 
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium">Results</h3>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">Transaction List</h3>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3 text-xs">
+                  {totals.income > 0 && (
+                    <span className="text-green-600 font-medium">
+                      +{formatCurrency(totals.income)}
+                    </span>
+                  )}
+                  {totals.expense > 0 && (
+                    <span className="text-red-600 font-medium">
+                      -{formatCurrency(totals.expense)}
+                    </span>
+                  )}
+                  {totals.investment > 0 && (
+                    <span className="text-purple-600 font-medium">
+                      ⬆{formatCurrency(totals.investment)}
+                    </span>
+                  )}
+                  {totals.transfer > 0 && (
+                    <span className="text-blue-600 font-medium">
+                      ⇄{formatCurrency(totals.transfer)}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-500">{transactions.length} transactions</span>
+              </div>
+            </div>
           </div>
-          <div className="card-body">
+          <div className="p-0">
             {loading ? (
-              <div className="space-y-3">
+              <div className="p-4 space-y-3">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="h-10 bg-gray-100 rounded" />
                 ))}

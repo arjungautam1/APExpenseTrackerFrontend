@@ -25,12 +25,25 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
   // Initialize from transaction
   useEffect(() => {
     if (transaction) {
+      // Fix timezone issue by properly converting the date
+      let formattedDate = new Date().toISOString().split('T')[0]; // Default to today
+      
+      if (transaction.date) {
+        // Create a date object and format it properly to avoid timezone issues
+        const dateObj = new Date(transaction.date);
+        // Use toLocaleDateString to get the date in local timezone
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        formattedDate = `${year}-${month}-${day}`;
+      }
+      
       setFormData({
         amount: String(transaction.amount),
         type: transaction.type,
         categoryId: transaction.categoryId,
         description: transaction.description || '',
-        date: transaction.date ? transaction.date.substring(0, 10) : new Date().toISOString().split('T')[0]
+        date: formattedDate
       });
     }
   }, [transaction]);
