@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  User
+  User,
+  Calendar
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -22,6 +23,7 @@ interface LayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Transactions', href: '/transactions', icon: CreditCard },
+  { name: 'Monthly Expenses', href: '/monthly-expenses', icon: Calendar },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
   { name: 'Loans & EMIs', href: '/loans', icon: Building },
   { name: 'Transfers', href: '/transfers', icon: Send },

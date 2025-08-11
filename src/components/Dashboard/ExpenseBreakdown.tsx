@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, BarChart3, TrendingUp, DollarSign, Calendar, Hash } from 'lucide-react';
+import { PieChart, BarChart3, TrendingUp, DollarSign, Calendar, Hash, Clock, AlertCircle } from 'lucide-react';
 import { transactionService } from '../../services/transaction';
 import { ExpenseBreakdownData, ExpenseBreakdownItem } from '../../services/transaction';
+import { monthlyExpenseService, MonthlyExpensesSummary } from '../../services/monthlyExpense';
 import toast from 'react-hot-toast';
 
 interface ExpenseBreakdownProps {
@@ -15,6 +16,7 @@ interface ExpenseBreakdownProps {
 
 export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: ExpenseBreakdownProps) {
   const [breakdown, setBreakdown] = useState<ExpenseBreakdownData | null>(null);
+  const [monthlyExpenses, setMonthlyExpenses] = useState<MonthlyExpensesSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedView, setSelectedView] = useState<'breakdown' | 'trends'>('breakdown');
 
@@ -35,8 +37,19 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     }
   };
 
+  const fetchMonthlyExpenses = async () => {
+    try {
+      const data = await monthlyExpenseService.getMonthlyExpensesSummary();
+      setMonthlyExpenses(data);
+    } catch (error: any) {
+      console.error('Failed to fetch monthly expenses:', error);
+      // Don't show toast for this as it's secondary data
+    }
+  };
+
   useEffect(() => {
     fetchExpenseBreakdown();
+    fetchMonthlyExpenses();
   }, [dateRange?.startDate, dateRange?.endDate, limit]);
 
   const formatCurrency = (amount: number) => {
@@ -268,6 +281,124 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                 </div>
               ))}
             </div>
+
+            {/* Monthly Expenses Section */}
+            {monthlyExpenses && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-gray-900">Monthly Expenses</h3>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-500">Recurring Payments</span>
+                  </div>
+                </div>
+
+                {/* Monthly Expenses Summary */}
+                <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                        <DollarSign className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formatCurrency(monthlyExpenses.totalMonthly)}
+                      </p>
+                      <p className="text-sm text-gray-600">Total Monthly</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                        <Hash className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">{monthlyExpenses.count}</p>
+                      <p className="text-sm text-gray-600">Active Bills</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
+                        <AlertCircle className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">{monthlyExpenses.dueThisMonth}</p>
+                      <p className="text-sm text-gray-600">Due This Month</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                        <Calendar className="h-6 w-6 text-green-600" />
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {formatCurrency(monthlyExpenses.totalMonthly / 12)}
+                      </p>
+                      <p className="text-sm text-gray-600">Daily Average</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Monthly Expenses by Category */}
+                <div className="space-y-4">
+                  {Object.entries(monthlyExpenses.byCategory).map(([category, amount]) => {
+                    if (amount === 0) return null;
+                    
+                    const categoryInfo = {
+                      home: { name: 'Home & Rent', icon: '🏠', color: 'bg-blue-500' },
+                      mobile: { name: 'Mobile & Phone', icon: '📱', color: 'bg-green-500' },
+                      internet: { name: 'Internet & TV', icon: '🌐', color: 'bg-purple-500' },
+                      gym: { name: 'Gym & Fitness', icon: '💪', color: 'bg-orange-500' },
+                      other: { name: 'Other Bills', icon: '📋', color: 'bg-gray-500' }
+                    }[category as keyof typeof monthlyExpenses.byCategory];
+
+                    const percentage = (amount / monthlyExpenses.totalMonthly) * 100;
+
+                    return (
+                      <div key={category} className="group p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                        <div className="flex items-center space-x-4">
+                          {/* Category Icon */}
+                          <div className="flex-shrink-0">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm ${categoryInfo.color}`}>
+                              <span className="text-xl">{categoryInfo.icon}</span>
+                            </div>
+                          </div>
+
+                          {/* Category Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-sm font-semibold text-gray-900">
+                                {categoryInfo.name}
+                              </h4>
+                              <span className="text-sm font-bold text-gray-900">
+                                {formatCurrency(amount)}
+                              </span>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                <div
+                                  className="h-2.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+                                  style={{ width: `${Math.min(percentage, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-medium text-gray-600 w-12 text-right">
+                                {formatPercentage(percentage)}
+                              </span>
+                            </div>
+
+                            {/* Additional Info */}
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                Monthly recurring
+                              </span>
+                              <span className="flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                Due monthly
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           /* Monthly Trends View */

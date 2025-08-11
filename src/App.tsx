@@ -13,6 +13,7 @@ import { LoansPage } from './pages/LoansPage'
 import { TransfersPage } from './pages/TransfersPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import MonthlyExpensesPage from './pages/MonthlyExpensesPage'
 
 function App() {
   return (
@@ -39,6 +40,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <TransactionsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/monthly-expenses"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <MonthlyExpensesPage />
               </Layout>
             </ProtectedRoute>
           }
