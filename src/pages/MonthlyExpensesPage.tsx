@@ -120,14 +120,23 @@ const MonthlyExpensesPage: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Monthly Expenses</h1>
-        <p className="text-gray-600">Manage your recurring monthly bills and subscriptions</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Monthly Expenses</h1>
+          <p className="text-gray-600">Manage your recurring monthly bills and subscriptions</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg"
+        >
+          <Plus className="h-5 w-5 mr-2" />
+          Add New Expense
+        </button>
       </div>
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 rounded-full bg-blue-100 text-blue-600">
@@ -160,23 +169,6 @@ const MonthlyExpensesPage: React.FC = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Due This Month</p>
                 <p className="text-2xl font-bold text-gray-900">{summary.dueThisMonth}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 rounded-full bg-purple-100 text-purple-600">
-                <Plus className="h-6 w-6" />
-              </div>
-              <div className="ml-4">
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="text-sm font-medium text-purple-600 hover:text-purple-700"
-                >
-                  Add New Expense
-                </button>
-                <p className="text-2xl font-bold text-gray-900">+</p>
               </div>
             </div>
           </div>
@@ -305,6 +297,16 @@ const MonthlyExpensesPage: React.FC = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 md:hidden">
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
       </div>
 
       {/* Add/Edit Modal */}
