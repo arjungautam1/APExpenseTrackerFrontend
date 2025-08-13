@@ -3,6 +3,7 @@ import { PieChart, BarChart3, TrendingUp, DollarSign, Calendar, Hash, Clock, Ale
 import { transactionService } from '../../services/transaction';
 import { ExpenseBreakdownData, ExpenseBreakdownItem } from '../../services/transaction';
 import { monthlyExpenseService, MonthlyExpensesSummary } from '../../services/monthlyExpense';
+import { useCurrencyFormatter } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 interface ExpenseBreakdownProps {
@@ -19,6 +20,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
   const [monthlyExpenses, setMonthlyExpenses] = useState<MonthlyExpensesSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedView, setSelectedView] = useState<'breakdown' | 'trends'>('breakdown');
+  const { formatCurrency } = useCurrencyFormatter();
 
   const fetchExpenseBreakdown = async () => {
     try {
@@ -52,12 +54,6 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     fetchMonthlyExpenses();
   }, [dateRange?.startDate, dateRange?.endDate, limit]);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
 
   const formatPercentage = (percentage: number) => {
     return `${percentage.toFixed(1)}%`;

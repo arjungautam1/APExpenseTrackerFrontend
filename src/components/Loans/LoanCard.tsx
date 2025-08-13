@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, DollarSign, MoreHorizontal, Trash2, Clock } from 'lucide-react';
 import { LoanDto, loanService } from '../../services/loan';
 import { ConfirmDialog } from '../Common/ConfirmDialog';
+import { useCurrencyFormatter } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 interface LoanCardProps {
@@ -10,10 +11,10 @@ interface LoanCardProps {
   onViewSchedule: (loan: LoanDto) => void;
 }
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 export function LoanCard({ loan, onChange, onViewSchedule }: LoanCardProps) {
+  const { formatCurrency } = useCurrencyFormatter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

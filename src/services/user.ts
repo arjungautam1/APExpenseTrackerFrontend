@@ -15,7 +15,9 @@ class UserService {
   }
 
   async updateProfile(data: UpdateProfileInput): Promise<User> {
+    console.log('Updating profile with data:', data);
     const response = await apiService.put<ApiResponse<{ user: User }>>('/settings/me', data);
+    console.log('Profile update response:', response.data);
     return response.data.data.user;
   }
 }

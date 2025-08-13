@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { loanService, LoanDto } from '../../services/loan';
+import { useCurrencyFormatter } from '../../utils/currency';
 
 interface EmiScheduleModalProps {
   loan: LoanDto | null;
@@ -11,6 +12,7 @@ export function EmiScheduleModal({ loan, onClose }: EmiScheduleModalProps) {
   const [loading, setLoading] = useState(true);
   const [emi, setEmi] = useState(0);
   const [rows, setRows] = useState<Array<{ installment: number; date: string; principal: number; interest: number; balance: number }>>([]);
+  const { formatCurrency } = useCurrencyFormatter();
 
   useEffect(() => {
     const load = async () => {
@@ -36,7 +38,7 @@ export function EmiScheduleModal({ loan, onClose }: EmiScheduleModalProps) {
 
   if (!loan) return null;
 
-  const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  const fmt = formatCurrency;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">

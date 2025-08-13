@@ -4,6 +4,7 @@ import { Investment } from '../../types';
 import { investmentService } from '../../services/investment';
 import { EditInvestmentModal } from './EditInvestmentModal';
 import { ConfirmDialog } from '../Common/ConfirmDialog';
+import { useCurrencyFormatter } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
 interface InvestmentCardProps {
@@ -17,13 +18,7 @@ export function InvestmentCard({ investment, onUpdate, onDelete }: InvestmentCar
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { formatCurrency } = useCurrencyFormatter();
 
 
   const formatDate = (dateString: string) => {

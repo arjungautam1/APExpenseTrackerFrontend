@@ -4,6 +4,7 @@ import { ScanBillModal } from '../components/Dashboard/ScanBillModal';
 import { ExpenseBreakdown } from '../components/Dashboard/ExpenseBreakdown';
 import { transactionService } from '../services/transaction';
 import { investmentService } from '../services/investment';
+import { useCurrencyFormatter } from '../utils/currency';
 import { TrendingUp, TrendingDown, DollarSign, PiggyBank, BarChart3, Building, Grid3X3 } from 'lucide-react';
 import { Transaction } from '../types';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('');
   const [activeTransactionTab, setActiveTransactionTab] = useState<'all' | 'income' | 'expense' | 'investment'>('all');
+  const { formatCurrency } = useCurrencyFormatter();
 
   const fetchDashboardData = async () => {
     try {
@@ -32,7 +34,7 @@ export function DashboardPage() {
       // Calculate current month start and end dates
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
       
       const startDate = startOfMonth.toISOString().split('T')[0];
       const endDate = endOfMonth.toISOString().split('T')[0];
@@ -74,12 +76,6 @@ export function DashboardPage() {
     fetchDashboardData();
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

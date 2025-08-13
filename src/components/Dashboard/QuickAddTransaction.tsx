@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, DollarSign, Calendar, Tag, FileText, X, TrendingUp, TrendingDown, Building } from 'lucide-react';
+import { Plus, DollarSign, Calendar, Tag, FileText, X, TrendingUp, TrendingDown, Building, Sparkles } from 'lucide-react';
 import { transactionService } from '../../services/transaction';
 import { categoryService } from '../../services/category';
 import { investmentService } from '../../services/investment';
+import { aiService } from '../../services/ai';
 import { Category } from '../../types';
 import toast from 'react-hot-toast';
 
@@ -14,14 +15,22 @@ interface QuickAddTransactionProps {
 export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
+  const [autoCategorized, setAutoCategorized] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryUsage, setCategoryUsage] = useState<{[key: string]: number}>({});
+  const [autoCategorizeTimeout, setAutoCategorizeTimeout] = useState<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState({
     amount: '',
     type: 'expense' as 'income' | 'expense' | 'investment',
     categoryId: '',
     description: '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA', { 
+      timeZone: 'America/Toronto',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }),
     // Investment specific fields
     investmentType: 'other' as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other',
     platform: ''
@@ -33,6 +42,15 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       fetchCategories();
     }
   }, [isModalOpen, formData.type]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoCategorizeTimeout) {
+        clearTimeout(autoCategorizeTimeout);
+      }
+    };
+  }, [autoCategorizeTimeout]);
 
   const fetchCategories = async () => {
     try {
@@ -77,6 +95,80 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       [name]: value,
       ...(name === 'type' && { categoryId: '' }) // Reset category when type changes
     }));
+
+    // Reset auto-categorized flag when description changes
+    if (name === 'description') {
+      setAutoCategorized(false);
+    }
+
+    // Auto-categorize when description changes and has enough content
+    if (name === 'description' && value.trim().length >= 3) {
+      // Clear existing timeout
+      if (autoCategorizeTimeout) {
+        clearTimeout(autoCategorizeTimeout);
+      }
+      
+      // Set new timeout for debounced auto-categorization
+      const timeout = setTimeout(() => {
+        handleAutoCategorize(value.trim());
+      }, 1000); // Wait 1 second after user stops typing
+      
+      setAutoCategorizeTimeout(timeout);
+    }
+  };
+
+  const handleAutoCategorize = async (description: string) => {
+    if (!description || description.length < 3) return;
+    
+    try {
+      setIsAutoCategorizing(true);
+      console.log('Auto-categorizing:', description);
+      
+      const result = await aiService.autoCategorize({
+        description,
+        amount: formData.amount ? parseFloat(formData.amount) : undefined
+      });
+
+      console.log('Auto-categorization result:', result);
+
+      if (result.categoryId && result.confidence !== 'low') {
+        // Update form data with the suggested category and type
+        setFormData(prev => ({
+          ...prev,
+          type: result.transactionType,
+          categoryId: result.categoryId || ''
+        }));
+
+        // Show success message
+        const confidenceText = result.confidence === 'high' ? 'high confidence' : 'medium confidence';
+        toast.success(`Auto-categorized as "${result.categoryName}" (${confidenceText})`);
+        
+        // Set auto-categorized flag
+        setAutoCategorized(true);
+        
+        // Force refresh categories if needed
+        if (categories.length === 0) {
+          await fetchCategories();
+        }
+      } else {
+        console.log('Auto-categorization result not confident enough:', result);
+      }
+    } catch (error: any) {
+      console.error('Auto-categorization failed:', error);
+      
+      if (error.response?.status === 401) {
+        // User is not authenticated
+        toast.error('Please log in to use auto-categorization');
+      } else if (error.response?.status === 404) {
+        // Route not found - server issue
+        toast.error('Auto-categorization service is not available');
+      } else {
+        // Other errors
+        toast.error(`Auto-categorization failed: ${error.message}`);
+      }
+    } finally {
+      setIsAutoCategorizing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +193,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
             name: formData.description.trim() || 'Quick Investment',
             type: formData.investmentType,
             amountInvested: parseFloat(formData.amount),
-            purchaseDate: formData.date,
+            purchaseDate: formData.date + 'T12:00:00',
             platform: formData.platform.trim() || 'Quick Add'
           }),
           // Create transaction record
@@ -110,7 +202,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
             type: 'investment',
             categoryId: investmentCategory.id,
             description: formData.description.trim() || 'Investment',
-            date: formData.date
+            date: formData.date + 'T12:00:00'
           })
         ]);
 
@@ -122,7 +214,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
           type: formData.type,
           categoryId: formData.categoryId,
           description: formData.description.trim() || undefined,
-          date: formData.date
+          date: formData.date + 'T12:00:00'
         };
 
         await transactionService.createTransaction(transactionData);
@@ -135,10 +227,18 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
         type: 'expense',
         categoryId: '',
         description: '',
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleDateString('en-CA', { 
+          timeZone: 'America/Toronto',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }),
         investmentType: 'other',
         platform: ''
       });
+      
+      // Reset auto-categorization state
+      setAutoCategorized(false);
       
       setIsModalOpen(false);
       if (onSuccess) onSuccess();
@@ -255,6 +355,52 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   </div>
                 </div>
 
+                {/* Description/Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                    {formData.type === 'investment' ? 'Investment Name' : 'Description'}
+                    {formData.type !== 'investment' && (
+                      <span className="ml-2 text-xs text-gray-500 flex items-center">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        AI-powered categorization
+                      </span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      rows={3}
+                      className="input pl-10 resize-none"
+                      placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction... (e.g., "coffee at starbucks")'}
+                    />
+                    {isAutoCategorizing && (
+                      <div className="absolute right-3 top-3 flex items-center bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <span className="ml-2 text-xs text-blue-600 font-medium">AI Categorizing...</span>
+                      </div>
+                    )}
+                    {!isAutoCategorizing && formData.description.trim().length >= 3 && formData.type !== 'investment' && !autoCategorized && (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoCategorize(formData.description.trim())}
+                        className="absolute right-3 top-3 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                        title="Auto-categorize this transaction"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                      </button>
+                    )}
+                    {autoCategorized && !isAutoCategorizing && (
+                      <div className="absolute right-3 top-3 flex items-center bg-green-50 px-2 py-1 rounded-md border border-green-200">
+                        <Sparkles className="h-4 w-4 text-green-600" />
+                        <span className="ml-2 text-xs text-green-600 font-medium">AI Categorized</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -279,8 +425,19 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                 {/* Category for Income/Expense */}
                 {formData.type !== 'investment' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
                       Category
+                      {formData.description.trim().length >= 3 && (
+                        <button
+                          type="button"
+                          onClick={() => handleAutoCategorize(formData.description.trim())}
+                          disabled={isAutoCategorizing}
+                          className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
+                        </button>
+                      )}
                     </label>
                     <div className="relative">
                       <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -361,24 +518,6 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                     />
                   </div>
                 )}
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {formData.type === 'investment' ? 'Investment Name' : 'Description (Optional)'}
-                  </label>
-                  <div className="relative">
-                    <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      rows={3}
-                      className="input pl-10 resize-none"
-                      placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction...'}
-                    />
-                  </div>
-                </div>
 
                 {/* Submit Buttons */}
                 <div className="flex space-x-3 pt-4">

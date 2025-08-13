@@ -146,30 +146,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      // For development with mock auth, set mock tokens if none exist
       if (!authService.isAuthenticated()) {
-        authService.setTokens('mock-jwt-token', 'mock-refresh-token');
+        dispatch({ type: 'LOGIN_FAILURE' });
+        return;
       }
 
       const user = await authService.getCurrentUser();
+      console.log('Auth check - received user data:', user);
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error) {
-      // If check fails, still try to set mock tokens for development
-      console.log('Auth check failed, setting mock tokens for development');
-      authService.setTokens('mock-jwt-token', 'mock-refresh-token');
-      
-      // Create a mock user for development
-      const mockUser = {
-        id: '64a7b8c8d3e4f5a6b7c8d9e0',
-        name: 'Test User',
-        email: 'test@example.com',
-        currency: 'USD',
-        timezone: 'UTC',
-        isVerified: true,
-        avatar: undefined
-      };
-      
-      dispatch({ type: 'SET_USER', payload: mockUser });
+      console.log('Auth check failed:', error);
+      authService.clearTokens();
+      dispatch({ type: 'LOGIN_FAILURE' });
     }
   };
 

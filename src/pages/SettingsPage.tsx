@@ -2,9 +2,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/user';
+import { getSupportedCurrencies } from '../utils/currency';
 import toast from 'react-hot-toast';
 
-const currencies = ['USD', 'EUR', 'GBP', 'INR', 'NPR', 'CAD', 'AUD', 'JPY', 'CNY'];
+const supportedCurrencies = getSupportedCurrencies();
 
 export function SettingsPage() {
   const { user, isLoading, checkAuth } = useAuth();
@@ -33,9 +34,18 @@ export function SettingsPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      await userService.updateProfile({ name, currency, timezone });
+      const updatedUser = await userService.updateProfile({ name, currency, timezone });
+      
+      // Force refresh the auth context with updated user data
       await checkAuth();
-      toast.success('Settings updated');
+      
+      // Double-check that the currency was actually saved
+      if (updatedUser.currency !== currency) {
+        toast.error('Currency setting was not saved properly. Please try again.');
+        return;
+      }
+      
+      toast.success('Settings updated successfully');
     } catch (error: any) {
       const message = error.response?.data?.message || 'Failed to update settings';
       toast.error(message);
@@ -84,8 +94,8 @@ export function SettingsPage() {
                 onChange={(e) => setCurrency(e.target.value)}
                 disabled={isLoading}
               >
-                {currencies.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                {supportedCurrencies.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
                 ))}
               </select>
             </div>

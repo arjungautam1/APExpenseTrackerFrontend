@@ -11,6 +11,25 @@ export interface ScanBillResult {
   raw?: string;
 }
 
+export interface AutoCategorizeRequest {
+  description: string;
+  amount?: number;
+  merchant?: string;
+}
+
+export interface AutoCategorizeResult {
+  categoryId: string | null;
+  categoryName: string;
+  transactionType: 'income' | 'expense';
+  confidence: 'high' | 'medium' | 'low';
+  raw?: string;
+  availableCategories: Array<{
+    id: string;
+    name: string;
+    type: 'income' | 'expense' | 'investment';
+  }>;
+}
+
 class AIService {
   async scanBill(imageBase64?: string, imageUrl?: string): Promise<ScanBillResult> {
     const payload: any = {};
@@ -19,6 +38,14 @@ class AIService {
     const response = await apiService.post<{ success: boolean; data: ScanBillResult; message: string }>(
       '/ai/scan-bill',
       payload
+    );
+    return response.data.data;
+  }
+
+  async autoCategorize(data: AutoCategorizeRequest): Promise<AutoCategorizeResult> {
+    const response = await apiService.post<{ success: boolean; data: AutoCategorizeResult; message: string }>(
+      '/ai/auto-categorize',
+      data
     );
     return response.data.data;
   }

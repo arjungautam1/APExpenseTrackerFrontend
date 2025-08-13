@@ -1,5 +1,6 @@
 import React from 'react';
 import { Transaction } from '../../types';
+import { useCurrencyFormatter } from '../../utils/currency';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface TransactionListProps {
@@ -8,13 +9,11 @@ interface TransactionListProps {
   onDelete?: (t: Transaction) => void;
 }
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-
 const formatDate = (dateString: string) =>
   new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 export function TransactionList({ items, onEdit, onDelete }: TransactionListProps) {
+  const { formatCurrency } = useCurrencyFormatter();
   if (items.length === 0) {
     return (
       <div className="text-center py-8">

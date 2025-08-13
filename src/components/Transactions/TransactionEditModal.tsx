@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Calendar, Tag, FileText, X } from 'lucide-react';
+import { DollarSign, Calendar, Tag, FileText, X, Sparkles } from 'lucide-react';
 import { Transaction, Category } from '../../types';
 import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
+import { aiService } from '../../services/ai';
 import toast from 'react-hot-toast';
 
 interface TransactionEditModalProps {
@@ -13,6 +14,7 @@ interface TransactionEditModalProps {
 
 export function TransactionEditModal({ transaction, onClose, onSaved }: TransactionEditModalProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     amount: '',
@@ -74,6 +76,55 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
       [name]: value,
       ...(name === 'type' ? { categoryId: '' } : {})
     }));
+
+    // Auto-categorize when description changes and has enough content
+    if (name === 'description' && value.trim().length >= 3) {
+      handleAutoCategorize(value.trim());
+    }
+  };
+
+  const handleAutoCategorize = async (description: string) => {
+    if (!description || description.length < 3) return;
+    
+    try {
+      setIsAutoCategorizing(true);
+      console.log('Auto-categorizing:', description);
+      
+      const result = await aiService.autoCategorize({
+        description,
+        amount: formData.amount ? parseFloat(formData.amount) : undefined
+      });
+
+      console.log('Auto-categorization result:', result);
+
+      if (result.categoryId && result.confidence !== 'low') {
+        // Update form data with the suggested category and type
+        setFormData(prev => ({
+          ...prev,
+          type: result.transactionType,
+          categoryId: result.categoryId || ''
+        }));
+
+        // Show success message
+        const confidenceText = result.confidence === 'high' ? 'high confidence' : 'medium confidence';
+        toast.success(`Auto-categorized as "${result.categoryName}" (${confidenceText})`);
+      }
+    } catch (error: any) {
+      console.error('Auto-categorization failed:', error);
+      
+      if (error.response?.status === 401) {
+        // User is not authenticated
+        toast.error('Please log in to use auto-categorization');
+      } else if (error.response?.status === 404) {
+        // Route not found - server issue
+        toast.error('Auto-categorization service is not available');
+      } else {
+        // Other errors - don't show for auto-categorization failures
+        console.log('Auto-categorization failed silently:', error.message);
+      }
+    } finally {
+      setIsAutoCategorizing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,7 +240,13 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                Description (Optional)
+                <span className="ml-2 text-xs text-gray-500 flex items-center">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  AI-powered categorization
+                </span>
+              </label>
               <div className="relative">
                 <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <textarea
@@ -198,8 +255,24 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
                   onChange={handleChange}
                   rows={3}
                   className="input pl-10 resize-none"
-                  placeholder="Add a note..."
+                  placeholder="Add a note... (e.g., 'coffee at starbucks')"
                 />
+                {isAutoCategorizing && (
+                  <div className="absolute right-3 top-3 flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    <span className="ml-2 text-xs text-blue-600">Categorizing...</span>
+                  </div>
+                )}
+                {!isAutoCategorizing && formData.description.trim().length >= 3 && formData.type !== 'transfer' && (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoCategorize(formData.description.trim())}
+                    className="absolute right-3 top-3 p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                    title="Auto-categorize this transaction"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 

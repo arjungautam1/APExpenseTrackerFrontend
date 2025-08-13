@@ -5,14 +5,13 @@ import { TransactionFilters, TransactionFilterState } from '../components/Transa
 import { TransactionList } from '../components/Transactions/TransactionList';
 import { TransactionEditModal } from '../components/Transactions/TransactionEditModal';
 import { ConfirmDialog } from '../components/Common/ConfirmDialog';
+import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
 export function TransactionsPage() {
   const [filters, setFilters] = useState<TransactionFilterState>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { formatCurrency } = useCurrencyFormatter();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Transaction | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);

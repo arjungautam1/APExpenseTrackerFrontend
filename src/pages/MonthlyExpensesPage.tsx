@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Home, Phone, Wifi, Dumbbell, CreditCard, ChevronDown, ChevronUp, Edit, Trash2, Calendar, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 import { monthlyExpenseService, MonthlyExpenseDto, CreateMonthlyExpenseDto, MonthlyExpensesSummary } from '../services/monthlyExpense';
 import AddEditMonthlyExpenseModal from '../components/MonthlyExpenses/AddEditMonthlyExpenseModal';
+import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
 
 const MonthlyExpensesPage: React.FC = () => {
@@ -12,6 +13,7 @@ const MonthlyExpensesPage: React.FC = () => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<MonthlyExpenseDto | null>(null);
+  const { formatCurrency } = useCurrencyFormatter();
 
   const categories = [
     { key: 'home', name: 'Home', icon: Home, color: 'bg-red-100 text-red-600' },
@@ -56,12 +58,6 @@ const MonthlyExpensesPage: React.FC = () => {
     return expenses.filter(expense => expense.category === category);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

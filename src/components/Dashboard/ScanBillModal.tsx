@@ -20,6 +20,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [editableAmount, setEditableAmount] = useState<number>(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -89,6 +90,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
     setResult(null);
     setSelectedCategoryId('');
     setSelectedDate('');
+    setEditableAmount(0);
   };
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,10 +161,17 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       
       setResult(data);
       
-      // Auto-fill the date if extracted from receipt
-      if (data.date) {
-        setSelectedDate(data.date);
-      }
+      // Set editable amount from result
+      setEditableAmount(data.amount || 0);
+      
+      // Auto-fill the date with current date in Toronto timezone
+      const torontoDate = new Date().toLocaleDateString('en-CA', { 
+        timeZone: 'America/Toronto',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      setSelectedDate(torontoDate);
       
       toast.success('Details extracted successfully');
     } catch (error: any) {
@@ -190,21 +199,29 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
   };
 
   const canCreate = useMemo(() => {
-    return Boolean(result?.amount && selectedCategoryId);
-  }, [result, selectedCategoryId]);
+    return Boolean(editableAmount && editableAmount > 0 && selectedCategoryId);
+  }, [editableAmount, selectedCategoryId]);
 
   const handleCreate = async () => {
-    if (!result?.amount || !selectedCategoryId) return;
+    if (!editableAmount || editableAmount <= 0 || !selectedCategoryId) return;
     try {
-      // Ensure we have a valid date
-      const transactionDate = selectedDate || new Date().toISOString().split('T')[0];
+      // Ensure we have a valid date in Toronto timezone
+      const transactionDate = selectedDate || new Date().toLocaleDateString('en-CA', { 
+        timeZone: 'America/Toronto',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      
+      // Ensure date is sent as local date string to avoid timezone conversion
+      const localDateString = transactionDate + 'T12:00:00';
       
       const transactionData = {
-        amount: result.amount,
-        type: (result.transactionType as 'income' | 'expense') || 'expense',
+        amount: editableAmount,
+        type: (result?.transactionType as 'income' | 'expense') || 'expense',
         categoryId: selectedCategoryId,
-        description: result.description || result.merchant || 'Scanned document',
-        date: transactionDate,
+        description: result?.description || result?.merchant || 'Scanned document',
+        date: localDateString,
       };
       
       console.log('Creating transaction with data:', transactionData);
@@ -323,7 +340,17 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
                           <p className="text-xs font-medium text-green-700 mb-1">Amount</p>
-                          <p className="text-lg font-bold text-green-800">${result.amount ?? '0.00'}</p>
+                          <div className="flex items-center">
+                            <span className="text-lg font-bold text-green-800 mr-1">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              className="text-lg font-bold text-green-800 bg-transparent border-none outline-none w-full"
+                              value={editableAmount}
+                              onChange={(e) => setEditableAmount(parseFloat(e.target.value) || 0)}
+                            />
+                          </div>
                         </div>
                         <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
                           <p className="text-xs font-medium text-blue-700 mb-1">Type</p>
@@ -367,18 +394,18 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
                           </select>
                         </div>
 
-                        {result.date && (
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Transaction Date</label>
-                            <input
-                              type="date"
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                              value={selectedDate}
-                              onChange={(e) => setSelectedDate(e.target.value)}
-                            />
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Transaction Date</label>
+                          <input
+                            type="date"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                          />
+                          {result.date && (
                             <p className="text-xs text-gray-500 mt-1">Date extracted from receipt: {result.date}</p>
-                          </div>
-                        )}
+                          )}
+                        </div>
 
                         <button 
                           onClick={handleCreate} 

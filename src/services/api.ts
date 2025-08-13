@@ -15,8 +15,8 @@ class ApiService {
     // Request interceptor to add token
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token') || 'mock-jwt-token';
-        if (token) {
+        const token = localStorage.getItem('token');
+        if (token && token !== 'mock-jwt-token') {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

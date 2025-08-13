@@ -66,7 +66,8 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!(token && token !== 'mock-jwt-token');
   }
 }
 

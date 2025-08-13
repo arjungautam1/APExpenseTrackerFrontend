@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getSupportedCurrencies } from '../../utils/currency';
 import { Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react';
 
-const currencies = [
-  { code: 'USD', name: 'US Dollar' },
-  { code: 'EUR', name: 'Euro' },
-  { code: 'GBP', name: 'British Pound' },
-  { code: 'INR', name: 'Indian Rupee' },
-  { code: 'NPR', name: 'Nepalese Rupee' },
-  { code: 'CAD', name: 'Canadian Dollar' },
-  { code: 'AUD', name: 'Australian Dollar' },
-  { code: 'JPY', name: 'Japanese Yen' },
-  { code: 'CNY', name: 'Chinese Yuan' },
-];
+const currencies = getSupportedCurrencies();
 
 export function RegisterForm() {
   const navigate = useNavigate();

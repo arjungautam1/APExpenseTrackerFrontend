@@ -4,6 +4,7 @@ import { loanService, LoanDto } from '../services/loan';
 import { AddLoanModal } from '../components/Loans/AddLoanModal';
 import { LoanCard } from '../components/Loans/LoanCard';
 import { EmiScheduleModal } from '../components/Loans/EmiScheduleModal';
+import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
 
 export function LoansPage() {
@@ -11,6 +12,7 @@ export function LoansPage() {
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [scheduleLoan, setScheduleLoan] = useState<LoanDto | null>(null);
+  const { formatCurrency } = useCurrencyFormatter();
 
   const loadLoans = async () => {
     try {
@@ -26,7 +28,6 @@ export function LoansPage() {
 
   useEffect(() => { loadLoans(); }, []);
 
-  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
   // Aggregate stats
   const totalPrincipal = loans.reduce((sum, l) => sum + (l.principalAmount || 0), 0);
