@@ -30,6 +30,23 @@ export interface AutoCategorizeResult {
   }>;
 }
 
+export interface ExtractedTransaction {
+  amount: number;
+  description: string;
+  date: string;
+  merchant?: string;
+  categoryId?: string;
+  categoryName?: string;
+  transactionType: 'income' | 'expense';
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface BulkTransactionExtractionResult {
+  transactions: ExtractedTransaction[];
+  totalFound: number;
+  raw?: string;
+}
+
 class AIService {
   async scanBill(imageBase64?: string, imageUrl?: string): Promise<ScanBillResult> {
     const payload: any = {};
@@ -47,6 +64,16 @@ class AIService {
       '/ai/auto-categorize',
       data
     );
+    return response.data.data;
+  }
+
+  async extractBulkTransactions(imageBase64: string): Promise<BulkTransactionExtractionResult> {
+    console.log('Calling extractBulkTransactions API...');
+    const response = await apiService.post<{ success: boolean; data: BulkTransactionExtractionResult; message: string }>(
+      '/ai/extract-bulk-transactions',
+      { imageBase64 }
+    );
+    console.log('API response:', response.data);
     return response.data.data;
   }
 }

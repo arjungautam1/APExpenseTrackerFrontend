@@ -164,14 +164,38 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       // Set editable amount from result
       setEditableAmount(data.amount || 0);
       
-      // Auto-fill the date with current date in Toronto timezone
-      const torontoDate = new Date().toLocaleDateString('en-CA', { 
-        timeZone: 'America/Toronto',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
-      setSelectedDate(torontoDate);
+      // Use extracted date if available, otherwise use current date
+      let dateToUse = '';
+      if (data.date) {
+        // Try to parse the extracted date
+        try {
+          const extractedDate = new Date(data.date);
+          if (!isNaN(extractedDate.getTime())) {
+            // Format the extracted date to YYYY-MM-DD
+            const year = extractedDate.getFullYear();
+            const month = String(extractedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(extractedDate.getDate()).padStart(2, '0');
+            dateToUse = `${year}-${month}-${day}`;
+            console.log('Using extracted date:', dateToUse);
+          }
+        } catch (dateError) {
+          console.warn('Failed to parse extracted date:', data.date, dateError);
+        }
+      }
+      
+      // Fallback to current date if no valid date was extracted
+      if (!dateToUse) {
+        const torontoDate = new Date().toLocaleDateString('en-CA', { 
+          timeZone: 'America/Toronto',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        dateToUse = torontoDate;
+        console.log('Using current date as fallback:', dateToUse);
+      }
+      
+      setSelectedDate(dateToUse);
       
       toast.success('Details extracted successfully');
     } catch (error: any) {
@@ -227,7 +251,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       console.log('Creating transaction with data:', transactionData);
       
       await transactionService.createTransaction(transactionData);
-      toast.success(`${result.transactionType === 'income' ? 'Income' : 'Expense'} created`);
+      toast.success(`${result?.transactionType === 'income' ? 'Income' : 'Expense'} created`);
       close();
       onSuccess?.();
     } catch (error: any) {

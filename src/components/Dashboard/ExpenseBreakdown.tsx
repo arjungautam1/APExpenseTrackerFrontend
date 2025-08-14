@@ -19,12 +19,14 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
   const [breakdown, setBreakdown] = useState<ExpenseBreakdownData | null>(null);
   const [monthlyExpenses, setMonthlyExpenses] = useState<MonthlyExpensesSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedView, setSelectedView] = useState<'breakdown' | 'trends'>('breakdown');
+  const [error, setError] = useState<string | null>(null);
+  const [selectedView, setSelectedView] = useState<'breakdown' | 'trends' | 'categories-trends'>('breakdown');
   const { formatCurrency } = useCurrencyFormatter();
 
   const fetchExpenseBreakdown = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await transactionService.getExpenseBreakdown(
         dateRange?.startDate,
         dateRange?.endDate,
@@ -33,6 +35,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
       setBreakdown(data);
     } catch (error: any) {
       console.error('Failed to fetch expense breakdown:', error);
+      setError('Failed to load expense breakdown');
       toast.error('Failed to load expense breakdown');
     } finally {
       setLoading(false);
@@ -122,6 +125,31 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     );
   }
 
+  if (error) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="text-lg font-medium">Expense Breakdown</h3>
+        </div>
+        <div className="card-body">
+          <div className="text-center py-8">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <BarChart3 className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load expense breakdown</h3>
+            <p className="text-sm text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={fetchExpenseBreakdown}
+              className="btn-primary"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!breakdown || breakdown.breakdown.length === 0) {
     return (
       <div className="card">
@@ -147,19 +175,19 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     <div className="card">
       <div className="card-header flex items-center justify-between">
         <h3 className="text-lg font-medium">Expense Breakdown</h3>
-        {showTrends && breakdown.monthlyTrends.length > 0 && (
-          <div className="flex space-x-1">
-            <button
-              onClick={() => setSelectedView('breakdown')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                selectedView === 'breakdown' 
-                  ? 'bg-primary-100 text-primary-700 border border-primary-200' 
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <PieChart className="h-4 w-4 inline mr-1" />
-              Categories
-            </button>
+        <div className="flex space-x-1">
+          <button
+            onClick={() => setSelectedView('breakdown')}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              selectedView === 'breakdown' 
+                ? 'bg-primary-100 text-primary-700 border border-primary-200' 
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <PieChart className="h-4 w-4 inline mr-1" />
+            Categories
+          </button>
+          {showTrends && breakdown.monthlyTrends.length > 0 && (
             <button
               onClick={() => setSelectedView('trends')}
               className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
@@ -171,8 +199,21 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
               <TrendingUp className="h-4 w-4 inline mr-1" />
               Trends
             </button>
-          </div>
-        )}
+          )}
+          {monthlyExpenses && (
+            <button
+              onClick={() => setSelectedView('categories-trends')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                selectedView === 'categories-trends' 
+                  ? 'bg-primary-100 text-primary-700 border border-primary-200' 
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Clock className="h-4 w-4 inline mr-1" />
+              Monthly Expenses
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="card-body">
@@ -278,9 +319,53 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
               ))}
             </div>
 
+
+          </>
+        ) : selectedView === 'trends' ? (
+          /* Monthly Trends View */
+          <div className="space-y-6">
+            {breakdown.monthlyTrends.map((trend) => (
+              <div key={trend.categoryId} className="p-4 rounded-xl border border-gray-100">
+                <h4 className="text-sm font-semibold text-gray-900 mb-4">{trend.categoryName}</h4>
+                <div className="space-y-3">
+                  {trend.monthlyData.map((month, index) => {
+                    const monthName = new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric'
+                    });
+                    const maxAmount = Math.max(...breakdown.monthlyTrends.flatMap(t => t.monthlyData.map(m => m.amount)));
+                    const percentage = maxAmount > 0 ? (month.amount / maxAmount) * 100 : 0;
+
+                    return (
+                      <div key={`${month._id.year}-${month._id.month}`} className="flex items-center space-x-4">
+                        <span className="text-sm text-gray-600 w-20 font-medium">{monthName}</span>
+                        <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                          <div
+                            className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm font-semibold text-gray-900 w-20 text-right">
+                            {formatCurrency(month.amount)}
+                          </span>
+                          <span className="text-xs text-gray-500 w-8 text-right">
+                            {month.count}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Categories & Trends View */
+          <div className="space-y-8">
             {/* Monthly Expenses Section */}
             {monthlyExpenses && (
-              <div className="mt-8 pt-8 border-t border-gray-200">
+              <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-medium text-gray-900">Monthly Expenses</h3>
                   <div className="flex items-center space-x-2">
@@ -395,45 +480,57 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                 </div>
               </div>
             )}
-          </>
-        ) : (
-          /* Monthly Trends View */
-          <div className="space-y-6">
-            {breakdown.monthlyTrends.map((trend) => (
-              <div key={trend.categoryId} className="p-4 rounded-xl border border-gray-100">
-                <h4 className="text-sm font-semibold text-gray-900 mb-4">{trend.categoryName}</h4>
-                <div className="space-y-3">
-                  {trend.monthlyData.map((month, index) => {
-                    const monthName = new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', {
-                      month: 'short',
-                      year: 'numeric'
-                    });
-                    const maxAmount = Math.max(...breakdown.monthlyTrends.flatMap(t => t.monthlyData.map(m => m.amount)));
-                    const percentage = maxAmount > 0 ? (month.amount / maxAmount) * 100 : 0;
 
-                    return (
-                      <div key={`${month._id.year}-${month._id.month}`} className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-600 w-20 font-medium">{monthName}</span>
-                        <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                          <div
-                            className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm font-semibold text-gray-900 w-20 text-right">
-                            {formatCurrency(month.amount)}
-                          </span>
-                          <span className="text-xs text-gray-500 w-8 text-right">
-                            {month.count}
-                          </span>
-                        </div>
+            {/* Category Trends Section */}
+            {showTrends && breakdown.monthlyTrends.length > 0 && (
+              <div className="pt-8 border-t border-gray-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-medium text-gray-900">Category Trends</h3>
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-500">Monthly Patterns</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-6">
+                  {breakdown.monthlyTrends.map((trend) => (
+                    <div key={trend.categoryId} className="p-4 rounded-xl border border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-4">{trend.categoryName}</h4>
+                      <div className="space-y-3">
+                        {trend.monthlyData.map((month, index) => {
+                          const monthName = new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric'
+                          });
+                          const maxAmount = Math.max(...breakdown.monthlyTrends.flatMap(t => t.monthlyData.map(m => m.amount)));
+                          const percentage = maxAmount > 0 ? (month.amount / maxAmount) * 100 : 0;
+
+                          return (
+                            <div key={`${month._id.year}-${month._id.month}`} className="flex items-center space-x-4">
+                              <span className="text-sm text-gray-600 w-20 font-medium">{monthName}</span>
+                              <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <div className="flex items-center space-x-3">
+                                <span className="text-sm font-semibold text-gray-900 w-20 text-right">
+                                  {formatCurrency(month.amount)}
+                                </span>
+                                <span className="text-xs text-gray-500 w-8 text-right">
+                                  {month.count}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

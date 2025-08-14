@@ -2,31 +2,65 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Filter, Download, TrendingUp, BarChart3 } from 'lucide-react';
 import { ExpenseBreakdown } from '../components/Dashboard/ExpenseBreakdown';
+import { AnalyticsChart } from '../components/Dashboard/AnalyticsChart';
 import { transactionService } from '../services/transaction';
 import { TransactionStats } from '../services/transaction';
+import { investmentService } from '../services/investment';
+import { InvestmentStats } from '../services/investment';
 import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
 
 export function AnalyticsPage() {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().getFullYear(), new Date().getMonth() - 2, 1).toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0]
-  });
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  
+  // Initialize with the full current year range
+  const getYearRange = (year: number) => {
+    const yearStart = new Date(year, 0, 1);
+    const yearEnd = new Date(year, 11, 31);
+    
+    const formatLocalDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    return {
+      startDate: formatLocalDate(yearStart),
+      endDate: formatLocalDate(yearEnd)
+    };
+  };
+  
+  const [dateRange, setDateRange] = useState(getYearRange(currentYear));
   const [stats, setStats] = useState<TransactionStats | null>(null);
+  const [investmentStats, setInvestmentStats] = useState<InvestmentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { formatCurrency } = useCurrencyFormatter();
 
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const statsData = await transactionService.getTransactionStats(
-        dateRange.startDate,
-        dateRange.endDate
-      );
+      setError(null);
+      
+      // Fetch transaction stats and investment stats in parallel
+      const [statsData, investmentStatsData] = await Promise.all([
+        transactionService.getTransactionStats(
+          dateRange.startDate,
+          dateRange.endDate
+        ),
+        investmentService.getInvestmentStats(
+          dateRange.startDate,
+          dateRange.endDate
+        )
+      ]);
+      
       setStats(statsData);
+      setInvestmentStats(investmentStatsData);
     } catch (error: any) {
       console.error('Failed to fetch analytics:', error);
+      setError('Failed to load analytics data');
       toast.error('Failed to load analytics data');
     } finally {
       setLoading(false);
@@ -39,39 +73,25 @@ export function AnalyticsPage() {
 
   useEffect(() => {
     // When year changes, automatically set to full year of that year
-    const today = new Date();
-    const isCurrentYear = selectedYear === today.getFullYear();
-    
-    // Create dates in local timezone (Toronto)
-    const yearStart = new Date(selectedYear, 0, 1);
-    const yearEnd = new Date(selectedYear, 11, 31);
-    
-    // Format dates as YYYY-MM-DD in local timezone
-    const formatLocalDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    
-    setDateRange({
-      startDate: formatLocalDate(yearStart),
-      endDate: isCurrentYear ? formatLocalDate(today) : formatLocalDate(yearEnd)
-    });
+    setDateRange(getYearRange(selectedYear));
   }, [selectedYear]);
 
 
   const formatDateRange = () => {
-    const start = new Date(dateRange.startDate).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    const end = new Date(dateRange.endDate).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    // Parse the date strings and format them consistently
+    const formatDisplayDate = (dateString: string) => {
+      const [year, month, day] = dateString.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed
+      
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    };
+    
+    const start = formatDisplayDate(dateRange.startDate);
+    const end = formatDisplayDate(dateRange.endDate);
     return `${start} - ${end}`;
   };
 
@@ -86,14 +106,10 @@ export function AnalyticsPage() {
 
   const resetToDefault = () => {
     const today = new Date();
-    const defaultStartDate = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
-    const defaultEndDate = today.toISOString().split('T')[0];
+    const currentYear = today.getFullYear();
     
-    setSelectedYear(today.getFullYear());
-    setDateRange({
-      startDate: defaultStartDate,
-      endDate: defaultEndDate
-    });
+    setSelectedYear(currentYear);
+    setDateRange(getYearRange(currentYear));
   };
 
   const getQuickDateRanges = () => {
@@ -108,14 +124,13 @@ export function AnalyticsPage() {
       return `${year}-${month}-${day}`;
     };
     
-    const yearStart = new Date(selectedYear, 0, 1);
-    const yearEnd = new Date(selectedYear, 11, 31);
+    const yearRange = getYearRange(selectedYear);
     
     const ranges = [
       {
         label: 'Full Year',
-        startDate: formatLocalDate(yearStart),
-        endDate: isCurrentYear ? formatLocalDate(today) : formatLocalDate(yearEnd)
+        startDate: yearRange.startDate,
+        endDate: yearRange.endDate
       }
     ];
 
@@ -226,8 +241,29 @@ export function AnalyticsPage() {
         </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="mb-8 card">
+          <div className="card-body">
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <BarChart3 className="h-8 w-8 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load analytics</h3>
+              <p className="text-sm text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={fetchAnalytics}
+                className="btn-primary"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Overview Stats */}
-      {stats && (
+      {stats && !error && (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           <div className="card">
             <div className="card-body">
@@ -288,17 +324,20 @@ export function AnalyticsPage() {
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-sm font-medium text-gray-500">Savings Rate</h3>
-                  <p className={`text-2xl font-bold ${stats.totalSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {stats.totalIncome > 0 
-                      ? `${((stats.totalSavings / stats.totalIncome) * 100).toFixed(1)}%`
-                      : '0.0%'
-                    }
+                  <h3 className="text-sm font-medium text-gray-500">Total Investment</h3>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {investmentStats ? formatCurrency(investmentStats.totalInvested) : '$0.00'}
                   </p>
+                  {investmentStats && investmentStats.totalGainLoss !== 0 && (
+                    <p className={`text-sm ${investmentStats.totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {investmentStats.totalGainLoss >= 0 ? '+' : ''}{formatCurrency(investmentStats.totalGainLoss)} 
+                      ({investmentStats.totalGainLossPercentage >= 0 ? '+' : ''}{investmentStats.totalGainLossPercentage.toFixed(1)}%)
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -306,23 +345,57 @@ export function AnalyticsPage() {
         </div>
       )}
 
-      {/* Detailed Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Expense Breakdown */}
-        <div className="lg:col-span-2">
-          <ExpenseBreakdown 
-            dateRange={dateRange} 
-            limit={15} 
-            showTrends={true}
-          />
+      {/* Financial Trends Chart */}
+      {!loading && !error && (
+        <div className="mb-8">
+          <AnalyticsChart dateRange={dateRange} />
         </div>
-      </div>
+      )}
+
+      {/* Detailed Analytics */}
+      {!loading && !error && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Expense Breakdown */}
+          <div className="lg:col-span-2">
+            <ExpenseBreakdown 
+              dateRange={dateRange} 
+              limit={15} 
+              showTrends={true}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && stats && stats.transactionCount === 0 && (
+        <div className="card">
+          <div className="card-body">
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <BarChart3 className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
+              <p className="text-sm text-gray-500 max-w-sm mx-auto mb-6">
+                No transactions found for the selected date range. Try adjusting the date range or add some transactions to see analytics.
+              </p>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={resetToDefault}
+                  className="btn-secondary"
+                >
+                  Reset Date Range
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p className="text-sm text-gray-600 mt-2">Loading analytics...</p>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-sm text-gray-600">Loading analytics...</p>
           </div>
         </div>
       )}

@@ -5,7 +5,9 @@ import { TransactionFilters, TransactionFilterState } from '../components/Transa
 import { TransactionList } from '../components/Transactions/TransactionList';
 import { TransactionEditModal } from '../components/Transactions/TransactionEditModal';
 import { ConfirmDialog } from '../components/Common/ConfirmDialog';
+import { BulkTransactionUpload } from '../components/Dashboard/BulkTransactionUpload';
 import { useCurrencyFormatter } from '../utils/currency';
+import { Grid3X3, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export function TransactionsPage() {
@@ -17,6 +19,9 @@ export function TransactionsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   // Calculate totals based on filtered transactions
   const totals = useMemo(() => {
@@ -43,15 +48,16 @@ export function TransactionsPage() {
     try {
       setLoading(true);
       
+      console.log('Fetching transactions with filters:', filters);
+      
       // Convert month/year filters to date ranges
       let startDate = filters.startDate;
       let endDate = filters.endDate;
       
       if (filters.month && filters.year) {
         startDate = `${filters.year}-${filters.month}-01`;
-        // Get last day: go to first day of next month, then subtract 1 day
-        const nextMonth = new Date(parseInt(filters.year), parseInt(filters.month), 1);
-        const lastDay = new Date(nextMonth.getTime() - 24 * 60 * 60 * 1000).getDate();
+        // Get last day of the month
+        const lastDay = new Date(parseInt(filters.year), parseInt(filters.month), 0).getDate();
         endDate = `${filters.year}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
       } else if (filters.year) {
         startDate = `${filters.year}-01-01`;
@@ -60,11 +66,12 @@ export function TransactionsPage() {
         // If only month is selected, use current year
         const currentYear = new Date().getFullYear();
         startDate = `${currentYear}-${filters.month}-01`;
-        // Get last day: go to first day of next month, then subtract 1 day
-        const nextMonth = new Date(currentYear, parseInt(filters.month), 1);
-        const lastDay = new Date(nextMonth.getTime() - 24 * 60 * 60 * 1000).getDate();
+        // Get last day of the month
+        const lastDay = new Date(currentYear, parseInt(filters.month), 0).getDate();
         endDate = `${currentYear}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
       }
+      
+      console.log('API call parameters:', { type: filters.type, categoryId: filters.categoryId, startDate, endDate });
       
       const res = await transactionService.getTransactions({
         type: filters.type,
@@ -74,6 +81,8 @@ export function TransactionsPage() {
         limit: 20,
         page: 1
       });
+      
+      console.log('API response:', res);
       setTransactions(res.data);
     } catch (error: any) {
       console.error('Failed to fetch transactions:', error);
@@ -89,6 +98,11 @@ export function TransactionsPage() {
   }, [filters.type, filters.categoryId, filters.startDate, filters.endDate, filters.month, filters.year]);
 
   const clearFilters = () => setFilters({});
+
+  // Debug filter changes
+  useEffect(() => {
+    console.log('Filters changed:', filters);
+  }, [filters]);
 
   const handleEdit = (t: Transaction) => setEditing(t);
   const handleDelete = (t: Transaction) => {
@@ -113,10 +127,46 @@ export function TransactionsPage() {
     }
   };
 
+  const confirmDeleteAll = async () => {
+    if (deletingAll) return;
+    try {
+      setDeletingAll(true);
+      const result = await transactionService.deleteAllTransactions();
+      toast.success(`Successfully deleted ${result.deletedCount} transactions`);
+      setShowDeleteAllConfirm(false);
+      fetchTransactions();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'Failed to delete all transactions';
+      toast.error(message);
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
   return (
     <div className="px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
+        <div className="flex items-center space-x-3">
+          {transactions.length > 0 && (
+            <button
+              onClick={() => setShowDeleteAllConfirm(true)}
+              className="btn-danger flex items-center"
+              disabled={loading}
+              title="Delete all transactions"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete All ({transactions.length})
+            </button>
+          )}
+          <button
+            onClick={() => setShowBulkUploadModal(true)}
+            className="btn-secondary flex items-center"
+          >
+            <Grid3X3 className="h-4 w-4 mr-2" />
+            Bulk Upload
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -186,6 +236,41 @@ export function TransactionsPage() {
         onConfirm={confirmDelete}
         onClose={() => { setConfirmOpen(false); setPendingDelete(null); }}
       />
+
+      <ConfirmDialog
+        open={showDeleteAllConfirm}
+        title="Delete all transactions?"
+        description={
+          <div>
+            <p className="mb-3">
+              This will permanently delete <strong>ALL {transactions.length} transactions</strong>. 
+              This action cannot be undone and will remove all your transaction history.
+            </p>
+            {Object.keys(filters).length > 0 && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  ⚠️ <strong>Warning:</strong> You have active filters applied. 
+                  This will delete ALL transactions in your account, not just the filtered ones.
+                </p>
+              </div>
+            )}
+          </div>
+        }
+        confirmText="Delete All"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deletingAll}
+        onConfirm={confirmDeleteAll}
+        onClose={() => setShowDeleteAllConfirm(false)}
+      />
+
+      {/* Bulk Upload Modal */}
+      {showBulkUploadModal && (
+        <BulkTransactionUpload
+          onClose={() => setShowBulkUploadModal(false)}
+          onSuccess={fetchTransactions}
+        />
+      )}
     </div>
   );
 }

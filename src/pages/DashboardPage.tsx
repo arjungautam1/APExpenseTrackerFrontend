@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { QuickAddTransaction } from '../components/Dashboard/QuickAddTransaction';
 import { ScanBillModal } from '../components/Dashboard/ScanBillModal';
 import { ExpenseBreakdown } from '../components/Dashboard/ExpenseBreakdown';
+import { BulkTransactionUpload } from '../components/Dashboard/BulkTransactionUpload';
 import { transactionService } from '../services/transaction';
 import { investmentService } from '../services/investment';
 import { useCurrencyFormatter } from '../utils/currency';
@@ -25,6 +26,7 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('');
   const [activeTransactionTab, setActiveTransactionTab] = useState<'all' | 'income' | 'expense' | 'investment'>('all');
+  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const { formatCurrency } = useCurrencyFormatter();
 
   const fetchDashboardData = async () => {
@@ -120,6 +122,13 @@ export function DashboardPage() {
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex items-center gap-3">
+          <button
+            onClick={() => setShowBulkUploadModal(true)}
+            className="btn-secondary flex items-center"
+          >
+            <Grid3X3 className="h-4 w-4 mr-2" />
+            Bulk Upload
+          </button>
           <ScanBillModal onSuccess={handleTransactionAdded} />
           <QuickAddTransaction onSuccess={handleTransactionAdded} />
         </div>
@@ -323,6 +332,14 @@ export function DashboardPage() {
         {/* Expense Breakdown */}
         <ExpenseBreakdown limit={8} showTrends={true} />
       </div>
+
+      {/* Bulk Upload Modal */}
+      {showBulkUploadModal && (
+        <BulkTransactionUpload
+          onClose={() => setShowBulkUploadModal(false)}
+          onSuccess={handleTransactionAdded}
+        />
+      )}
     </div>
   );
 }

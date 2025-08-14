@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, DollarSign, Calendar, Building, Hash, Briefcase } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, DollarSign, Calendar, Building, Hash, Briefcase, Sparkles } from 'lucide-react';
 import { investmentService } from '../../services/investment';
+import { aiService } from '../../services/ai';
 import toast from 'react-hot-toast';
 
 interface AddInvestmentModalProps {
@@ -10,6 +11,9 @@ interface AddInvestmentModalProps {
 
 export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
+  const [autoCategorized, setAutoCategorized] = useState(false);
+  const [autoCategorizeTimeout, setAutoCategorizeTimeout] = useState<NodeJS.Timeout | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     type: 'stocks' as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other',
@@ -20,12 +24,122 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
     platform: ''
   });
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoCategorizeTimeout) {
+        clearTimeout(autoCategorizeTimeout);
+      }
+    };
+  }, [autoCategorizeTimeout]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    // Reset auto-categorized flag when name changes
+    if (name === 'name') {
+      setAutoCategorized(false);
+    }
+
+    // Auto-categorize when name changes and has enough content
+    if (name === 'name' && value.trim().length >= 3) {
+      // Clear existing timeout
+      if (autoCategorizeTimeout) {
+        clearTimeout(autoCategorizeTimeout);
+      }
+      
+      // Set new timeout for debounced auto-categorization
+      const timeout = setTimeout(() => {
+        handleAutoCategorize(value.trim());
+      }, 1000); // Wait 1 second after user stops typing
+      
+      setAutoCategorizeTimeout(timeout);
+    }
+  };
+
+  const handleAutoCategorize = async (name: string) => {
+    if (!name || name.length < 3) return;
+    
+    try {
+      setIsAutoCategorizing(true);
+      console.log('Auto-categorizing investment:', name);
+      
+      // Direct investment type categorization based on the name
+      const lowerName = name.toLowerCase();
+      let suggestedType = 'other';
+      let confidence = 'medium';
+
+      // Stocks detection
+      if (lowerName.includes('stock') || lowerName.includes('inc') || lowerName.includes('corp') || 
+          lowerName.includes('ltd') || lowerName.includes('apple') || lowerName.includes('google') || 
+          lowerName.includes('microsoft') || lowerName.includes('amazon') || lowerName.includes('tesla') ||
+          lowerName.includes('netflix') || lowerName.includes('meta') || lowerName.includes('nvidia') ||
+          lowerName.includes('amd') || lowerName.includes('intel') || lowerName.includes('oracle') ||
+          lowerName.includes('salesforce') || lowerName.includes('adobe') || lowerName.includes('paypal')) {
+        suggestedType = 'stocks';
+        confidence = 'high';
+      } 
+      // Mutual Funds detection
+      else if (lowerName.includes('fund') || lowerName.includes('etf') || lowerName.includes('index') || 
+               lowerName.includes('mutual') || lowerName.includes('vanguard') || lowerName.includes('fidelity') ||
+               lowerName.includes('schwab') || lowerName.includes('blackrock') || lowerName.includes('sp500') ||
+               lowerName.includes('s&p') || lowerName.includes('nasdaq') || lowerName.includes('dow') ||
+               lowerName.includes('total market') || lowerName.includes('target date') || lowerName.includes('target-date')) {
+        suggestedType = 'mutual_funds';
+        confidence = 'high';
+      } 
+      // Cryptocurrency detection
+      else if (lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('eth') || 
+               lowerName.includes('btc') || lowerName.includes('coin') || lowerName.includes('ethereum') ||
+               lowerName.includes('cardano') || lowerName.includes('solana') || lowerName.includes('polkadot') ||
+               lowerName.includes('chainlink') || lowerName.includes('uniswap') || lowerName.includes('binance') ||
+               lowerName.includes('dogecoin') || lowerName.includes('shiba') || lowerName.includes('xrp') ||
+               lowerName.includes('ripple') || lowerName.includes('litecoin') || lowerName.includes('ltc')) {
+        suggestedType = 'crypto';
+        confidence = 'high';
+      } 
+      // Real Estate detection
+      else if (lowerName.includes('real estate') || lowerName.includes('property') || lowerName.includes('house') || 
+               lowerName.includes('land') || lowerName.includes('apartment') || lowerName.includes('condo') ||
+               lowerName.includes('rental') || lowerName.includes('reit') || lowerName.includes('real estate investment') ||
+               lowerName.includes('commercial') || lowerName.includes('residential') || lowerName.includes('office') ||
+               lowerName.includes('retail') || lowerName.includes('industrial') || lowerName.includes('warehouse')) {
+        suggestedType = 'real_estate';
+        confidence = 'high';
+      }
+      // Other investments (bonds, commodities, etc.)
+      else if (lowerName.includes('bond') || lowerName.includes('treasury') || lowerName.includes('commodity') ||
+               lowerName.includes('gold') || lowerName.includes('silver') || lowerName.includes('oil') ||
+               lowerName.includes('futures') || lowerName.includes('options') || lowerName.includes('derivative')) {
+        suggestedType = 'other';
+        confidence = 'medium';
+      }
+
+      // Update form data with the suggested type
+      setFormData(prev => ({
+        ...prev,
+        type: suggestedType as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other'
+      }));
+
+      // Show success message
+      const typeLabel = suggestedType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      toast.success(`Auto-categorized as "${typeLabel}" (${confidence} confidence)`);
+      
+      // Set auto-categorized flag
+      setAutoCategorized(true);
+      
+      console.log('Investment auto-categorized:', { name, suggestedType, confidence });
+      
+    } catch (error: any) {
+      console.error('Auto-categorization failed:', error);
+      toast.error('Failed to auto-categorize investment');
+    } finally {
+      setIsAutoCategorizing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,8 +209,12 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {/* Investment Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
                 Investment Name *
+                <span className="ml-2 text-xs text-gray-500 flex items-center">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  AI-powered categorization
+                </span>
               </label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -107,15 +225,48 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                   onChange={handleChange}
                   required
                   className="input pl-10"
-                  placeholder="e.g., Apple Inc., S&P 500 Index Fund"
+                  placeholder="e.g., Apple Inc., S&P 500 Index Fund (AI will auto-categorize)"
                 />
+                {isAutoCategorizing && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    <span className="ml-2 text-xs text-blue-600 font-medium">AI Categorizing...</span>
+                  </div>
+                )}
+                {!isAutoCategorizing && formData.name.trim().length >= 3 && !autoCategorized && (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoCategorize(formData.name.trim())}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Auto-categorize this investment"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                )}
+                {autoCategorized && !isAutoCategorizing && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center bg-green-50 px-2 py-1 rounded-md border border-green-200">
+                    <Sparkles className="h-4 w-4 text-green-600" />
+                    <span className="ml-2 text-xs text-green-600 font-medium">AI Categorized</span>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Investment Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
                 Investment Type *
+                {formData.name.trim().length >= 3 && (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoCategorize(formData.name.trim())}
+                    disabled={isAutoCategorizing}
+                    className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    <span>{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
+                  </button>
+                )}
               </label>
               <div className="relative">
                 <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

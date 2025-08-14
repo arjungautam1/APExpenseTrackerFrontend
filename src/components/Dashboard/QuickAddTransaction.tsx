@@ -124,34 +124,110 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       setIsAutoCategorizing(true);
       console.log('Auto-categorizing:', description);
       
-      const result = await aiService.autoCategorize({
-        description,
-        amount: formData.amount ? parseFloat(formData.amount) : undefined
-      });
+      if (formData.type === 'investment') {
+        // For investments, categorize the investment type and select appropriate category
+        const lowerName = description.toLowerCase();
+        let suggestedInvestmentType = 'other';
+        let confidence = 'medium';
 
-      console.log('Auto-categorization result:', result);
+        // Stocks detection
+        if (lowerName.includes('stock') || lowerName.includes('inc') || lowerName.includes('corp') || 
+            lowerName.includes('ltd') || lowerName.includes('apple') || lowerName.includes('google') || 
+            lowerName.includes('microsoft') || lowerName.includes('amazon') || lowerName.includes('tesla') ||
+            lowerName.includes('netflix') || lowerName.includes('meta') || lowerName.includes('nvidia') ||
+            lowerName.includes('amd') || lowerName.includes('intel') || lowerName.includes('oracle') ||
+            lowerName.includes('salesforce') || lowerName.includes('adobe') || lowerName.includes('paypal')) {
+          suggestedInvestmentType = 'stocks';
+          confidence = 'high';
+        } 
+        // Mutual Funds detection
+        else if (lowerName.includes('fund') || lowerName.includes('etf') || lowerName.includes('index') || 
+                 lowerName.includes('mutual') || lowerName.includes('vanguard') || lowerName.includes('fidelity') ||
+                 lowerName.includes('schwab') || lowerName.includes('blackrock') || lowerName.includes('sp500') ||
+                 lowerName.includes('s&p') || lowerName.includes('nasdaq') || lowerName.includes('dow') ||
+                 lowerName.includes('total market') || lowerName.includes('target date') || lowerName.includes('target-date')) {
+          suggestedInvestmentType = 'mutual_funds';
+          confidence = 'high';
+        } 
+        // Cryptocurrency detection
+        else if (lowerName.includes('bitcoin') || lowerName.includes('crypto') || lowerName.includes('eth') || 
+                 lowerName.includes('btc') || lowerName.includes('coin') || lowerName.includes('ethereum') ||
+                 lowerName.includes('cardano') || lowerName.includes('solana') || lowerName.includes('polkadot') ||
+                 lowerName.includes('chainlink') || lowerName.includes('uniswap') || lowerName.includes('binance') ||
+                 lowerName.includes('dogecoin') || lowerName.includes('shiba') || lowerName.includes('xrp') ||
+                 lowerName.includes('ripple') || lowerName.includes('litecoin') || lowerName.includes('ltc')) {
+          suggestedInvestmentType = 'crypto';
+          confidence = 'high';
+        } 
+        // Real Estate detection
+        else if (lowerName.includes('real estate') || lowerName.includes('property') || lowerName.includes('house') || 
+                 lowerName.includes('land') || lowerName.includes('apartment') || lowerName.includes('condo') ||
+                 lowerName.includes('rental') || lowerName.includes('reit') || lowerName.includes('real estate investment') ||
+                 lowerName.includes('commercial') || lowerName.includes('residential') || lowerName.includes('office') ||
+                 lowerName.includes('retail') || lowerName.includes('industrial') || lowerName.includes('warehouse')) {
+          suggestedInvestmentType = 'real_estate';
+          confidence = 'high';
+        }
+        // Other investments (bonds, commodities, etc.)
+        else if (lowerName.includes('bond') || lowerName.includes('treasury') || lowerName.includes('commodity') ||
+                 lowerName.includes('gold') || lowerName.includes('silver') || lowerName.includes('oil') ||
+                 lowerName.includes('futures') || lowerName.includes('options') || lowerName.includes('derivative')) {
+          suggestedInvestmentType = 'other';
+          confidence = 'medium';
+        }
 
-      if (result.categoryId && result.confidence !== 'low') {
-        // Update form data with the suggested category and type
+        // Get investment categories and select appropriate one
+        const investmentCategories = await categoryService.getCategories('investment');
+        let selectedCategory = investmentCategories.find(cat => cat.name === 'Investment Transaction');
+        
+        // If it's a specific type of investment, use the main "Investment" category
+        if (suggestedInvestmentType !== 'other') {
+          selectedCategory = investmentCategories.find(cat => cat.name === 'Investment');
+        }
+
+        // Update form data
         setFormData(prev => ({
           ...prev,
-          type: result.transactionType,
-          categoryId: result.categoryId || ''
+          investmentType: suggestedInvestmentType as 'stocks' | 'mutual_funds' | 'crypto' | 'real_estate' | 'other',
+          categoryId: selectedCategory?.id || ''
         }));
 
         // Show success message
-        const confidenceText = result.confidence === 'high' ? 'high confidence' : 'medium confidence';
-        toast.success(`Auto-categorized as "${result.categoryName}" (${confidenceText})`);
+        const typeLabel = suggestedInvestmentType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const categoryName = selectedCategory?.name || 'Investment';
+        const confidenceText = confidence === 'high' ? 'high confidence' : 'medium confidence';
+        toast.success(`Auto-categorized as "${typeLabel}" investment (${confidenceText})`);
         
-        // Set auto-categorized flag
         setAutoCategorized(true);
-        
-        // Force refresh categories if needed
-        if (categories.length === 0) {
-          await fetchCategories();
-        }
       } else {
-        console.log('Auto-categorization result not confident enough:', result);
+        // For regular transactions, use the existing AI service
+        const result = await aiService.autoCategorize({
+          description,
+          amount: formData.amount ? parseFloat(formData.amount) : undefined
+        });
+
+        console.log('Auto-categorization result:', result);
+
+        if (result.categoryId && result.confidence !== 'low') {
+          // Update form data with the suggested category and type
+          setFormData(prev => ({
+            ...prev,
+            type: result.transactionType,
+            categoryId: result.categoryId || ''
+          }));
+
+          // Show success message
+          const confidenceText = result.confidence === 'high' ? 'high confidence' : 'medium confidence';
+          toast.success(`Auto-categorized as "${result.categoryName}" (${confidenceText})`);
+          
+          // Set auto-categorized flag
+          setAutoCategorized(true);
+        }
+      }
+      
+      // Force refresh categories if needed
+      if (categories.length === 0) {
+        await fetchCategories();
       }
     } catch (error: any) {
       console.error('Auto-categorization failed:', error);
@@ -177,13 +253,19 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
     try {
       if (formData.type === 'investment') {
-        // First, get the investment transaction category
-        const investmentCategories = await categoryService.getCategories('investment');
-        const investmentCategory = investmentCategories.find(cat => cat.name === 'Investment Transaction');
+        // Use the auto-categorized categoryId or fallback to Investment Transaction
+        let categoryId = formData.categoryId;
         
-        if (!investmentCategory) {
-          toast.error('Investment category not found. Please contact support.');
-          return;
+        if (!categoryId) {
+          // Fallback to Investment Transaction category
+          const investmentCategories = await categoryService.getCategories('investment');
+          const investmentCategory = investmentCategories.find(cat => cat.name === 'Investment Transaction');
+          
+          if (!investmentCategory) {
+            toast.error('Investment category not found. Please contact support.');
+            return;
+          }
+          categoryId = investmentCategory.id;
         }
 
         // Create both investment and transaction
@@ -200,7 +282,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
           transactionService.createTransaction({
             amount: parseFloat(formData.amount),
             type: 'investment',
-            categoryId: investmentCategory.id,
+            categoryId: categoryId,
             description: formData.description.trim() || 'Investment',
             date: formData.date + 'T12:00:00'
           })

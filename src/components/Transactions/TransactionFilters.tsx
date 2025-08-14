@@ -153,6 +153,104 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
     }
   };
 
+  // Helper function to check if current date range matches a specific period
+  const isCurrentPeriod = (period: 'thisMonth' | 'lastMonth' | 'thisYear') => {
+    if (!value.startDate || !value.endDate) return false;
+    
+    const startDate = new Date(value.startDate);
+    const endDate = new Date(value.endDate);
+    const today = new Date();
+    
+    // Normalize dates to start of day for comparison
+    const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const normalizedStart = normalizeDate(startDate);
+    const normalizedEnd = normalizeDate(endDate);
+    
+    let result = false;
+    
+    switch (period) {
+      case 'thisMonth': {
+        // Check if the date range represents a full month (1st to last day)
+        const startMonth = startDate.getMonth();
+        const startYear = startDate.getFullYear();
+        const firstDayOfMonth = new Date(startYear, startMonth, 1);
+        const lastDayOfMonth = new Date(startYear, startMonth + 1, 0);
+        
+        result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
+                normalizedEnd.getTime() === lastDayOfMonth.getTime();
+        
+        console.log(`isCurrentPeriod(${period}):`, {
+          normalizedStart: normalizedStart.toISOString(),
+          normalizedEnd: normalizedEnd.toISOString(),
+          firstDayOfMonth: firstDayOfMonth.toISOString(),
+          lastDayOfMonth: lastDayOfMonth.toISOString(),
+          startMonth,
+          startYear,
+          result
+        });
+        break;
+      }
+      case 'lastMonth': {
+        // Check if the date range represents the previous month
+        const startMonth = startDate.getMonth();
+        const startYear = startDate.getFullYear();
+        const firstDayOfMonth = new Date(startYear, startMonth, 1);
+        const lastDayOfMonth = new Date(startYear, startMonth + 1, 0);
+        
+        // Check if this is the month before the current month
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const expectedMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const expectedYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+        
+        result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
+                normalizedEnd.getTime() === lastDayOfMonth.getTime() &&
+                startMonth === expectedMonth && startYear === expectedYear;
+        
+        console.log(`isCurrentPeriod(${period}):`, {
+          normalizedStart: normalizedStart.toISOString(),
+          normalizedEnd: normalizedEnd.toISOString(),
+          firstDayOfMonth: firstDayOfMonth.toISOString(),
+          lastDayOfMonth: lastDayOfMonth.toISOString(),
+          startMonth,
+          startYear,
+          expectedMonth,
+          expectedYear,
+          result
+        });
+        break;
+      }
+      case 'thisYear': {
+        // Check if the date range represents the full current year
+        const startYear = startDate.getFullYear();
+        const firstDayOfYear = new Date(startYear, 0, 1);
+        const lastDayOfYear = new Date(startYear, 11, 31);
+        
+        result = normalizedStart.getTime() === firstDayOfYear.getTime() && 
+                normalizedEnd.getTime() === lastDayOfYear.getTime() &&
+                startYear === today.getFullYear();
+        
+        console.log(`isCurrentPeriod(${period}):`, {
+          normalizedStart: normalizedStart.toISOString(),
+          normalizedEnd: normalizedEnd.toISOString(),
+          firstDayOfYear: firstDayOfYear.toISOString(),
+          lastDayOfYear: lastDayOfYear.toISOString(),
+          startYear,
+          currentYear: today.getFullYear(),
+          result
+        });
+        break;
+      }
+      default:
+        result = false;
+    }
+    
+    return result;
+  };
+
+  // Debug current filter values
+  console.log('TransactionFilters render - current value:', value);
+  
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
       {/* Header */}
@@ -204,6 +302,118 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         {/* Date Filters */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">Time Period</label>
+          
+          {/* Quick Filters */}
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <button
+              onClick={() => {
+                const today = new Date();
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                
+                const newFilters = {
+                  ...value,
+                  startDate: firstDay.toISOString().split('T')[0],
+                  endDate: lastDay.toISOString().split('T')[0],
+                  month: undefined,
+                  year: undefined
+                };
+                
+                console.log('This Month clicked - setting filters:', newFilters);
+                onChange(newFilters);
+              }}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
+                isCurrentPeriod('thisMonth')
+                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              This Month
+            </button>
+            
+            <button
+              onClick={() => {
+                const today = new Date();
+                const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                
+                const newFilters = {
+                  ...value,
+                  startDate: firstDayLastMonth.toISOString().split('T')[0],
+                  endDate: lastDayLastMonth.toISOString().split('T')[0],
+                  month: undefined,
+                  year: undefined
+                };
+                
+                console.log('Last Month clicked - setting filters:', newFilters);
+                onChange(newFilters);
+              }}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
+                isCurrentPeriod('lastMonth')
+                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              Last Month
+            </button>
+            
+            <button
+              onClick={() => {
+                const today = new Date();
+                const firstDayYear = new Date(today.getFullYear(), 0, 1);
+                const lastDayYear = new Date(today.getFullYear(), 11, 31);
+                
+                onChange({
+                  ...value,
+                  startDate: firstDayYear.toISOString().split('T')[0],
+                  endDate: lastDayYear.toISOString().split('T')[0],
+                  month: undefined,
+                  year: undefined
+                });
+              }}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
+                isCurrentPeriod('thisYear')
+                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              This Year
+            </button>
+            
+            <button
+              onClick={() => {
+                const today = new Date();
+                const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                onChange({
+                  ...value,
+                  startDate: sevenDaysAgo.toISOString().split('T')[0],
+                  endDate: today.toISOString().split('T')[0],
+                  month: undefined,
+                  year: undefined
+                });
+              }}
+              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
+                (() => {
+                  if (!value.startDate || !value.endDate) return false;
+                  const today = new Date();
+                  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                  const normalizedStart = normalizeDate(new Date(value.startDate));
+                  const normalizedEnd = normalizeDate(new Date(value.endDate));
+                  const normalizedSevenDaysAgo = normalizeDate(sevenDaysAgo);
+                  const normalizedToday = normalizeDate(today);
+                  return normalizedStart.getTime() === normalizedSevenDaysAgo.getTime() && 
+                         normalizedEnd.getTime() === normalizedToday.getTime();
+                })()
+                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+              }`}
+            >
+              Last 7 Days
+            </button>
+          </div>
+          
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Month */}
             <div className="relative">

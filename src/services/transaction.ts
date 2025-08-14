@@ -155,6 +155,11 @@ export class TransactionService {
     await apiService.delete(`/transactions/${id}`);
   }
 
+  async deleteAllTransactions(): Promise<{ deletedCount: number }> {
+    const response = await apiService.delete<ApiResponse<{ deletedCount: number }>>('/transactions');
+    return response.data.data;
+  }
+
   async getTransactionStats(startDate?: string, endDate?: string): Promise<TransactionStats> {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
@@ -177,6 +182,18 @@ export class TransactionService {
     const url = queryString ? `/transactions/expense-breakdown?${queryString}` : '/transactions/expense-breakdown';
     
     const response = await apiService.get<ApiResponse<ExpenseBreakdownData>>(url);
+    return response.data.data;
+  }
+
+  async getMonthlyTrends(startDate?: string, endDate?: string): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/transactions/monthly-trends?${queryString}` : '/transactions/monthly-trends';
+    
+    const response = await apiService.get<ApiResponse<any[]>>(url);
     return response.data.data;
   }
 }
