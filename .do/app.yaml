@@ -1,27 +1,4 @@
-name: apexpensetracker
-services:
-  - name: backend
-    source_dir: /
-    github:
-      repo: arjungautam1/APExpenseTrackerBackend
-      branch: main
-    build_command: npm install && npm run build
-    run_command: npm start
-    environment_slug: node-js
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    routes:
-      - path: /apexpensetrackerbackend2
-    envs:
-      - key: MONGODB_URI
-        value: ${MONGODB_URI}
-      - key: GROQ_API_KEY
-        value: ${GROQ_API_KEY}
-      - key: GROQ_TEXT
-        value: ${GROQ_TEXT}
-      - key: JWT_SECRET
-        value: ${JWT_SECRET}
-
+name: apexpensetracker-frontend
 static_sites:
   - name: frontend
     source_dir: /
@@ -32,7 +9,6 @@ static_sites:
     output_dir: dist
     routes:
       - path: /
-        preserve_path_prefix: false
     envs:
       - key: VITE_API_URL
         value: https://apexpensetracker-fpnq5.ondigitalocean.app/apexpensetrackerbackend2/api
