@@ -22,16 +22,14 @@ services:
       - key: JWT_SECRET
         value: ${JWT_SECRET}
 
+static_sites:
   - name: frontend
     source_dir: /
     github:
       repo: arjungautam1/APExpenseTrackerFrontend
       branch: main
     build_command: npm install && npm run build
-    run_command: npm run preview
-    environment_slug: html
-    instance_count: 1
-    instance_size_slug: basic-xxs
+    output_dir: /app/dist
     routes:
       - path: /
     envs:
