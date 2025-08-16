@@ -29,7 +29,7 @@ static_sites:
       repo: arjungautam1/APExpenseTrackerFrontend
       branch: main
     build_command: npm install && npm run build
-    output_dir: /app/dist
+    output_dir: dist
     routes:
       - path: /
     envs:
