@@ -240,22 +240,7 @@ export function TransactionsPage() {
       <ConfirmDialog
         open={showDeleteAllConfirm}
         title="Delete all transactions?"
-        description={
-          <div>
-            <p className="mb-3">
-              This will permanently delete <strong>ALL {transactions.length} transactions</strong>. 
-              This action cannot be undone and will remove all your transaction history.
-            </p>
-            {Object.keys(filters).length > 0 && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ <strong>Warning:</strong> You have active filters applied. 
-                  This will delete ALL transactions in your account, not just the filtered ones.
-                </p>
-              </div>
-            )}
-          </div>
-        }
+        description={`This will permanently delete ALL ${transactions.length} transactions. This action cannot be undone and will remove all your transaction history.`}
         confirmText="Delete All"
         cancelText="Cancel"
         variant="danger"

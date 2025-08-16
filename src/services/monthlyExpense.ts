@@ -45,33 +45,33 @@ class MonthlyExpenseService {
   private baseUrl = '/monthly-expenses';
 
   async getMonthlyExpenses(): Promise<MonthlyExpenseDto[]> {
-    const response = await apiService.get(this.baseUrl);
-    return response.data.data;
+    const response = await apiService.get<{ data: MonthlyExpenseDto[] }>(this.baseUrl);
+    return (response.data as any).data;
   }
 
   async getMonthlyExpensesByCategory(category: string): Promise<MonthlyExpenseDto[]> {
-    const response = await apiService.get(`${this.baseUrl}/category/${category}`);
-    return response.data.data;
+    const response = await apiService.get<{ data: MonthlyExpenseDto[] }>(`${this.baseUrl}/category/${category}`);
+    return (response.data as any).data;
   }
 
   async getMonthlyExpensesSummary(): Promise<MonthlyExpensesSummary> {
-    const response = await apiService.get(`${this.baseUrl}/summary`);
-    return response.data.data;
+    const response = await apiService.get<{ data: MonthlyExpensesSummary }>(`${this.baseUrl}/summary`);
+    return (response.data as any).data;
   }
 
   async createMonthlyExpense(data: CreateMonthlyExpenseDto): Promise<MonthlyExpenseDto> {
-    const response = await apiService.post(this.baseUrl, data);
-    return response.data.data;
+    const response = await apiService.post<{ data: MonthlyExpenseDto }>(this.baseUrl, data);
+    return (response.data as any).data;
   }
 
   async updateMonthlyExpense(id: string, data: UpdateMonthlyExpenseDto): Promise<MonthlyExpenseDto> {
-    const response = await apiService.put(`${this.baseUrl}/${id}`, data);
-    return response.data.data;
+    const response = await apiService.put<{ data: MonthlyExpenseDto }>(`${this.baseUrl}/${id}`, data);
+    return (response.data as any).data;
   }
 
   async deleteMonthlyExpense(id: string): Promise<{ message: string }> {
-    const response = await apiService.delete(`${this.baseUrl}/${id}`);
-    return response.data.data;
+    const response = await apiService.delete<{ data: { message: string } }>(`${this.baseUrl}/${id}`);
+    return (response.data as any).data;
   }
 
   async processPayment(id: string): Promise<{
@@ -79,8 +79,8 @@ class MonthlyExpenseService {
     transaction: any;
     nextDueDate: string;
   }> {
-    const response = await apiService.post(`${this.baseUrl}/${id}/pay`);
-    return response.data.data;
+    const response = await apiService.post<{ data: { message: string; transaction: any; nextDueDate: string } }>(`${this.baseUrl}/${id}/pay`);
+    return (response.data as any).data;
   }
 }
 
