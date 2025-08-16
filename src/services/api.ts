@@ -4,8 +4,29 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
+    // Dynamic API URL based on environment
+    const getApiUrl = () => {
+      // If VITE_API_URL is set, use it
+      if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+      }
+      
+      // Auto-detect based on current location
+      const isProduction = import.meta.env.PROD;
+      const currentHost = window.location.hostname;
+      const currentProtocol = window.location.protocol;
+      
+      if (isProduction) {
+        // In production, use current domain with /api
+        return `${currentProtocol}//${currentHost}/api`;
+      } else {
+        // In development, use localhost:5051
+        return 'http://localhost:5051/api';
+      }
+    };
+
     this.api = axios.create({
-      baseURL: import.meta.env.VITE_API_URL || '/api',
+      baseURL: getApiUrl(),
       timeout: 30000, // Increased from 10000ms to 30000ms for AI processing
       headers: {
         'Content-Type': 'application/json',
