@@ -55,7 +55,7 @@ static_sites:
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
-        value: https://apexpensetracker-fpnq5.ondigitalocean.app/api
+        value: https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api
 
 ingress:
   rules:

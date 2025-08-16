@@ -7,7 +7,7 @@ class ApiService {
     // Use deployed backend API for all environments
     const getApiUrl = () => {
       // Always use the deployed backend API
-      return 'https://apexpensetracker-fpnq5.ondigitalocean.app/apexpensetrackerbackend2/api';
+      return 'https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api';
     };
 
     this.api = axios.create({
