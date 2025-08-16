@@ -7,7 +7,7 @@ import './styles/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter basename="/apexpensetrackerfrontend2">
+    <BrowserRouter>
       <App />
       <Toaster 
         position="top-right"
