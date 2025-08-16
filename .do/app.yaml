@@ -36,7 +36,7 @@ services:
         value: 30d
       - key: CLIENT_URL
         scope: RUN_AND_BUILD_TIME
-        value: https://apexpensetracker-fpnq5.ondigitalocean.app
+        value: https://ap-bhaoh.ondigitalocean.app
       - key: GROQ_API_KEY
         scope: RUN_AND_BUILD_TIME
         value: ${GROQ_API_KEY}
