@@ -6,6 +6,7 @@ import { investmentService } from '../../services/investment';
 import { aiService } from '../../services/ai';
 import { Category } from '../../types';
 import toast from 'react-hot-toast';
+import { CategorySelect } from '../Common/CategorySelect';
 
 interface QuickAddTransactionProps {
   onClose?: () => void;
@@ -56,10 +57,6 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
     try {
       console.log('Fetching categories for type:', formData.type);
       const fetchedCategories = await categoryService.getCategories(formData.type);
-      // Filter out Investment category from expenses
-      const filteredCategories = fetchedCategories.filter(cat => 
-        !(formData.type === 'expense' && cat.name === 'Investment')
-      );
 
       // Fetch category usage statistics
       try {
@@ -79,8 +76,8 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
         console.warn('Failed to load category usage statistics:', error);
       }
 
-      console.log('Fetched categories:', filteredCategories);
-      setCategories(filteredCategories);
+      console.log('Fetched categories:', fetchedCategories);
+      setCategories(fetchedCategories);
     } catch (error: any) {
       console.error('Failed to fetch categories:', error);
       console.error('Categories error response:', error.response?.data);
@@ -355,13 +352,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
     if (onClose) onClose();
   };
 
-  const filteredCategories = categories
-    .filter(cat => cat.type === formData.type)
-    .sort((a, b) => {
-      const aUsage = categoryUsage[a.id] || 0;
-      const bUsage = categoryUsage[b.id] || 0;
-      return bUsage - aUsage; // Most used first
-    });
+
 
   return (
     <>
@@ -521,23 +512,13 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                         </button>
                       )}
                     </label>
-                    <div className="relative">
-                      <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <select
-                        name="categoryId"
-                        value={formData.categoryId}
-                        onChange={handleChange}
-                        required
-                        className="input pl-10"
-                      >
-                        <option value="">Select a category</option>
-                        {filteredCategories.map(category => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <CategorySelect
+                      value={formData.categoryId}
+                      onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
+                      type={formData.type}
+                      required
+                      placeholder="Select a category"
+                    />
                   </div>
                 )}
 

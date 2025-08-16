@@ -5,6 +5,7 @@ import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
 import { aiService } from '../../services/ai';
 import toast from 'react-hot-toast';
+import { CategorySelect } from '../Common/CategorySelect';
 
 interface TransactionEditModalProps {
   transaction: Transaction | null;
@@ -201,26 +202,18 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
             </div>
 
             {/* Category */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-              <div className="relative">
-                <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  name="categoryId"
+            {formData.type !== 'transfer' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <CategorySelect
                   value={formData.categoryId}
-                  onChange={handleChange}
+                  onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
+                  type={formData.type}
                   required
-                  className="input pl-10"
-                >
-                  <option value="">Select a category</option>
-                  {categories
-                    .filter((c) => c.type === formData.type)
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                </select>
+                  placeholder="Select a category"
+                />
               </div>
-            </div>
+            )}
 
             {/* Date */}
             <div>
