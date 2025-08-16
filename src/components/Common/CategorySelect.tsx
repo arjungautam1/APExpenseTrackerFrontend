@@ -115,11 +115,11 @@ export function CategorySelect({
         ))}
         {showCreateOption && categories.length > 0 && (
           <option value="__create_new__" disabled>
-            ────────────────
+            ──────────────────────
           </option>
         )}
         {showCreateOption && (
-          <option value="__create_new__">
+          <option value="__create_new__" className="text-blue-600 font-medium">
             ➕ Create New Category
           </option>
         )}
@@ -127,21 +127,33 @@ export function CategorySelect({
 
       {/* Create Category Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Create New Category
-              </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-auto transform transition-all animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Plus className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    New Category
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Add a custom category
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 text-gray-400" />
               </button>
             </div>
             
-            <div className="space-y-4">
+            {/* Content */}
+            <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category Name
@@ -151,29 +163,36 @@ export function CategorySelect({
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={`Enter ${type} category name`}
-                  className="input w-full"
+                  placeholder={`e.g., ${type === 'expense' ? 'Coffee Shops' : type === 'income' ? 'Freelance' : 'Stocks'}`}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-400"
                   autoFocus
                 />
               </div>
               
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <Tag className="h-4 w-4" />
-                <span>Type: {type.charAt(0).toUpperCase() + type.slice(1)}</span>
+              {/* Category Type Badge */}
+              <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                <div className={`w-3 h-3 rounded-full ${
+                  type === 'expense' ? 'bg-red-500' : 
+                  type === 'income' ? 'bg-green-500' : 'bg-purple-500'
+                }`} />
+                <span className="text-sm font-medium text-gray-700">
+                  {type.charAt(0).toUpperCase() + type.slice(1)} Category
+                </span>
               </div>
             </div>
             
-            <div className="flex space-x-3 mt-6">
+            {/* Actions */}
+            <div className="flex space-x-3 p-6 border-t border-gray-100">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateCategory}
                 disabled={isCreating || !newCategoryName.trim()}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-3 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center space-x-2 shadow-sm"
               >
                 {isCreating ? (
                   <>
@@ -183,7 +202,7 @@ export function CategorySelect({
                 ) : (
                   <>
                     <Plus className="h-4 w-4" />
-                    <span>Create</span>
+                    <span>Create Category</span>
                   </>
                 )}
               </button>
