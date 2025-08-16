@@ -32,6 +32,7 @@ static_sites:
     output_dir: dist
     routes:
       - path: /
+        preserve_path_prefix: false
     envs:
       - key: VITE_API_URL
         value: https://apexpensetracker-fpnq5.ondigitalocean.app/apexpensetrackerbackend2/api
