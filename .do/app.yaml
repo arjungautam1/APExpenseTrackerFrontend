@@ -1,4 +1,5 @@
 name: apexpensetracker
+region: tor
 services:
   - name: backend
     source_dir: /
@@ -10,17 +11,38 @@ services:
     environment_slug: node-js
     instance_count: 1
     instance_size_slug: basic-xxs
-    routes:
-      - path: /api
+    http_port: 8080
     envs:
+      - key: NODE_ENV
+        scope: RUN_AND_BUILD_TIME
+        value: production
       - key: MONGODB_URI
+        scope: RUN_AND_BUILD_TIME
         value: ${MONGODB_URI}
+      - key: PORT
+        scope: RUN_AND_BUILD_TIME
+        value: "8080"
+      - key: JWT_SECRET
+        scope: RUN_AND_BUILD_TIME
+        value: ${JWT_SECRET}
+      - key: JWT_EXPIRE
+        scope: RUN_AND_BUILD_TIME
+        value: 7d
+      - key: JWT_REFRESH_SECRET
+        scope: RUN_AND_BUILD_TIME
+        value: ${JWT_REFRESH_SECRET}
+      - key: JWT_REFRESH_EXPIRE
+        scope: RUN_AND_BUILD_TIME
+        value: 30d
+      - key: CLIENT_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://apexpensetracker-fpnq5.ondigitalocean.app
       - key: GROQ_API_KEY
+        scope: RUN_AND_BUILD_TIME
         value: ${GROQ_API_KEY}
       - key: GROQ_TEXT
+        scope: RUN_AND_BUILD_TIME
         value: ${GROQ_TEXT}
-      - key: JWT_SECRET
-        value: ${JWT_SECRET}
 
 static_sites:
   - name: frontend
@@ -30,8 +52,20 @@ static_sites:
       branch: main
     build_command: npm install && npm run build
     output_dir: dist
-    routes:
-      - path: /
     envs:
       - key: VITE_API_URL
+        scope: BUILD_TIME
         value: https://apexpensetracker-fpnq5.ondigitalocean.app/api
+
+ingress:
+  rules:
+    - component:
+        name: backend
+      match:
+        path:
+          prefix: /api
+    - component:
+        name: frontend
+      match:
+        path:
+          prefix: /
