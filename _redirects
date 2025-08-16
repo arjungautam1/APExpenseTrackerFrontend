@@ -1,0 +1,4 @@
+# Netlify redirects file
+# Place this in your client/public folder as _redirects
+
+/*    /index.html   200

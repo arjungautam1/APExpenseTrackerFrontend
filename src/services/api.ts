@@ -4,25 +4,10 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    // Dynamic API URL based on environment
+    // Use deployed backend API for all environments
     const getApiUrl = () => {
-      // If VITE_API_URL is set, use it
-      if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL;
-      }
-      
-      // Auto-detect based on current location
-      const isProduction = import.meta.env.PROD;
-      const currentHost = window.location.hostname;
-      const currentProtocol = window.location.protocol;
-      
-      if (isProduction) {
-        // In production, use current domain with /api
-        return `${currentProtocol}//${currentHost}/api`;
-      } else {
-        // In development, use localhost:5051
-        return 'http://localhost:5051/api';
-      }
+      // Always use the deployed backend API
+      return 'https://apexpensetracker-fpnq5.ondigitalocean.app/apexpensetrackerbackend2/api';
     };
 
     this.api = axios.create({
