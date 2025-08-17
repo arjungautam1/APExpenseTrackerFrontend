@@ -130,7 +130,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
+        <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto" data-tour="navigation">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (

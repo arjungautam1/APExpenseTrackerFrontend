@@ -10,6 +10,13 @@ import { formatTransactionDescription } from '../utils/transactionNameFormatter'
 import { TrendingUp, TrendingDown, DollarSign, PiggyBank, BarChart3, Building, Grid3X3 } from 'lucide-react';
 import { Transaction } from '../types';
 import toast from 'react-hot-toast';
+import React from 'react';
+import { motion } from 'framer-motion';
+import CountUp from 'react-countup';
+import { DashboardTour, dashboardTourSteps } from '../components/Tour/DashboardTour';
+import { useTour } from '@reactour/tour';
+import { Tooltip, PulsingHotspot } from '../components/UI/Tooltip';
+import { SuccessCelebration, useSuccessCelebration } from '../components/UI/SuccessCelebration';
 
 interface DashboardStats {
   totalIncome: number;
@@ -30,6 +37,13 @@ export function DashboardPage() {
   const [activeTransactionTab, setActiveTransactionTab] = useState<'all' | 'income' | 'expense' | 'investment'>('all');
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const { formatCurrency } = useCurrencyFormatter();
+  const { setSteps } = useTour();
+  const { celebration, celebrate, hideCelebration } = useSuccessCelebration();
+
+  // Setup tour steps when component mounts
+  React.useEffect(() => {
+    setSteps?.(dashboardTourSteps as any);
+  }, [setSteps]);
 
   const fetchDashboardData = async () => {
     try {
@@ -79,6 +93,13 @@ export function DashboardPage() {
   const handleTransactionAdded = () => {
     // Refresh dashboard data when a new transaction is added
     fetchDashboardData();
+    
+    // Celebrate successful transaction
+    celebrate({
+      type: 'success',
+      title: 'Transaction Added!',
+      message: 'Your transaction has been successfully recorded.'
+    });
   };
 
 
@@ -213,24 +234,28 @@ export function DashboardPage() {
           </div>
           
           {/* Action buttons */}
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3" data-tour="quick-actions">
             <div className="flex space-x-2 sm:space-x-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowBulkUploadModal(true)}
-                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2 hover:scale-105 transition-transform"
+                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2 transition-transform"
               >
                 <Grid3X3 className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Bulk Upload</span>
                 <span className="xs:hidden">Upload</span>
-              </button>
+              </motion.button>
               <ScanBillModal onSuccess={handleTransactionAdded} />
-              <QuickAddTransaction onSuccess={handleTransactionAdded} />
+              <PulsingHotspot tooltip="Click here to quickly add a new transaction!" position="bottom">
+                <QuickAddTransaction onSuccess={handleTransactionAdded} />
+              </PulsingHotspot>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4" data-tour="stats-cards">
         {/* Stats Cards */}
         <div className="card group hover:shadow-lg transition-all duration-300">
           <div className="card-body p-4 sm:p-6 relative overflow-hidden">
@@ -242,9 +267,23 @@ export function DashboardPage() {
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Total Income</h3>
+                <Tooltip content="Total income received this month from all sources" position="top">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Total Income</h3>
+                </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-green-600 truncate group-hover:text-green-700 transition-colors">
-                  {stats ? formatCurrency(stats.totalIncome) : '$0'}
+                  {stats ? (
+                    <CountUp
+                      start={0}
+                      end={stats.totalIncome}
+                      duration={2.5}
+                      decimals={2}
+                      decimal="."
+                      prefix="$"
+                      preserveValue
+                    />
+                  ) : (
+                    '$0'
+                  )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
@@ -262,9 +301,24 @@ export function DashboardPage() {
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Expenses</h3>
+                <Tooltip content="Total expenses and spending this month" position="top">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Expenses</h3>
+                </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-red-600 truncate group-hover:text-red-700 transition-colors">
-                  {stats ? formatCurrency(stats.totalExpenses) : '$0'}
+                  {stats ? (
+                    <CountUp
+                      start={0}
+                      end={stats.totalExpenses}
+                      duration={2.5}
+                      delay={0.5}
+                      decimals={2}
+                      decimal="."
+                      prefix="$"
+                      preserveValue
+                    />
+                  ) : (
+                    '$0'
+                  )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
@@ -272,7 +326,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card group hover:shadow-lg transition-all duration-300">
+        <div className="card group hover:shadow-lg transition-all duration-300" data-tour="investment-card">
           <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -281,9 +335,24 @@ export function DashboardPage() {
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Investments</h3>
+                <Tooltip content="Total amount invested this month in your portfolio" position="top">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Investments</h3>
+                </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate group-hover:text-purple-700 transition-colors">
-                  {stats ? formatCurrency(stats.totalInvestments) : '$0'}
+                  {stats ? (
+                    <CountUp
+                      start={0}
+                      end={stats.totalInvestments}
+                      duration={3}
+                      delay={1}
+                      decimals={2}
+                      decimal="."
+                      prefix="$"
+                      preserveValue
+                    />
+                  ) : (
+                    '$0'
+                  )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
@@ -309,13 +378,28 @@ export function DashboardPage() {
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Net Savings</h3>
+                <Tooltip content="Your savings this month (Income - Expenses - Investments)" position="top">
+                  <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Net Savings</h3>
+                </Tooltip>
                 <p className={`text-lg sm:text-2xl font-bold truncate transition-all duration-300 group-hover:scale-105 ${
                   stats && stats.totalSavings >= 0 
                     ? 'text-blue-600 group-hover:text-blue-700' 
                     : 'text-red-600 group-hover:text-red-700'
                 }`}>
-                  {stats ? formatCurrency(stats.totalSavings) : '$0'}
+                  {stats ? (
+                    <CountUp
+                      start={0}
+                      end={stats.totalSavings}
+                      duration={2.5}
+                      delay={1.5}
+                      decimals={2}
+                      decimal="."
+                      prefix={stats.totalSavings >= 0 ? '$' : '-$'}
+                      preserveValue
+                    />
+                  ) : (
+                    '$0'
+                  )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
@@ -326,7 +410,7 @@ export function DashboardPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
-        <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden" data-tour="recent-transactions">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/15 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
           <div className="card-header relative z-10">
             <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors">Recent Transactions</h3>
@@ -442,10 +526,12 @@ export function DashboardPage() {
         </div>
 
         {/* Expense Breakdown */}
-        <ExpenseBreakdown 
-          limit={8} 
-          showTrends={true} 
-        />
+        <div data-tour="expense-breakdown">
+          <ExpenseBreakdown 
+            limit={8} 
+            showTrends={true} 
+          />
+        </div>
       </div>
 
       {/* Bulk Upload Modal */}
@@ -455,6 +541,18 @@ export function DashboardPage() {
           onSuccess={handleTransactionAdded}
         />
       )}
+      
+      {/* Dashboard Tour */}
+      <DashboardTour />
+      
+      {/* Success Celebration */}
+      <SuccessCelebration
+        isVisible={celebration.isVisible}
+        type={celebration.type}
+        title={celebration.title}
+        message={celebration.message}
+        onComplete={hideCelebration}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './components/Auth/ProtectedRoute'
 import { Layout } from './components/Common/Layout'
+import { TourProvider } from './components/Tour/TourProvider'
 
 // Pages
 import { LoginPage } from './pages/LoginPage'
@@ -18,6 +19,7 @@ import MonthlyExpensesPage from './pages/MonthlyExpensesPage'
 function App() {
   return (
     <AuthProvider>
+      <TourProvider>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -105,6 +107,7 @@ function App() {
           }
         />
       </Routes>
+      </TourProvider>
     </AuthProvider>
   )
 }
