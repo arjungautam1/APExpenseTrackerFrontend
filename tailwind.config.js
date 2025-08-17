@@ -44,12 +44,16 @@ export default {
           900: '#7f1d1d',
         },
       },
+      screens: {
+        'xs': '475px',
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
+        'bounce-gentle': 'bounceGentle 0.6s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -60,6 +64,14 @@ export default {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        bounceGentle: {
+          '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
+          '40%': { transform: 'translateY(-3px)' },
+          '60%': { transform: 'translateY(-1px)' },
+        },
+      },
+      backdropBlur: {
+        'xs': '2px',
       },
     },
   },

@@ -189,44 +189,47 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
 
   return (
     <div className="card">
-      <div className="card-header flex items-center justify-between">
-        <h3 className="text-lg font-medium">{getTitle()}</h3>
-        <div className="flex space-x-1">
+      <div className="card-header flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <h3 className="text-base sm:text-lg font-medium">{getTitle()}</h3>
+        <div className="flex flex-wrap gap-1 sm:space-x-1">
           <button
             onClick={() => setSelectedView('breakdown')}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+            className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors touch-manipulation ${
               selectedView === 'breakdown' 
                 ? 'bg-primary-100 text-primary-700 border border-primary-200' 
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
-            <PieChart className="h-4 w-4 inline mr-1" />
-            Categories
+            <PieChart className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+            <span className="hidden xs:inline">Categories</span>
+            <span className="xs:hidden">Cat</span>
           </button>
           {showTrends && breakdown.monthlyTrends.length > 0 && (
             <button
               onClick={() => setSelectedView('trends')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors touch-manipulation ${
                 selectedView === 'trends' 
                   ? 'bg-primary-100 text-primary-700 border border-primary-200' 
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <TrendingUp className="h-4 w-4 inline mr-1" />
-              Trends
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+              <span className="hidden xs:inline">Trends</span>
+              <span className="xs:hidden">Trend</span>
             </button>
           )}
           {monthlyExpenses && (
             <button
               onClick={() => setSelectedView('categories-trends')}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors touch-manipulation ${
                 selectedView === 'categories-trends' 
                   ? 'bg-primary-100 text-primary-700 border border-primary-200' 
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Clock className="h-4 w-4 inline mr-1" />
-              Monthly Expenses
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1" />
+              <span className="hidden xs:inline">Monthly</span>
+              <span className="xs:hidden">Mon</span>
             </button>
           )}
         </div>
@@ -236,96 +239,97 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
         {selectedView === 'breakdown' ? (
           <>
             {/* Summary Stats */}
-            <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border border-blue-100">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                    <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {formatCurrency(breakdown.totalExpenses)}
                   </p>
-                  <p className="text-sm text-gray-600">Total Expenses</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Total Expenses</p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
-                    <Hash className="h-6 w-6 text-green-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                    <Hash className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{breakdown.summary.totalCategories}</p>
-                  <p className="text-sm text-gray-600">Categories</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{breakdown.summary.totalCategories}</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Categories</p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                    <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">
                     {formatCurrency(breakdown.summary.avgExpensePerCategory)}
                   </p>
-                  <p className="text-sm text-gray-600">Avg per Category</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Avg per Category</p>
                 </div>
               </div>
             </div>
 
             {/* Category Breakdown List */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {breakdown.breakdown.map((item: ExpenseBreakdownItem, index: number) => (
-                <div key={item.categoryId} className="group p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
-                  <div className="flex items-center space-x-4">
+                <div key={item.categoryId} className="group p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200 active:scale-[0.98] sm:active:scale-100">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
                     {/* Rank Badge */}
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-sm font-semibold text-gray-600">#{index + 1}</span>
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-xs sm:text-sm font-semibold text-gray-600">#{index + 1}</span>
                       </div>
                     </div>
 
                     {/* Category Icon */}
                     <div className="flex-shrink-0">
                       <div 
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-sm"
                         style={{ backgroundColor: item.categoryColor }}
                       >
-                        <span className="text-xl">{getCategoryIcon(item.categoryIcon)}</span>
+                        <span className="text-lg sm:text-xl">{getCategoryIcon(item.categoryIcon)}</span>
                       </div>
                     </div>
 
                     {/* Category Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-gray-900 truncate">
+                        <h4 className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                           {item.categoryName}
                         </h4>
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-xs sm:text-sm font-bold text-gray-900">
                           {formatCurrency(item.totalAmount)}
                         </span>
                       </div>
 
                       {/* Progress Bar */}
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                      <div className="flex items-center space-x-2 sm:space-x-3 mb-2">
+                        <div className="flex-1 bg-gray-100 rounded-full h-2 sm:h-2.5 overflow-hidden">
                           <div
-                            className={`h-2.5 rounded-full bg-gradient-to-r ${getColorIntensity(item.percentage)}`}
+                            className={`h-2 sm:h-2.5 rounded-full bg-gradient-to-r ${getColorIntensity(item.percentage)}`}
                             style={{ width: `${Math.min(item.percentage, 100)}%` }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-600 w-12 text-right">
+                        <span className="text-xs font-medium text-gray-600 w-8 sm:w-12 text-right">
                           {formatPercentage(item.percentage)}
                         </span>
                       </div>
 
                       {/* Additional Stats */}
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 sm:space-x-4">
                           <span className="flex items-center">
-                            <Hash className="h-3 w-3 mr-1" />
-                            {item.transactionCount} transactions
+                            <Hash className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
+                            <span className="hidden xs:inline">{item.transactionCount} transactions</span>
+                            <span className="xs:hidden">{item.transactionCount}tx</span>
                           </span>
-                          <span className="flex items-center">
+                          <span className="flex items-center hidden sm:flex">
                             <DollarSign className="h-3 w-3 mr-1" />
                             Avg: {formatCurrency(item.avgAmount)}
                           </span>
                         </div>
                         <span className="flex items-center">
-                          <Calendar className="h-3 w-3 mr-1" />
+                          <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                           {formatDate(item.lastTransaction)}
                         </span>
                       </div>
@@ -391,39 +395,39 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                 </div>
 
                 {/* Monthly Expenses Summary */}
-                <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 text-center">
+                <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg sm:rounded-xl border border-purple-100">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-center">
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                        <DollarSign className="h-6 w-6 text-purple-600" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                        <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {formatCurrency(monthlyExpenses.totalMonthly)}
                       </p>
-                      <p className="text-sm text-gray-600">Total Monthly</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Total Monthly</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                        <Hash className="h-6 w-6 text-blue-600" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                        <Hash className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">{monthlyExpenses.count}</p>
-                      <p className="text-sm text-gray-600">Active Bills</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyExpenses.count}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Active Bills</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
-                        <AlertCircle className="h-6 w-6 text-orange-600" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
+                        <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">{monthlyExpenses.dueThisMonth}</p>
-                      <p className="text-sm text-gray-600">Due This Month</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyExpenses.dueThisMonth}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Due This Month</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
-                        <Calendar className="h-6 w-6 text-green-600" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
+                        <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {formatCurrency(monthlyExpenses.totalMonthly / 12)}
                       </p>
-                      <p className="text-sm text-gray-600">Daily Average</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Daily Average</p>
                     </div>
                   </div>
                 </div>

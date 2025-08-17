@@ -44,12 +44,12 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
-        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white shadow-xl">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
-              className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="ml-1 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-6 w-6 text-white" />
@@ -69,35 +69,35 @@ export function Layout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-200 px-3 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <button
               type="button"
-              className="lg:hidden -ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900"
+              className="lg:hidden -ml-0.5 -mt-0.5 h-10 w-10 sm:h-12 sm:w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
               onClick={() => setSidebarOpen(true)}
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
             
-            <div className="flex items-center space-x-4 ml-auto">
-              <div className="flex items-center space-x-3">
-                <div className="hidden md:block text-right">
-                  <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+            <div className="flex items-center space-x-2 sm:space-x-4 ml-auto">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="hidden sm:block text-right">
+                  <p className="text-sm font-medium text-gray-900 truncate max-w-24 sm:max-w-none">{user?.name}</p>
+                  <p className="text-xs text-gray-500 truncate max-w-24 sm:max-w-none">{user?.email}</p>
                 </div>
                 <div className="flex-shrink-0">
-                  <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary-600 rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                   </div>
                 </div>
               </div>
               
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100"
+                className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
                 title="Logout"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
@@ -115,41 +115,41 @@ export function Layout({ children }: LayoutProps) {
     return (
       <>
         {/* Logo */}
-        <div className="flex h-16 items-center px-6 border-b border-gray-200">
+        <div className="flex h-16 items-center px-4 sm:px-6 border-b border-gray-200">
           <div className="flex items-center min-w-0">
-            <div className="h-10 w-10 bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
-              <BarChart3 className="h-6 w-6 text-white" />
+            <div className="h-9 w-9 sm:h-10 sm:w-10 bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl flex items-center justify-center shadow-lg">
+              <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
-            <div className="ml-3 min-w-0">
+            <div className="ml-2 sm:ml-3 min-w-0">
               <div className="flex flex-col">
-                <span className="text-lg font-bold text-gray-900 leading-none">AP Finance</span>
-                <span className="text-sm font-medium text-primary-600 leading-none">Tracker</span>
+                <span className="text-base sm:text-lg font-bold text-gray-900 leading-none">AP Finance</span>
+                <span className="text-xs sm:text-sm font-medium text-primary-600 leading-none">Tracker</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-2 py-4">
+        <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${
+                className={`group flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-primary-100 text-primary-700 shadow-sm border border-primary-200'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
                 <item.icon
-                  className={`mr-3 h-5 w-5 ${
+                  className={`mr-3 h-5 w-5 flex-shrink-0 ${
                     isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
                   }`}
                 />
-                {item.name}
+                <span className="truncate">{item.name}</span>
               </Link>
             );
           })}

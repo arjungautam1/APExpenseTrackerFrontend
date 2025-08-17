@@ -116,100 +116,107 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">
-            {currentMonth ? `Financial overview for ${currentMonth}` : 'Get an overview of your financial health'}
-          </p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center gap-3">
-          <button
-            onClick={() => setShowBulkUploadModal(true)}
-            className="btn-secondary flex items-center"
-          >
-            <Grid3X3 className="h-4 w-4 mr-2" />
-            Bulk Upload
-          </button>
-          <ScanBillModal onSuccess={handleTransactionAdded} />
-          <QuickAddTransaction onSuccess={handleTransactionAdded} />
+    <div className="px-3 py-4 sm:px-6 lg:px-8">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              {currentMonth ? `Financial overview for ${currentMonth}` : 'Get an overview of your financial health'}
+            </p>
+          </div>
+          
+          {/* Mobile action buttons */}
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <div className="flex space-x-2 sm:space-x-3">
+              <button
+                onClick={() => setShowBulkUploadModal(true)}
+                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2"
+              >
+                <Grid3X3 className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Bulk Upload</span>
+                <span className="xs:hidden">Upload</span>
+              </button>
+              <ScanBillModal onSuccess={handleTransactionAdded} />
+              <QuickAddTransaction onSuccess={handleTransactionAdded} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
         {/* Stats Cards */}
         <div className="card">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Total Income</h3>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total Income</h3>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 truncate">
                   {stats ? formatCurrency(stats.totalIncome) : '$0'}
                 </p>
-                <p className="text-sm text-gray-500">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5 text-red-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Total Expenses</h3>
-                <p className="text-2xl font-bold text-red-600">
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Expenses</h3>
+                <p className="text-lg sm:text-2xl font-bold text-red-600 truncate">
                   {stats ? formatCurrency(stats.totalExpenses) : '$0'}
                 </p>
-                <p className="text-sm text-gray-500">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <div className="card-body">
+          <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Total Investments</h3>
-                <p className="text-2xl font-bold text-purple-600">
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Investments</h3>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate">
                   {stats ? formatCurrency(stats.totalInvestments) : '$0'}
                 </p>
-                <p className="text-sm text-gray-500">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-body">
+        <div className="card col-span-2 lg:col-span-1">
+          <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <PiggyBank className="w-5 h-5 text-blue-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <PiggyBank className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                 </div>
               </div>
-              <div className="ml-4">
-                <h3 className="text-sm font-medium text-gray-500">Net Savings</h3>
-                <p className={`text-2xl font-bold ${stats && stats.totalSavings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Net Savings</h3>
+                <p className={`text-lg sm:text-2xl font-bold truncate ${stats && stats.totalSavings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                   {stats ? formatCurrency(stats.totalSavings) : '$0'}
                 </p>
-                <p className="text-sm text-gray-500">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
               </div>
             </div>
           </div>
