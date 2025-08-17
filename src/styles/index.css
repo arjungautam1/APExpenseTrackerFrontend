@@ -83,20 +83,31 @@ body.modal-open {
   z-index: 1;
 }
 
-/* Smooth transitions for all interactive elements */
-* {
+/* Smooth transitions for interactive elements only */
+button,
+.btn,
+.card,
+.tooltip,
+.modal,
+.animate-element {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
 
-/* Enhanced button hover effects */
+/* Enhanced button hover effects - only for actual buttons */
+button.btn-primary,
+button.btn-secondary,
+button.btn,
 .btn-primary,
 .btn-secondary {
   position: relative;
   overflow: hidden;
 }
 
+button.btn-primary::before,
+button.btn-secondary::before,
+button.btn::before,
 .btn-primary::before,
 .btn-secondary::before {
   content: '';
@@ -107,11 +118,29 @@ body.modal-open {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
+  pointer-events: none;
 }
 
+button.btn-primary:hover::before,
+button.btn-secondary:hover::before,
+button.btn:hover::before,
 .btn-primary:hover::before,
 .btn-secondary:hover::before {
   left: 100%;
+}
+
+/* Ensure form inputs don't get button effects */
+input,
+textarea,
+select {
+  position: static;
+  overflow: visible;
+}
+
+input::before,
+textarea::before,
+select::before {
+  display: none !important;
 }
 
 /* Card hover effects */
