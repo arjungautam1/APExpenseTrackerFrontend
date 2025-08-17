@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, Calendar, Tag, FileText } from 'lucide-react';
+import { X, DollarSign, Calendar, Tag, FileText, Plus, Edit, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CreateMonthlyBill, MonthlyBill, monthlyBillsService } from '../../services/monthlyBills';
 import toast from 'react-hot-toast';
 
@@ -11,13 +12,13 @@ interface AddBillModalProps {
 }
 
 const categories = [
-  { value: 'housing', label: 'Housing', color: 'bg-blue-100 text-blue-800' },
-  { value: 'utilities', label: 'Utilities', color: 'bg-green-100 text-green-800' },
-  { value: 'transport', label: 'Transport', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'food', label: 'Food & Dining', color: 'bg-red-100 text-red-800' },
-  { value: 'entertainment', label: 'Entertainment', color: 'bg-purple-100 text-purple-800' },
-  { value: 'health', label: 'Health & Fitness', color: 'bg-pink-100 text-pink-800' },
-  { value: 'other', label: 'Other', color: 'bg-gray-100 text-gray-800' }
+  { value: 'housing', label: 'Housing', color: 'bg-blue-500', icon: '🏠', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
+  { value: 'utilities', label: 'Utilities', color: 'bg-green-500', icon: '⚡', bgColor: 'bg-green-50', textColor: 'text-green-700' },
+  { value: 'transport', label: 'Transport', color: 'bg-yellow-500', icon: '🚗', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
+  { value: 'food', label: 'Food & Dining', color: 'bg-red-500', icon: '🍽️', bgColor: 'bg-red-50', textColor: 'text-red-700' },
+  { value: 'entertainment', label: 'Entertainment', color: 'bg-purple-500', icon: '🎬', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
+  { value: 'health', label: 'Health & Fitness', color: 'bg-pink-500', icon: '💪', bgColor: 'bg-pink-50', textColor: 'text-pink-700' },
+  { value: 'other', label: 'Other', color: 'bg-gray-500', icon: '📋', bgColor: 'bg-gray-50', textColor: 'text-gray-700' }
 ];
 
 export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }: AddBillModalProps) {
@@ -112,80 +113,138 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
     }
   };
 
+  const getCategoryInfo = (categoryValue: string) => {
+    return categories.find(cat => cat.value === categoryValue) || categories[categories.length - 1];
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {editingBill ? 'Edit Monthly Bill' : 'Add Monthly Bill'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modern Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  {editingBill ? (
+                    <Edit className="h-6 w-6 text-white" />
+                  ) : (
+                    <Plus className="h-6 w-6 text-white" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    {editingBill ? 'Edit Monthly Bill' : 'Add Monthly Bill'}
+                  </h2>
+                  <p className="text-blue-100 text-sm">
+                    {editingBill ? 'Update your bill details' : 'Create a new recurring bill'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
+            </div>
+            
+            {/* Decorative elements */}
+            <div className="absolute -bottom-4 right-6 p-3 rounded-full bg-white shadow-lg">
+              <Sparkles className="h-6 w-6 text-blue-600" />
+            </div>
+          </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Bill Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
               Bill Name *
             </label>
             <div className="relative">
-              <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <FileText className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
+                className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
                 placeholder="e.g., Netflix Subscription, Rent"
               />
             </div>
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            {errors.name && (
+              <motion.p 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2 text-sm text-red-600 flex items-center"
+              >
+                <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                {errors.name}
+              </motion.p>
+            )}
           </div>
 
           {/* Amount and Due Date */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-3">
                 Amount *
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.amount ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                    errors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   placeholder="0.00"
                 />
               </div>
-              {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount}</p>}
+              {errors.amount && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-sm text-red-600 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                  {errors.amount}
+                </motion.p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-3">
                 Due Date *
               </label>
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <select
                   value={formData.dueDate}
                   onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value))}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    errors.dueDate ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                    errors.dueDate ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
@@ -193,62 +252,106 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                   ))}
                 </select>
               </div>
-              {errors.dueDate && <p className="mt-1 text-sm text-red-600">{errors.dueDate}</p>}
+              {errors.dueDate && (
+                <motion.p 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-sm text-red-600 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                  {errors.dueDate}
+                </motion.p>
+              )}
             </div>
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
               Category *
             </label>
-            <div className="relative">
-              <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <select
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {categories.map(cat => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-3">
+              {categories.map(cat => {
+                const isSelected = formData.category === cat.value;
+                const categoryInfo = getCategoryInfo(cat.value);
+                return (
+                  <motion.button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => handleInputChange('category', cat.value)}
+                    className={`p-4 rounded-xl border-2 transition-all duration-200 flex items-center space-x-3 ${
+                      isSelected 
+                        ? `${cat.bgColor} ${cat.textColor} border-${cat.color.split('-')[1]}-300 shadow-md` 
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-xl">{cat.icon}</span>
+                    <span className="font-medium text-sm">{cat.label}</span>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className={`w-5 h-5 rounded-full ${cat.color} flex items-center justify-center`}
+                      >
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </motion.div>
+                    )}
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-3">
               Description (Optional)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Add any additional details..."
+              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 resize-none"
+              placeholder="Add any additional details about this bill..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-3 pt-4">
-            <button
+          <div className="flex space-x-4 pt-6">
+            <motion.button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading ? 'Saving...' : editingBill ? 'Update Bill' : 'Add Bill'}
-            </button>
+              {loading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2">
+                  {editingBill ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                  <span>{editingBill ? 'Update Bill' : 'Add Bill'}</span>
+                </div>
+              )}
+            </motion.button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    </AnimatePresence>
   );
 }
