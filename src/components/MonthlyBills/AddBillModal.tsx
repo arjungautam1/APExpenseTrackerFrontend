@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, DollarSign, Calendar, Tag, FileText, Plus, Edit, Sparkles } from 'lucide-react';
+import { X, DollarSign, Calendar, Sparkles, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreateMonthlyBill, MonthlyBill, monthlyBillsService } from '../../services/monthlyBills';
 import toast from 'react-hot-toast';
@@ -12,13 +12,13 @@ interface AddBillModalProps {
 }
 
 const categories = [
-  { value: 'housing', label: 'Housing', color: 'bg-blue-500', icon: '🏠', bgColor: 'bg-blue-50', textColor: 'text-blue-700' },
-  { value: 'utilities', label: 'Utilities', color: 'bg-green-500', icon: '⚡', bgColor: 'bg-green-50', textColor: 'text-green-700' },
-  { value: 'transport', label: 'Transport', color: 'bg-yellow-500', icon: '🚗', bgColor: 'bg-yellow-50', textColor: 'text-yellow-700' },
-  { value: 'food', label: 'Food & Dining', color: 'bg-red-500', icon: '🍽️', bgColor: 'bg-red-50', textColor: 'text-red-700' },
-  { value: 'entertainment', label: 'Entertainment', color: 'bg-purple-500', icon: '🎬', bgColor: 'bg-purple-50', textColor: 'text-purple-700' },
-  { value: 'health', label: 'Health & Fitness', color: 'bg-pink-500', icon: '💪', bgColor: 'bg-pink-50', textColor: 'text-pink-700' },
-  { value: 'other', label: 'Other', color: 'bg-gray-500', icon: '📋', bgColor: 'bg-gray-50', textColor: 'text-gray-700' }
+  { value: 'housing', label: 'Housing', icon: '🏠', color: 'blue' },
+  { value: 'utilities', label: 'Utilities', icon: '⚡', color: 'emerald' },
+  { value: 'transport', label: 'Transport', icon: '🚗', color: 'amber' },
+  { value: 'food', label: 'Food', icon: '🍽️', color: 'red' },
+  { value: 'entertainment', label: 'Entertainment', icon: '🎬', color: 'purple' },
+  { value: 'health', label: 'Health', icon: '💪', color: 'pink' },
+  { value: 'other', label: 'Other', icon: '📋', color: 'gray' }
 ];
 
 export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }: AddBillModalProps) {
@@ -113,11 +113,13 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
     }
   };
 
-  const getCategoryInfo = (categoryValue: string) => {
-    return categories.find(cat => cat.value === categoryValue) || categories[categories.length - 1];
+  const getSelectedCategory = () => {
+    return categories.find(cat => cat.value === formData.category) || categories[categories.length - 1];
   };
 
   if (!isOpen) return null;
+
+  const selectedCategory = getSelectedCategory();
 
   return (
     <AnimatePresence>
@@ -125,233 +127,201 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ type: "spring", damping: 30, stiffness: 400 }}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Modern Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 relative overflow-hidden">
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  {editingBill ? (
-                    <Edit className="h-5 w-5 text-white" />
-                  ) : (
-                    <Plus className="h-5 w-5 text-white" />
-                  )}
+          {/* Clean Header */}
+          <div className="px-6 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className={`p-2 bg-gradient-to-br from-${selectedCategory.color}-400 to-${selectedCategory.color}-600 rounded-lg shadow-sm`}>
+                  <span className="text-xl">{selectedCategory.icon}</span>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-white">
-                    {editingBill ? 'Edit Monthly Bill' : 'Add Monthly Bill'}
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {editingBill ? 'Edit Bill' : 'New Monthly Bill'}
                   </h2>
-                  <p className="text-blue-100 text-xs">
-                    {editingBill ? 'Update your bill details' : 'Create a new recurring bill'}
+                  <p className="text-xs text-gray-500">
+                    Recurring payment
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="h-4 w-4 text-white" />
+                <X className="h-4 w-4 text-gray-400" />
               </button>
-            </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -bottom-3 right-4 p-2 rounded-full bg-white shadow-lg">
-              <Sparkles className="h-4 w-4 text-blue-600" />
             </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Bill Name */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Bill Name *
-            </label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          {/* Clean Form */}
+          <form onSubmit={handleSubmit} className="p-6">
+            {/* Bill Name - Clean Input */}
+            <div className="mb-5">
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                BILL NAME
+              </label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
-                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                className={`w-full px-3 py-2.5 bg-gray-50 border rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+                  errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200'
                 }`}
-                placeholder="e.g., Netflix Subscription, Rent"
+                placeholder="e.g., Netflix, Spotify, Rent"
+                autoFocus
+              />
+              {errors.name && (
+                <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Amount and Date Row */}
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                  AMOUNT
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.amount}
+                    onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                    className={`w-full pl-7 pr-3 py-2.5 bg-gray-50 border rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
+                      errors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    }`}
+                    placeholder="0.00"
+                  />
+                </div>
+                {errors.amount && (
+                  <p className="mt-1 text-xs text-red-500">{errors.amount}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                  DUE DAY
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                  <select
+                    value={formData.dueDate}
+                    onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value))}
+                    className={`w-full pl-9 pr-3 py-2.5 bg-gray-50 border rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none ${
+                      errors.dueDate ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                    }`}
+                  >
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>
+                        {day}{day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {errors.dueDate && (
+                  <p className="mt-1 text-xs text-red-500">{errors.dueDate}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Category - Minimal Pills */}
+            <div className="mb-5">
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                CATEGORY
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(cat => {
+                  const isSelected = formData.category === cat.value;
+                  return (
+                    <motion.button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => handleInputChange('category', cat.value)}
+                      className={`px-3 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+                        isSelected 
+                          ? `bg-${cat.color}-100 text-${cat.color}-700 ring-2 ring-${cat.color}-500 ring-offset-1` 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.label}</span>
+                      {isSelected && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500 }}
+                        >
+                          <Check className="h-3 w-3" />
+                        </motion.div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Description - Optional */}
+            <div className="mb-6">
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                NOTES (OPTIONAL)
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                placeholder="Add any notes..."
               />
             </div>
-            {errors.name && (
-              <motion.p 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-1 text-xs text-red-600 flex items-center"
+
+            {/* Clean Actions */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
-                {errors.name}
-              </motion.p>
-            )}
-          </div>
-
-          {/* Amount and Due Date */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Amount *
-              </label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.amount}
-                  onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-                  className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
-                    errors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  placeholder="0.00"
-                />
-              </div>
-              {errors.amount && (
-                <motion.p 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-1 text-xs text-red-600 flex items-center"
-                >
-                  <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
-                  {errors.amount}
-                </motion.p>
-              )}
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                    Saving...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {editingBill ? 'Update Bill' : 'Add Bill'}
+                  </span>
+                )}
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Due Date *
-              </label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <select
-                  value={formData.dueDate}
-                  onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value))}
-                  className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
-                    errors.dueDate ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                    <option key={day} value={day}>{day}</option>
-                  ))}
-                </select>
-              </div>
-              {errors.dueDate && (
-                <motion.p 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-1 text-xs text-red-600 flex items-center"
-                >
-                  <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
-                  {errors.dueDate}
-                </motion.p>
-              )}
-            </div>
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Category *
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {categories.map(cat => {
-                const isSelected = formData.category === cat.value;
-                const categoryInfo = getCategoryInfo(cat.value);
-                return (
-                  <motion.button
-                    key={cat.value}
-                    type="button"
-                    onClick={() => handleInputChange('category', cat.value)}
-                    className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center space-x-2 ${
-                      isSelected 
-                        ? `${cat.bgColor} ${cat.textColor} border-${cat.color.split('-')[1]}-300 shadow-sm` 
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <span className="text-lg">{cat.icon}</span>
-                    <span className="font-medium text-xs">{cat.label}</span>
-                    {isSelected && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className={`w-4 h-4 rounded-full ${cat.color} flex items-center justify-center`}
-                      >
-                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                      </motion.div>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-2">
-              Description (Optional)
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 resize-none"
-              placeholder="Add any additional details..."
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex space-x-3 pt-4">
-            <motion.button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              Cancel
-            </motion.button>
-            <motion.button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-md hover:shadow-lg"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Saving...</span>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center space-x-2">
-                  {editingBill ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  <span>{editingBill ? 'Update Bill' : 'Add Bill'}</span>
-                </div>
-              )}
-            </motion.button>
-          </div>
-        </form>
+          </form>
+        </motion.div>
       </motion.div>
-    </motion.div>
     </AnimatePresence>
   );
 }
