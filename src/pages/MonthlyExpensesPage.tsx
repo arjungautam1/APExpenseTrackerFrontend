@@ -45,7 +45,7 @@ export default function MonthlyExpensesPage() {
     }
 
     try {
-      await monthlyBillsService.deleteBill(bill.id);
+      await monthlyBillsService.deleteBill(bill._id);
       toast.success('Bill deleted successfully');
       loadBills();
     } catch (error) {
@@ -148,7 +148,7 @@ export default function MonthlyExpensesPage() {
             {bills.map((bill) => {
               const categoryInfo = getCategoryInfo(bill.category);
               return (
-                <div key={bill.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={bill._id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="text-2xl">{categoryInfo.icon}</div>

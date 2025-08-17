@@ -81,7 +81,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
     setLoading(true);
     try {
       if (editingBill) {
-        await monthlyBillsService.updateBill(editingBill.id, formData);
+        await monthlyBillsService.updateBill(editingBill._id, formData);
         toast.success('Bill updated successfully');
       } else {
         await monthlyBillsService.createBill(formData);
