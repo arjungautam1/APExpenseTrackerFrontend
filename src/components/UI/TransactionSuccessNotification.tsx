@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, TrendingUp, TrendingDown, Building, DollarSign, Calendar, Tag, X } from 'lucide-react';
+import { CheckCircle, TrendingUp, TrendingDown, Building, X } from 'lucide-react';
 import { formatCurrency } from '../../utils/currency';
 
 interface TransactionSuccessNotificationProps {
@@ -26,211 +26,135 @@ export function TransactionSuccessNotification({
   onClose,
   transaction,
   autoHide = true,
-  duration = 4000
+  duration = 3000
 }: TransactionSuccessNotificationProps) {
-  const [showConfetti, setShowConfetti] = useState(false);
-
   useEffect(() => {
-    if (isVisible) {
-      setShowConfetti(true);
+    if (isVisible && autoHide) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, duration);
       
-      if (autoHide) {
-        const timer = setTimeout(() => {
-          onClose();
-        }, duration);
-        
-        return () => clearTimeout(timer);
-      }
-    } else {
-      setShowConfetti(false);
+      return () => clearTimeout(timer);
     }
   }, [isVisible, autoHide, duration, onClose]);
 
   const getTypeIcon = () => {
     switch (transaction.type) {
       case 'income':
-        return <TrendingUp className="h-5 w-5 text-green-500" />;
+        return <TrendingUp className="h-4 w-4" />;
       case 'expense':
-        return <TrendingDown className="h-5 w-5 text-red-500" />;
+        return <TrendingDown className="h-4 w-4" />;
       case 'investment':
-        return <Building className="h-5 w-5 text-purple-500" />;
+        return <Building className="h-4 w-4" />;
       default:
-        return <DollarSign className="h-5 w-5 text-gray-500" />;
+        return <CheckCircle className="h-4 w-4" />;
     }
   };
 
   const getTypeColor = () => {
     switch (transaction.type) {
       case 'income':
-        return 'from-green-50 to-emerald-50 border-green-200';
+        return {
+          bg: 'bg-green-50',
+          border: 'border-green-200',
+          text: 'text-green-700',
+          icon: 'text-green-600'
+        };
       case 'expense':
-        return 'from-red-50 to-rose-50 border-red-200';
+        return {
+          bg: 'bg-red-50',
+          border: 'border-red-200',
+          text: 'text-red-700',
+          icon: 'text-red-600'
+        };
       case 'investment':
-        return 'from-purple-50 to-violet-50 border-purple-200';
+        return {
+          bg: 'bg-purple-50',
+          border: 'border-purple-200',
+          text: 'text-purple-700',
+          icon: 'text-purple-600'
+        };
       default:
-        return 'from-gray-50 to-slate-50 border-gray-200';
-    }
-  };
-
-  const getTypeTextColor = () => {
-    switch (transaction.type) {
-      case 'income':
-        return 'text-green-700';
-      case 'expense':
-        return 'text-red-700';
-      case 'investment':
-        return 'text-purple-700';
-      default:
-        return 'text-gray-700';
+        return {
+          bg: 'bg-gray-50',
+          border: 'border-gray-200',
+          text: 'text-gray-700',
+          icon: 'text-gray-600'
+        };
     }
   };
 
   const getTypeLabel = () => {
     switch (transaction.type) {
       case 'income':
-        return 'Income Added';
+        return 'Income added';
       case 'expense':
-        return 'Expense Recorded';
+        return 'Expense recorded';
       case 'investment':
-        return 'Investment Added';
+        return 'Investment added';
       default:
-        return 'Transaction Added';
+        return 'Transaction added';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  const colors = getTypeColor();
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -100, scale: 0.8 }}
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -100, scale: 0.8 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ 
             type: "spring", 
-            damping: 25, 
+            damping: 20, 
             stiffness: 300 
           }}
           className="fixed top-4 right-4 z-[9999] max-w-sm w-full"
         >
-          {/* Success Card */}
-          <div className={`bg-gradient-to-br ${getTypeColor()} rounded-xl shadow-2xl border backdrop-blur-sm relative overflow-hidden`}>
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-current rounded-full -translate-y-16 translate-x-16"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-current rounded-full translate-y-12 -translate-x-12"></div>
-            </div>
-
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 p-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors z-10"
-            >
-              <X className="h-4 w-4 text-gray-600" />
-            </button>
-
-            <div className="relative p-6">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-full bg-white/80 shadow-sm">
+          {/* Simple Success Toast */}
+          <div className={`${colors.bg} border ${colors.border} rounded-lg shadow-lg backdrop-blur-sm`}>
+            <div className="p-4">
+              {/* Header with Icon and Close */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <div className={`p-1.5 rounded-md ${colors.icon} bg-white/60`}>
                     {getTypeIcon()}
                   </div>
-                  <div>
-                    <h3 className={`font-semibold ${getTypeTextColor()}`}>
-                      {getTypeLabel()}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {formatDate(transaction.date)}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Success Checkmark */}
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ 
-                    delay: 0.3,
-                    type: "spring", 
-                    damping: 15, 
-                    stiffness: 200 
-                  }}
-                  className="p-2 rounded-full bg-green-100"
-                >
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                </motion.div>
-              </div>
-
-              {/* Transaction Details */}
-              <div className="space-y-3">
-                {/* Amount */}
-                <div className="flex items-center justify-between p-3 bg-white/60 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">Amount</span>
-                  </div>
-                  <span className={`font-bold text-lg ${getTypeTextColor()}`}>
-                    {transaction.type === 'expense' ? '-' : '+'}{formatCurrency(transaction.amount)}
+                  <span className={`text-sm font-medium ${colors.text}`}>
+                    {getTypeLabel()}
                   </span>
                 </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-md hover:bg-white/60 transition-colors"
+                >
+                  <X className="h-3 w-3 text-gray-500" />
+                </button>
+              </div>
 
-                {/* Description */}
-                {transaction.description && (
-                  <div className="flex items-center space-x-2 p-3 bg-white/40 rounded-lg">
-                    <div className="flex-shrink-0 w-4 h-4 text-gray-500">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    </div>
-                    <span className="text-sm text-gray-700 truncate">
-                      {transaction.description}
-                    </span>
-                  </div>
-                )}
-
-                {/* Category */}
-                {transaction.category && (
-                  <div className="flex items-center space-x-2 p-3 bg-white/40 rounded-lg">
-                    <Tag className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-700">
-                      {transaction.category.name}
-                    </span>
-                  </div>
-                )}
+              {/* Amount */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">
+                  {transaction.description ? transaction.description : transaction.category?.name || 'Transaction'}
+                </span>
+                <span className={`font-semibold ${colors.text}`}>
+                  {transaction.type === 'expense' ? '-' : '+'}{formatCurrency(transaction.amount)}
+                </span>
               </div>
 
               {/* Progress Bar */}
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: '100%' }}
-                transition={{ duration: 3, ease: 'linear' }}
-                className="h-1 bg-white/30 rounded-full mt-4 overflow-hidden"
+                initial={{ width: '100%' }}
+                animate={{ width: '0%' }}
+                transition={{ duration: duration / 1000, ease: 'linear' }}
+                className="h-0.5 bg-gray-200 rounded-full mt-3 overflow-hidden"
               >
-                <div className={`h-full ${getTypeTextColor().replace('text-', 'bg-')} rounded-full`}></div>
+                <div className={`h-full ${colors.text.replace('text-', 'bg-')} rounded-full`}></div>
               </motion.div>
             </div>
           </div>
-
-          {/* Confetti Effect */}
-          {showConfetti && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 pointer-events-none"
-            >
-              <div className="absolute top-0 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-              <div className="absolute top-2 left-1/2 w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
-              <div className="absolute top-1 right-1/4 w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-              <div className="absolute top-3 right-1/3 w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.7s' }}></div>
-            </motion.div>
-          )}
         </motion.div>
       )}
     </AnimatePresence>
