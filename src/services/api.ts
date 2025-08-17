@@ -26,7 +26,8 @@ class ApiService {
           hasToken: !!token,
           tokenValue: token ? token.substring(0, 20) + '...' : 'none',
           url: config.url,
-          method: config.method
+          method: config.method,
+          isMonthlyExpense: config.url?.includes('monthly-expenses')
         });
         if (token && token !== 'mock-jwt-token') {
           config.headers.Authorization = `Bearer ${token}`;
@@ -48,7 +49,9 @@ class ApiService {
           status: error.response?.status,
           url: originalRequest.url,
           method: originalRequest.method,
-          message: error.response?.data?.message
+          message: error.response?.data?.message,
+          isMonthlyExpense: originalRequest.url?.includes('monthly-expenses'),
+          willRedirect: error.response?.status === 401
         });
 
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -57,6 +60,7 @@ class ApiService {
 
           try {
             const refreshToken = localStorage.getItem('refreshToken');
+            console.log('Token refresh attempt - refresh token available:', !!refreshToken);
             if (refreshToken) {
               const response = await this.refreshToken(refreshToken);
               const { token, refreshToken: newRefreshToken } = response.data.data;
@@ -74,6 +78,7 @@ class ApiService {
               // No refresh token, redirect to login
               localStorage.removeItem('token');
               localStorage.removeItem('refreshToken');
+              console.log('About to redirect to login page...');
               window.location.href = '/login';
             }
           } catch (refreshError) {
@@ -81,6 +86,7 @@ class ApiService {
             // Refresh failed, redirect to login
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
+            console.log('About to redirect to login page due to refresh failure...');
             window.location.href = '/login';
           }
         } else if (error.response?.status === 401 && originalRequest._retry) {
@@ -88,6 +94,7 @@ class ApiService {
           console.log('Token refresh already attempted, redirecting to login');
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
+          console.log('About to redirect to login page due to retry failure...');
           window.location.href = '/login';
         }
 
