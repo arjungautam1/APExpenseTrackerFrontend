@@ -137,54 +137,54 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modern Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
                   {editingBill ? (
-                    <Edit className="h-6 w-6 text-white" />
+                    <Edit className="h-5 w-5 text-white" />
                   ) : (
-                    <Plus className="h-6 w-6 text-white" />
+                    <Plus className="h-5 w-5 text-white" />
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">
+                  <h2 className="text-lg font-semibold text-white">
                     {editingBill ? 'Edit Monthly Bill' : 'Add Monthly Bill'}
                   </h2>
-                  <p className="text-blue-100 text-sm">
+                  <p className="text-blue-100 text-xs">
                     {editingBill ? 'Update your bill details' : 'Create a new recurring bill'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
               >
-                <X className="h-5 w-5 text-white" />
+                <X className="h-4 w-4 text-white" />
               </button>
             </div>
             
             {/* Decorative elements */}
-            <div className="absolute -bottom-4 right-6 p-3 rounded-full bg-white shadow-lg">
-              <Sparkles className="h-6 w-6 text-blue-600" />
+            <div className="absolute -bottom-3 right-4 p-2 rounded-full bg-white shadow-lg">
+              <Sparkles className="h-4 w-4 text-blue-600" />
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Bill Name */}
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
               Bill Name *
             </label>
             <div className="relative">
-              <FileText className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
                   errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                 }`}
                 placeholder="e.g., Netflix Subscription, Rent"
@@ -194,29 +194,29 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
               <motion.p 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-2 text-sm text-red-600 flex items-center"
+                className="mt-1 text-xs text-red-600 flex items-center"
               >
-                <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
                 {errors.name}
               </motion.p>
             )}
           </div>
 
           {/* Amount and Due Date */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Amount *
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                  className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
                     errors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                   placeholder="0.00"
@@ -226,24 +226,24 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                 <motion.p 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-1 text-xs text-red-600 flex items-center"
                 >
-                  <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                  <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
                   {errors.amount}
                 </motion.p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Due Date *
               </label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <select
                   value={formData.dueDate}
                   onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value))}
-                  className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
+                  className={`w-full pl-10 pr-3 py-2.5 border-2 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 ${
                     errors.dueDate ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -256,9 +256,9 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                 <motion.p 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-1 text-xs text-red-600 flex items-center"
                 >
-                  <span className="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                  <span className="w-1 h-1 bg-red-500 rounded-full mr-1"></span>
                   {errors.dueDate}
                 </motion.p>
               )}
@@ -267,10 +267,10 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
               Category *
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {categories.map(cat => {
                 const isSelected = formData.category === cat.value;
                 const categoryInfo = getCategoryInfo(cat.value);
@@ -279,23 +279,23 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                     key={cat.value}
                     type="button"
                     onClick={() => handleInputChange('category', cat.value)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 flex items-center space-x-3 ${
+                    className={`p-3 rounded-lg border-2 transition-all duration-200 flex items-center space-x-2 ${
                       isSelected 
-                        ? `${cat.bgColor} ${cat.textColor} border-${cat.color.split('-')[1]}-300 shadow-md` 
+                        ? `${cat.bgColor} ${cat.textColor} border-${cat.color.split('-')[1]}-300 shadow-sm` 
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                   >
-                    <span className="text-xl">{cat.icon}</span>
-                    <span className="font-medium text-sm">{cat.label}</span>
+                    <span className="text-lg">{cat.icon}</span>
+                    <span className="font-medium text-xs">{cat.label}</span>
                     {isSelected && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className={`w-5 h-5 rounded-full ${cat.color} flex items-center justify-center`}
+                        className={`w-4 h-4 rounded-full ${cat.color} flex items-center justify-center`}
                       >
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                       </motion.div>
                     )}
                   </motion.button>
@@ -306,44 +306,44 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
               Description (Optional)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              rows={3}
-              className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 resize-none"
-              placeholder="Add any additional details about this bill..."
+              rows={2}
+              className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 resize-none"
+              placeholder="Add any additional details..."
             />
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-4 pt-6">
+          <div className="flex space-x-3 pt-4">
             <motion.button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
               Cancel
             </motion.button>
             <motion.button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   <span>Saving...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center space-x-2">
-                  {editingBill ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                  {editingBill ? <Edit className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   <span>{editingBill ? 'Update Bill' : 'Add Bill'}</span>
                 </div>
               )}
