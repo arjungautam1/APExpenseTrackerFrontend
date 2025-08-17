@@ -105,7 +105,7 @@ export function ModernSuccessPopup({
             animate={{ x: 0, opacity: 1, scale: 1 }}
             exit={{ x: 320, opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed top-4 right-4 z-[9999] w-96 max-w-[calc(100vw-2rem)]"
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] w-96 max-w-[calc(100vw-2rem)]"
           >
             <div className={`bg-white/98 backdrop-blur-2xl border border-white/30 rounded-xl shadow-2xl ${colors.glow} overflow-hidden`}>
               {/* Ultra-thin progress bar */}
@@ -196,7 +196,7 @@ export function ModernSuccessPopup({
             animate={{ scale: 1, x: 0, y: 0, opacity: 1 }}
             exit={{ scale: 0, x: 20, y: -20, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 500 }}
-            className="fixed top-20 right-4 z-[9999]"
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9999]"
           >
             <div className={`bg-white/98 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl ${colors.glow} px-5 py-3`}>
               <div className="flex items-center gap-3">
@@ -308,7 +308,7 @@ export function ModernSuccessPopup({
             animate={{ scale: 1, x: 0, y: 0, opacity: 1 }}
             exit={{ scale: 0, x: 20, y: -20, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 400 }}
-            className="fixed top-4 right-4 z-[9999]"
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999]"
           >
             <div className={`bg-white/98 backdrop-blur-xl border border-white/40 rounded-lg shadow-xl ${colors.glow} p-4 w-80`}>
               <div className="flex items-start gap-3">
