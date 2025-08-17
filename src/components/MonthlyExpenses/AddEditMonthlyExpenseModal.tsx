@@ -164,7 +164,15 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
       
       // Handle different types of errors
       if (error.response?.status === 401) {
-        toast.error('Authentication error. Please try logging in again.');
+        console.log('Authentication error - offering user options');
+        toast.error('Authentication failed. You will be redirected to login.');
+        
+        // Give user a moment to see the message, then redirect
+        setTimeout(() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+        }, 2000);
       } else if (error.message?.includes('authentication') || error.message?.includes('token')) {
         toast.error('Please log in again to continue');
       } else {
