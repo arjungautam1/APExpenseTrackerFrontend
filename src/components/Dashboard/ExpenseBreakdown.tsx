@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PieChart, BarChart3, TrendingUp, DollarSign, Calendar, Hash, Clock, AlertCircle } from 'lucide-react';
 import { transactionService } from '../../services/transaction';
 import { ExpenseBreakdownData, ExpenseBreakdownItem } from '../../services/transaction';
-import { monthlyExpenseService, MonthlyExpensesSummary } from '../../services/monthlyExpense';
+import { monthlyBillsService } from '../../services/monthlyBills';
 import { useCurrencyFormatter } from '../../utils/currency';
 import toast from 'react-hot-toast';
 
@@ -17,7 +17,7 @@ interface ExpenseBreakdownProps {
 
 export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: ExpenseBreakdownProps) {
   const [breakdown, setBreakdown] = useState<ExpenseBreakdownData | null>(null);
-  const [monthlyExpenses, setMonthlyExpenses] = useState<MonthlyExpensesSummary | null>(null);
+  const [monthlyBills, setMonthlyBills] = useState<{ totalMonthly: number; activeCount: number; categories: Record<string, number> } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<'breakdown' | 'trends' | 'categories-trends'>('breakdown');
@@ -58,19 +58,19 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     }
   };
 
-  const fetchMonthlyExpenses = async () => {
+  const fetchMonthlyBills = async () => {
     try {
-      const data = await monthlyExpenseService.getMonthlyExpensesSummary();
-      setMonthlyExpenses(data);
+      const data = monthlyBillsService.getSummary();
+      setMonthlyBills(data);
     } catch (error: any) {
-      console.error('Failed to fetch monthly expenses:', error);
+      console.error('Failed to fetch monthly bills:', error);
       // Don't show toast for this as it's secondary data
     }
   };
 
   useEffect(() => {
     fetchExpenseBreakdown();
-    fetchMonthlyExpenses();
+    fetchMonthlyBills();
   }, [dateRange?.startDate, dateRange?.endDate, limit]);
 
 
@@ -218,7 +218,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
               <span className="xs:hidden">Trend</span>
             </button>
           )}
-          {monthlyExpenses && (
+          {monthlyBills && (
             <button
               onClick={() => setSelectedView('categories-trends')}
               className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded-lg transition-colors touch-manipulation ${
@@ -385,7 +385,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
           /* Categories & Trends View */
           <div className="space-y-8">
             {/* Monthly Expenses Section */}
-            {monthlyExpenses && (
+            {monthlyBills && (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold text-gray-900">Monthly Expenses</h3>
@@ -403,7 +403,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                         <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                       </div>
                       <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                        {formatCurrency(monthlyExpenses.totalMonthly)}
+                        {formatCurrency(monthlyBills.totalMonthly)}
                       </p>
                       <p className="text-xs sm:text-sm text-gray-600">Total Monthly</p>
                     </div>
@@ -411,42 +411,44 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
                         <Hash className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                       </div>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyExpenses.count}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyBills.activeCount}</p>
                       <p className="text-xs sm:text-sm text-gray-600">Active Bills</p>
                     </div>
                     <div className="flex flex-col items-center">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
                         <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                       </div>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyExpenses.dueThisMonth}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">Due This Month</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{monthlyBills.activeCount}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Total Bills</p>
                     </div>
                     <div className="flex flex-col items-center">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
                         <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                       </div>
                       <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                        {formatCurrency(monthlyExpenses.totalMonthly / 12)}
+                        {formatCurrency(monthlyBills.totalMonthly / 12)}
                       </p>
                       <p className="text-xs sm:text-sm text-gray-600">Daily Average</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Monthly Expenses by Category */}
+                {/* Monthly Bills by Category */}
                 <div className="space-y-4">
-                  {Object.entries(monthlyExpenses.byCategory).map(([category, amount], index) => {
+                  {Object.entries(monthlyBills.categories).map(([category, amount], index) => {
                     if (amount === 0) return null;
                     
                     const categoryInfo = {
-                      home: { name: 'Home & Rent', icon: '🏠', color: 'bg-blue-500' },
-                      mobile: { name: 'Mobile & Phone', icon: '📱', color: 'bg-green-500' },
-                      internet: { name: 'Internet & TV', icon: '🌐', color: 'bg-purple-500' },
-                      gym: { name: 'Gym & Fitness', icon: '💪', color: 'bg-orange-500' },
+                      housing: { name: 'Housing', icon: '🏠', color: 'bg-blue-500' },
+                      utilities: { name: 'Utilities', icon: '⚡', color: 'bg-green-500' },
+                      transport: { name: 'Transport', icon: '🚗', color: 'bg-yellow-500' },
+                      food: { name: 'Food & Dining', icon: '🍕', color: 'bg-red-500' },
+                      entertainment: { name: 'Entertainment', icon: '🎬', color: 'bg-purple-500' },
+                      health: { name: 'Health & Fitness', icon: '💪', color: 'bg-pink-500' },
                       other: { name: 'Other Bills', icon: '📋', color: 'bg-gray-500' }
-                    }[category as keyof typeof monthlyExpenses.byCategory];
+                    }[category as keyof typeof monthlyBills.categories] || { name: 'Other', icon: '📋', color: 'bg-gray-500' };
 
-                    const percentage = (amount / monthlyExpenses.totalMonthly) * 100;
+                    const percentage = (amount / monthlyBills.totalMonthly) * 100;
 
                     return (
                       <div key={category} className="group p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
