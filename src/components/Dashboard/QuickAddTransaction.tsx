@@ -387,7 +387,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
         onClose={hideNotification}
         transaction={notification.transaction}
         autoHide={true}
-        duration={4000}
+        duration={1500}
       />
 
       {/* Quick Add Button */}

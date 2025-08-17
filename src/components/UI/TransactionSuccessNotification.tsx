@@ -26,7 +26,7 @@ export function TransactionSuccessNotification({
   onClose,
   transaction,
   autoHide = true,
-  duration = 3000
+  duration = 2000
 }: TransactionSuccessNotificationProps) {
   useEffect(() => {
     if (isVisible && autoHide) {
@@ -46,13 +46,13 @@ export function TransactionSuccessNotification({
   const getTypeIcon = () => {
     switch (transaction.type) {
       case 'income':
-        return <TrendingUp className="h-4 w-4" />;
+        return <TrendingUp className="h-5 w-5" />;
       case 'expense':
-        return <TrendingDown className="h-4 w-4" />;
+        return <TrendingDown className="h-5 w-5" />;
       case 'investment':
-        return <Building className="h-4 w-4" />;
+        return <Building className="h-5 w-5" />;
       default:
-        return <CheckCircle className="h-4 w-4" />;
+        return <CheckCircle className="h-5 w-5" />;
     }
   };
 
@@ -60,31 +60,35 @@ export function TransactionSuccessNotification({
     switch (transaction.type) {
       case 'income':
         return {
-          bg: 'bg-green-50',
-          border: 'border-green-200',
-          text: 'text-green-700',
-          icon: 'text-green-600'
+          bg: 'bg-emerald-500',
+          border: 'border-emerald-500',
+          text: 'text-emerald-600',
+          icon: 'text-white',
+          accent: 'bg-emerald-50'
         };
       case 'expense':
         return {
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          text: 'text-red-700',
-          icon: 'text-red-600'
+          bg: 'bg-rose-500',
+          border: 'border-rose-500',
+          text: 'text-rose-600',
+          icon: 'text-white',
+          accent: 'bg-rose-50'
         };
       case 'investment':
         return {
-          bg: 'bg-purple-50',
-          border: 'border-purple-200',
-          text: 'text-purple-700',
-          icon: 'text-purple-600'
+          bg: 'bg-violet-500',
+          border: 'border-violet-500',
+          text: 'text-violet-600',
+          icon: 'text-white',
+          accent: 'bg-violet-50'
         };
       default:
         return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
-          text: 'text-gray-700',
-          icon: 'text-gray-600'
+          bg: 'bg-slate-500',
+          border: 'border-slate-500',
+          text: 'text-slate-600',
+          icon: 'text-white',
+          accent: 'bg-slate-50'
         };
     }
   };
@@ -92,13 +96,13 @@ export function TransactionSuccessNotification({
   const getTypeLabel = () => {
     switch (transaction.type) {
       case 'income':
-        return 'Income added';
+        return 'Income Added';
       case 'expense':
-        return 'Expense recorded';
+        return 'Expense Recorded';
       case 'investment':
-        return 'Investment added';
+        return 'Investment Added';
       default:
-        return 'Transaction added';
+        return 'Transaction Added';
     }
   };
 
@@ -108,55 +112,76 @@ export function TransactionSuccessNotification({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, y: -50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          exit={{ opacity: 0, y: -50, scale: 0.9 }}
           transition={{ 
             type: "spring", 
-            damping: 20, 
-            stiffness: 300 
+            damping: 15, 
+            stiffness: 400,
+            duration: 0.3
           }}
-          className="fixed top-4 right-4 z-[9999] max-w-sm w-full"
+          className="fixed top-6 right-6 z-[9999] max-w-sm w-full"
         >
-          {/* Simple Success Toast */}
-          <div className={`${colors.bg} border ${colors.border} rounded-lg shadow-lg backdrop-blur-sm`}>
-            <div className="p-4">
-              {/* Header with Icon and Close */}
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <div className={`p-1.5 rounded-md ${colors.icon} bg-white/60`}>
+          {/* Modern Success Toast */}
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+            {/* Header with colored accent */}
+            <div className={`${colors.bg} p-4 relative`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-xl bg-white/20 backdrop-blur-sm">
                     {getTypeIcon()}
                   </div>
-                  <span className={`text-sm font-medium ${colors.text}`}>
-                    {getTypeLabel()}
-                  </span>
+                  <div>
+                    <h3 className="text-white font-semibold text-lg">
+                      {getTypeLabel()}
+                    </h3>
+                    <p className="text-white/80 text-sm">
+                      {transaction.description ? transaction.description : transaction.category?.name || 'Transaction'}
+                    </p>
+                  </div>
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-md hover:bg-white/60 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
                 >
-                  <X className="h-3 w-3 text-gray-500" />
+                  <X className="h-4 w-4 text-white" />
                 </button>
               </div>
+              
+              {/* Success checkmark */}
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  delay: 0.1,
+                  type: "spring", 
+                  damping: 15, 
+                  stiffness: 200 
+                }}
+                className="absolute -bottom-3 right-6 p-2 rounded-full bg-white shadow-lg"
+              >
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              </motion.div>
+            </div>
 
-              {/* Amount */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">
-                  {transaction.description ? transaction.description : transaction.category?.name || 'Transaction'}
-                </span>
-                <span className={`font-semibold ${colors.text}`}>
+            {/* Amount and details */}
+            <div className="p-4 pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-gray-600">Amount</span>
+                <span className={`text-2xl font-bold ${colors.text}`}>
                   {transaction.type === 'expense' ? '-' : '+'}{formatCurrency(transaction.amount)}
                 </span>
               </div>
 
-              {/* Progress Bar */}
+              {/* Progress bar */}
               <motion.div
                 initial={{ width: '100%' }}
                 animate={{ width: '0%' }}
                 transition={{ duration: duration / 1000, ease: 'linear' }}
-                className="h-0.5 bg-gray-200 rounded-full mt-3 overflow-hidden"
+                className="h-1 bg-gray-200 rounded-full overflow-hidden"
               >
-                <div className={`h-full ${colors.text.replace('text-', 'bg-')} rounded-full`}></div>
+                <div className={`h-full ${colors.bg} rounded-full`}></div>
               </motion.div>
             </div>
           </div>

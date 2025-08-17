@@ -296,7 +296,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
         onClose={hideNotification}
         transaction={notification.transaction}
         autoHide={true}
-        duration={4000}
+        duration={1500}
       />
 
       <button onClick={open} className="btn-secondary flex items-center space-x-2">
