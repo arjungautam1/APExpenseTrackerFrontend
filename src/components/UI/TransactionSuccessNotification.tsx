@@ -6,7 +6,7 @@ import { formatCurrency } from '../../utils/currency';
 interface TransactionSuccessNotificationProps {
   isVisible: boolean;
   onClose: () => void;
-  transaction: {
+  transaction?: {
     type: 'income' | 'expense' | 'investment';
     amount: number;
     description?: string;
@@ -37,6 +37,11 @@ export function TransactionSuccessNotification({
       return () => clearTimeout(timer);
     }
   }, [isVisible, autoHide, duration, onClose]);
+
+  // Don't render if no transaction data
+  if (!transaction) {
+    return null;
+  }
 
   const getTypeIcon = () => {
     switch (transaction.type) {
