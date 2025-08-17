@@ -23,6 +23,22 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
   const [selectedView, setSelectedView] = useState<'breakdown' | 'trends' | 'categories-trends'>('breakdown');
   const { formatCurrency } = useCurrencyFormatter();
 
+  // Helper to determine if we're showing current month data
+  const isCurrentMonth = dateRange && (() => {
+    const now = new Date();
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    return dateRange.startDate === currentMonthStart && dateRange.endDate === currentMonthEnd;
+  })();
+
+  const getTitle = () => {
+    if (isCurrentMonth) {
+      const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return `${monthName} Expense Breakdown`;
+    }
+    return dateRange ? 'Expense Breakdown' : 'All-Time Expense Breakdown';
+  };
+
   const fetchExpenseBreakdown = async () => {
     try {
       setLoading(true);
@@ -105,7 +121,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium">Expense Breakdown</h3>
+          <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
         <div className="card-body">
           <div className="animate-pulse space-y-4">
@@ -129,7 +145,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium">Expense Breakdown</h3>
+          <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
         <div className="card-body">
           <div className="text-center py-8">
@@ -154,7 +170,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
     return (
       <div className="card">
         <div className="card-header">
-          <h3 className="text-lg font-medium">Expense Breakdown</h3>
+          <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
         <div className="card-body">
           <div className="text-center py-12">
@@ -174,7 +190,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
   return (
     <div className="card">
       <div className="card-header flex items-center justify-between">
-        <h3 className="text-lg font-medium">Expense Breakdown</h3>
+        <h3 className="text-lg font-medium">{getTitle()}</h3>
         <div className="flex space-x-1">
           <button
             onClick={() => setSelectedView('breakdown')}

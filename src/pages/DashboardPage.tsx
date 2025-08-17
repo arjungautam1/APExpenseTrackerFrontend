@@ -25,6 +25,7 @@ export function DashboardPage() {
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState('');
+  const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
   const [activeTransactionTab, setActiveTransactionTab] = useState<'all' | 'income' | 'expense' | 'investment'>('all');
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const { formatCurrency } = useCurrencyFormatter();
@@ -41,9 +42,10 @@ export function DashboardPage() {
       const startDate = startOfMonth.toISOString().split('T')[0];
       const endDate = endOfMonth.toISOString().split('T')[0];
       
-      // Set current month name for UI
+      // Set current month name for UI and store date range
       const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       setCurrentMonth(monthName);
+      setDateRange({ startDate, endDate });
       
       // Fetch stats, investments, and recent transactions in parallel
       const [statsResponse, investmentStatsResponse, transactionsResponse] = await Promise.all([
@@ -330,7 +332,11 @@ export function DashboardPage() {
         </div>
 
         {/* Expense Breakdown */}
-        <ExpenseBreakdown limit={8} showTrends={true} />
+        <ExpenseBreakdown 
+          dateRange={dateRange || undefined}
+          limit={8} 
+          showTrends={true} 
+        />
       </div>
 
       {/* Bulk Upload Modal */}
