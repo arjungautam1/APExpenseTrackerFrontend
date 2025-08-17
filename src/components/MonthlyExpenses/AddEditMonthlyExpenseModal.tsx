@@ -1,12 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { X, Home, Phone, Wifi, Dumbbell, CreditCard } from 'lucide-react';
-import { MonthlyExpenseDto, CreateMonthlyExpenseDto, UpdateMonthlyExpenseDto, monthlyExpenseService } from '../../services/monthlyExpense';
+import { X, Home, Phone, Wifi, Dumbbell, CreditCard, Save, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+interface MonthlyExpense {
+  _id: string;
+  name: string;
+  category: 'home' | 'mobile' | 'internet' | 'gym' | 'other';
+  amount: number;
+  dueDate: number;
+  description: string;
+  isActive: boolean;
+  lastPaidDate?: string;
+  nextDueDate: string;
+  autoDeduct: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateMonthlyExpenseData {
+  name: string;
+  category: 'home' | 'mobile' | 'internet' | 'gym' | 'other';
+  amount: number;
+  dueDate: number;
+  description?: string;
+  autoDeduct?: boolean;
+  tags?: string[];
+}
 
 interface AddEditMonthlyExpenseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  expense?: MonthlyExpenseDto | null;
+  expense?: MonthlyExpense | null;
   onSuccess: () => void;
 }
 
@@ -18,13 +43,64 @@ const categories = [
   { key: 'other', name: 'Other', icon: CreditCard, color: 'bg-orange-100 text-orange-600' }
 ];
 
+// Simple API service for monthly expenses
+const monthlyExpenseAPI = {
+  async create(data: CreateMonthlyExpenseData): Promise<MonthlyExpense> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token');
+    }
+
+    const response = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/monthly-expenses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create monthly expense');
+    }
+
+    const result = await response.json();
+    return result.data;
+  },
+
+  async update(id: string, data: Partial<CreateMonthlyExpenseData>): Promise<MonthlyExpense> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token');
+    }
+
+    const response = await fetch(`https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/monthly-expenses/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update monthly expense');
+    }
+
+    const result = await response.json();
+    return result.data;
+  }
+};
+
 const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
   isOpen,
   onClose,
   expense,
   onSuccess
 }) => {
-  const [formData, setFormData] = useState<CreateMonthlyExpenseDto>({
+  const [formData, setFormData] = useState<CreateMonthlyExpenseData>({
     name: '',
     category: 'home',
     amount: 0,
@@ -92,71 +168,31 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     setLoading(true);
     try {
       console.log('Submitting monthly expense with data:', formData);
-      console.log('Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
       
       if (isEditing && expense) {
-        await monthlyExpenseService.updateMonthlyExpense(expense._id, formData);
+        await monthlyExpenseAPI.update(expense._id, formData);
         toast.success('Monthly expense updated successfully');
       } else {
-        await monthlyExpenseService.createMonthlyExpense(formData);
+        await monthlyExpenseAPI.create(formData);
         toast.success('Monthly expense added successfully');
       }
       onSuccess();
       onClose();
     } catch (error: any) {
       console.error('Error saving monthly expense:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       
-      // Handle 401 errors specifically for monthly expenses
-      if (error.response?.status === 401) {
-        console.log('401 error on monthly expense - attempting to refresh token and retry');
-        
-        try {
-          // Try to refresh the token manually
-          const refreshToken = localStorage.getItem('refreshToken');
-          if (refreshToken) {
-            console.log('Attempting manual token refresh...');
-            
-            // Import authService for token refresh
-            const { authService } = await import('../../services/auth');
-            const response = await authService.refreshToken();
-            const { token, refreshToken: newRefreshToken } = response.data.data;
-            
-            localStorage.setItem('token', token);
-            localStorage.setItem('refreshToken', newRefreshToken);
-            
-            console.log('Token refreshed successfully, retrying monthly expense creation...');
-            
-            // Retry the request with the new token
-            if (isEditing && expense) {
-              await monthlyExpenseService.updateMonthlyExpense(expense._id, formData);
-              toast.success('Monthly expense updated successfully');
-            } else {
-              await monthlyExpenseService.createMonthlyExpense(formData);
-              toast.success('Monthly expense added successfully');
-            }
-            onSuccess();
-            onClose();
-            return;
-          }
-        } catch (refreshError) {
-          console.error('Manual token refresh failed:', refreshError);
-        }
-        
-        // If refresh failed or no refresh token, show error
-        toast.error('Session expired. Please log in again.');
-        console.log('Redirecting to login due to authentication failure');
-        window.location.href = '/login';
+      if (error.message.includes('authentication') || error.message.includes('token')) {
+        toast.error('Please log in again to continue');
+        // Don't redirect automatically - let user decide
       } else {
-        toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
+        toast.error(error.message || (isEditing ? 'Failed to update expense' : 'Failed to add expense'));
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: keyof CreateMonthlyExpenseDto, value: any) => {
+  const handleInputChange = (field: keyof CreateMonthlyExpenseData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -175,17 +211,27 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {isEditing ? 'Edit Monthly Expense' : 'Add Monthly Expense'}
-          </h3>
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+              {isEditing ? <Save className="h-5 w-5 text-white" /> : <Plus className="h-5 w-5 text-white" />}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {isEditing ? 'Edit Monthly Expense' : 'Add Monthly Expense'}
+              </h3>
+              <p className="text-sm text-gray-500">
+                {isEditing ? 'Update your recurring expense' : 'Set up a new recurring expense'}
+              </p>
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -201,17 +247,17 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
               id="name"
               value={formData.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.name ? 'border-red-500' : 'border-gray-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
               }`}
               placeholder="e.g., Apartment Rent, Netflix Subscription"
             />
-            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-3">
               Category *
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -220,10 +266,10 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
                   key={category.key}
                   type="button"
                   onClick={() => handleInputChange('category', category.key)}
-                  className={`flex items-center p-3 rounded-lg border-2 transition-all ${
+                  className={`flex items-center p-4 rounded-lg border-2 transition-all ${
                     formData.category === category.key
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 shadow-md'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                   }`}
                 >
                   <div className={`p-2 rounded-full ${category.color} mr-3`}>
@@ -235,50 +281,48 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
             </div>
           </div>
 
-          {/* Amount */}
-          <div>
-            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-              Monthly Amount *
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2 text-gray-500">$</span>
-              <input
-                type="number"
-                id="amount"
-                value={formData.amount}
-                onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
-                step="0.01"
-                min="0"
-                className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.amount ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="0.00"
-              />
+          {/* Amount and Due Date */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+                Amount *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                <input
+                  type="number"
+                  id="amount"
+                  value={formData.amount}
+                  onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                  step="0.01"
+                  min="0"
+                  className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.amount ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  placeholder="0.00"
+                />
+              </div>
+              {errors.amount && <p className="mt-2 text-sm text-red-600">{errors.amount}</p>}
             </div>
-            {errors.amount && <p className="mt-1 text-sm text-red-600">{errors.amount}</p>}
-          </div>
 
-          {/* Due Date */}
-          <div>
-            <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
-              Due Date (Day of Month) *
-            </label>
-            <input
-              type="number"
-              id="dueDate"
-              value={formData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value) || 1)}
-              min="1"
-              max="31"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.dueDate ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="1-31"
-            />
-            {errors.dueDate && <p className="mt-1 text-sm text-red-600">{errors.dueDate}</p>}
-            <p className="mt-1 text-xs text-gray-500">
-              Enter the day of the month when this expense is due (e.g., 1 for 1st, 15 for 15th)
-            </p>
+            <div>
+              <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date *
+              </label>
+              <select
+                id="dueDate"
+                value={formData.dueDate}
+                onChange={(e) => handleInputChange('dueDate', parseInt(e.target.value))}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  errors.dueDate ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                  <option key={day} value={day}>{day}</option>
+                ))}
+              </select>
+              {errors.dueDate && <p className="mt-2 text-sm text-red-600">{errors.dueDate}</p>}
+            </div>
           </div>
 
           {/* Description */}
@@ -291,46 +335,56 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Additional details about this expense..."
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors hover:border-gray-400"
+              placeholder="Add any additional details about this expense..."
             />
           </div>
 
-          {/* Auto Deduct */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="autoDeduct"
-              checked={formData.autoDeduct}
-              onChange={(e) => handleInputChange('autoDeduct', e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            />
-            <label htmlFor="autoDeduct" className="ml-2 block text-sm text-gray-900">
-              Automatically deduct this expense monthly
-            </label>
+          {/* Auto Deduct Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900">Auto Deduct</h4>
+              <p className="text-sm text-gray-500">Automatically create transaction on due date</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleInputChange('autoDeduct', !formData.autoDeduct)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                formData.autoDeduct ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.autoDeduct ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
 
-          {/* Action Buttons */}
+          {/* Submit Buttons */}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {isEditing ? 'Updating...' : 'Adding...'}
-                </div>
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Saving...</span>
+                </>
               ) : (
-                isEditing ? 'Update Expense' : 'Add Expense'
+                <>
+                  {isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                  <span>{isEditing ? 'Update Expense' : 'Add Expense'}</span>
+                </>
               )}
             </button>
           </div>
