@@ -104,7 +104,7 @@ export function CategorySelect({
           }
         }}
         required={required}
-        className={`w-full rounded-xl border-2 border-gray-200 pl-12 pr-4 py-4 text-lg placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all ${showCreateOption ? 'hover:ring-2 hover:ring-blue-100' : ''}`}
+        className={`w-full rounded-lg border border-gray-200 pl-9 pr-3 py-2.5 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all ${showCreateOption ? 'hover:ring-2 hover:ring-blue-100' : ''}`}
         disabled={isLoading}
       >
         <option value="">{isLoading ? 'Loading...' : placeholder}</option>
