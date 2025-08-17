@@ -24,8 +24,10 @@ export function SuccessCelebration({
 }: SuccessCelebrationProps) {
   const [showConfetti, setShowConfetti] = useState(false);
 
+  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isVisible) {
+      document.body.style.overflow = 'hidden';
       setShowConfetti(true);
       
       if (autoHide) {
@@ -33,11 +35,19 @@ export function SuccessCelebration({
           onComplete?.();
         }, duration);
         
-        return () => clearTimeout(timer);
+        return () => {
+          clearTimeout(timer);
+          document.body.style.overflow = 'unset';
+        };
       }
     } else {
       setShowConfetti(false);
+      document.body.style.overflow = 'unset';
     }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isVisible, autoHide, duration, onComplete]);
 
   const getIcon = () => {
@@ -89,7 +99,7 @@ export function SuccessCelebration({
         <>
           {/* Confetti */}
           {showConfetti && (
-            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[9998] pointer-events-none">
               <ConfettiExplosion
                 force={0.8}
                 duration={3000}
@@ -105,7 +115,7 @@ export function SuccessCelebration({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={onComplete}
           >
             <motion.div
@@ -118,7 +128,7 @@ export function SuccessCelebration({
                 stiffness: 300,
                 delay: 0.5 
               }}
-              className="bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-md w-full text-center shadow-2xl border border-white/20"
+              className="bg-white/95 backdrop-blur-md rounded-2xl p-8 max-w-md w-full text-center shadow-2xl border border-white/20 relative"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Animated Icon */}
@@ -164,7 +174,7 @@ export function SuccessCelebration({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.6 }}
                 onClick={onComplete}
-                className="btn-primary px-6 py-2"
+                className="btn-primary px-6 py-2 hover:scale-105 transition-transform"
               >
                 Awesome!
               </motion.button>

@@ -40,7 +40,7 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
-        className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-white/95 backdrop-blur-md border border-primary-200 rounded-xl shadow-lg p-4 mx-4 max-w-md"
+        className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[9997] bg-white/95 backdrop-blur-md border border-primary-200 rounded-xl shadow-lg p-4 mx-4 max-w-md"
       >
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3">
@@ -57,7 +57,7 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
               <div className="flex space-x-2">
                 <button
                   onClick={startTour}
-                  className="btn-primary text-sm px-4 py-2 flex items-center"
+                  className="btn-primary text-sm px-4 py-2 flex items-center hover:scale-105 transition-transform"
                 >
                   <Play className="h-4 w-4 mr-1" />
                   Start Tour
@@ -67,7 +67,7 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
                     localStorage.setItem('dashboard-tour-seen', 'true');
                     setHasSeenTour(true);
                   }}
-                  className="btn-secondary text-sm px-4 py-2"
+                  className="btn-secondary text-sm px-4 py-2 hover:scale-105 transition-transform"
                 >
                   Skip
                 </button>
@@ -79,7 +79,7 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
               localStorage.setItem('dashboard-tour-seen', 'true');
               setHasSeenTour(true);
             }}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-1 text-gray-400 hover:text-gray-600 transition-colors hover:scale-110"
           >
             <X className="h-4 w-4" />
           </button>
@@ -96,14 +96,14 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       onClick={startTour}
-      className="fixed bottom-6 right-6 z-40 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
+      className="fixed bottom-6 right-6 z-[9996] w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
       title="Take a tour"
     >
       <HelpCircle className="h-6 w-6 text-white" />
       <motion.div
         className="absolute inset-0 rounded-full bg-primary-400/30"
         animate={{ scale: [1, 1.5, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       />
     </motion.button>
   );

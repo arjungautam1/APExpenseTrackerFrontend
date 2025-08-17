@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Info } from 'lucide-react';
 
@@ -20,6 +20,36 @@ export function Tooltip({
   className = ''
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState(position);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Auto-adjust position based on viewport
+  useEffect(() => {
+    if (isVisible && containerRef.current && tooltipRef.current) {
+      const container = containerRef.current.getBoundingClientRect();
+      const tooltip = tooltipRef.current.getBoundingClientRect();
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
+      let newPosition = position;
+
+      // Check if tooltip would go off screen
+      if (position === 'top' && container.top - tooltip.height < 10) {
+        newPosition = 'bottom';
+      } else if (position === 'bottom' && container.bottom + tooltip.height > viewport.height - 10) {
+        newPosition = 'top';
+      } else if (position === 'left' && container.left - tooltip.width < 10) {
+        newPosition = 'right';
+      } else if (position === 'right' && container.right + tooltip.width > viewport.width - 10) {
+        newPosition = 'left';
+      }
+
+      setTooltipPosition(newPosition);
+    }
+  }, [isVisible, position]);
 
   const handleMouseEnter = () => {
     if (trigger === 'hover') {
@@ -40,7 +70,7 @@ export function Tooltip({
   };
 
   const getPositionClasses = () => {
-    switch (position) {
+    switch (tooltipPosition) {
       case 'top':
         return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
       case 'bottom':
@@ -55,7 +85,7 @@ export function Tooltip({
   };
 
   const getArrowClasses = () => {
-    switch (position) {
+    switch (tooltipPosition) {
       case 'top':
         return 'top-full left-1/2 transform -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-800';
       case 'bottom':
@@ -73,6 +103,7 @@ export function Tooltip({
 
   return (
     <div
+      ref={containerRef}
       className={`relative inline-block ${className}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -88,13 +119,15 @@ export function Tooltip({
       <AnimatePresence>
         {isVisible && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.2 }}
-            className={`absolute z-50 ${getPositionClasses()}`}
+            ref={tooltipRef}
+            initial={{ opacity: 0, scale: 0.9, y: tooltipPosition === 'top' ? 10 : tooltipPosition === 'bottom' ? -10 : 0 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: tooltipPosition === 'top' ? 10 : tooltipPosition === 'bottom' ? -10 : 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className={`absolute z-[9999] ${getPositionClasses()}`}
+            style={{ pointerEvents: 'none' }}
           >
-            <div className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 max-w-xs shadow-lg backdrop-blur-sm">
+            <div className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 max-w-xs shadow-xl backdrop-blur-sm border border-gray-700/50">
               {content}
               <div className={`absolute w-0 h-0 border-4 ${getArrowClasses()}`} />
             </div>
@@ -137,12 +170,12 @@ export function PulsingHotspot({
         <motion.div
           className="absolute inset-0 rounded-full bg-primary-400/30 pointer-events-none"
           animate={{ scale: [1, 1.5, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute inset-0 rounded-full bg-primary-400/20 pointer-events-none"
           animate={{ scale: [1, 1.8, 1] }}
-          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+          transition={{ duration: 2, repeat: Infinity, delay: 0.5, ease: "easeInOut" }}
         />
       </div>
     </Tooltip>
