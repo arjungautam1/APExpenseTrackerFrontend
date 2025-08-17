@@ -58,7 +58,7 @@ export function LoginForm() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="Enter your email"
                 />
               </div>

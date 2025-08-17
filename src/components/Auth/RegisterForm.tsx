@@ -69,7 +69,7 @@ export function RegisterForm() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -87,7 +87,7 @@ export function RegisterForm() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="Enter your email"
                 />
               </div>

@@ -64,7 +64,7 @@ export function AddLoanModal({ onClose, onSuccess }: AddLoanModalProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">Principal Amount</label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input type="number" name="principalAmount" value={form.principalAmount} onChange={handleChange} required className="input pl-10" min="0" step="0.01" placeholder="10000" />
+                <input type="number" name="principalAmount" value={form.principalAmount} onChange={handleChange} required className="input-with-icon" min="0" step="0.01" placeholder="10000" />
               </div>
             </div>
             <div>
@@ -76,14 +76,14 @@ export function AddLoanModal({ onClose, onSuccess }: AddLoanModalProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required className="input pl-10" />
+                  <input type="date" name="startDate" value={form.startDate} onChange={handleChange} required className="input-with-icon" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required className="input pl-10" />
+                  <input type="date" name="endDate" value={form.endDate} onChange={handleChange} required className="input-with-icon" />
                 </div>
               </div>
             </div>

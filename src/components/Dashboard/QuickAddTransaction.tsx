@@ -489,7 +489,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                       required
                       step="0.01"
                       min="0"
-                      className="input pl-10"
+                      className="input-with-icon"
                       placeholder="0.00"
                     />
                   </div>
@@ -535,7 +535,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                         value={formData.investmentType}
                         onChange={handleChange}
                         required
-                        className="input pl-10"
+                        className="input-with-icon"
                       >
                         <option value="stocks">Stocks</option>
                         <option value="mutual_funds">Mutual Funds</option>
@@ -560,7 +560,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                       value={formData.date}
                       onChange={handleChange}
                       required
-                      className="input pl-10"
+                      className="input-with-icon"
                     />
                   </div>
                 </div>
