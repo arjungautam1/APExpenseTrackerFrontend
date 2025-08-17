@@ -116,7 +116,7 @@ export default function HomePage() {
                 to="/register" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-200"
               >
-                Get Started
+                Sign Up
               </Link>
             </div>
 
@@ -148,7 +148,7 @@ export default function HomePage() {
                   to="/register" 
                   className="block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg text-center"
                 >
-                  Get Started
+                  Sign Up
                 </Link>
               </div>
             </motion.div>
@@ -185,7 +185,7 @@ export default function HomePage() {
                 to="/register"
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all duration-200 flex items-center space-x-2 group"
               >
-                <span>Start Free Trial</span>
+                <span>Sign Up</span>
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors">
@@ -362,7 +362,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Ready to Transform Your Finances?
+              Ready to Get Started?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
               Join thousands of users who are already saving time and money with AI-powered expense tracking
@@ -371,7 +371,7 @@ export default function HomePage() {
               to="/register"
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all duration-200 inline-flex items-center space-x-2"
             >
-              <span>Start Your Free Trial</span>
+              <span>Sign Up Now</span>
               <ChevronRight className="h-5 w-5" />
             </Link>
           </motion.div>
