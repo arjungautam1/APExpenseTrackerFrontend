@@ -88,11 +88,23 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     
     // Check authentication status
     const token = localStorage.getItem('token');
+    const isAuthenticated = authService.isAuthenticated();
+    
     console.log('MonthlyExpenseModal - Authentication check:', {
       hasToken: !!token,
       tokenValue: token ? token.substring(0, 20) + '...' : 'none',
-      isAuthenticated: authService.isAuthenticated()
+      isAuthenticated: isAuthenticated
     });
+    
+    // If not authenticated, redirect to login
+    if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
+      toast.error('Please log in to continue');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login';
+      return;
+    }
     
     if (!validateForm()) {
       return;
@@ -109,9 +121,18 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
       }
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving monthly expense:', error);
-      toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
+      
+      // Handle authentication errors specifically
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please log in again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
+      } else {
+        toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
+      }
     } finally {
       setLoading(false);
     }

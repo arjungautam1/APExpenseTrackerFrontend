@@ -70,7 +70,11 @@ class ApiService {
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return this.api(originalRequest);
             } else {
-              console.log('No refresh token available');
+              console.log('No refresh token available, redirecting to login');
+              // No refresh token, redirect to login
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+              window.location.href = '/login';
             }
           } catch (refreshError) {
             console.log('Token refresh failed:', refreshError);
@@ -79,6 +83,12 @@ class ApiService {
             localStorage.removeItem('refreshToken');
             window.location.href = '/login';
           }
+        } else if (error.response?.status === 401 && originalRequest._retry) {
+          // Already tried to refresh, redirect to login
+          console.log('Token refresh already attempted, redirecting to login');
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
         }
 
         return Promise.reject(error);

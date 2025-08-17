@@ -171,7 +171,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+    
+    // Set up periodic authentication check every 5 minutes
+    const authCheckInterval = setInterval(() => {
+      if (state.isAuthenticated) {
+        checkAuth();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => {
+      clearInterval(authCheckInterval);
+    };
+  }, [state.isAuthenticated]);
 
   const value: AuthContextType = {
     ...state,
