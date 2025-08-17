@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, DollarSign, Calendar, BarChart3 } from 'lucide-react';
 import { MonthlyBill, monthlyBillsService } from '../services/monthlyBills';
 import AddBillModal from '../components/MonthlyBills/AddBillModal';
+import DeleteConfirmModal from '../components/UI/DeleteConfirmModal';
 import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
 
@@ -20,6 +21,8 @@ export default function MonthlyExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingBill, setEditingBill] = useState<MonthlyBill | null>(null);
+  const [deletingBill, setDeletingBill] = useState<MonthlyBill | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { formatCurrency } = useCurrencyFormatter();
 
   useEffect(() => {
@@ -39,18 +42,24 @@ export default function MonthlyExpensesPage() {
     }
   };
 
-  const handleDeleteBill = async (bill: MonthlyBill) => {
-    if (!confirm(`Are you sure you want to delete "${bill.name}"?`)) {
-      return;
-    }
+  const handleDeleteBill = (bill: MonthlyBill) => {
+    setDeletingBill(bill);
+  };
 
+  const confirmDeleteBill = async () => {
+    if (!deletingBill) return;
+
+    setDeleteLoading(true);
     try {
-      await monthlyBillsService.deleteBill(bill._id);
+      await monthlyBillsService.deleteBill(deletingBill._id);
       toast.success('Bill deleted successfully');
+      setDeletingBill(null);
       loadBills();
     } catch (error) {
       console.error('Error deleting bill:', error);
       toast.error('Failed to delete bill');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -216,6 +225,17 @@ export default function MonthlyExpensesPage() {
         }}
         onSuccess={loadBills}
         editingBill={editingBill}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deletingBill}
+        onClose={() => setDeletingBill(null)}
+        onConfirm={confirmDeleteBill}
+        title="Delete Monthly Bill"
+        itemName={deletingBill?.name || ''}
+        description={`This will permanently remove "${deletingBill?.name}" (${deletingBill ? formatCurrency(deletingBill.amount) : ''}/month) from your monthly bills. You won't receive any reminders for this bill anymore.`}
+        isLoading={deleteLoading}
       />
     </div>
   );
