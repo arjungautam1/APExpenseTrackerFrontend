@@ -100,8 +100,8 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
 
   return (
     <>
-      {/* Mobile – Modern Cards */}
-      <div className="md:hidden space-y-3">
+      {/* Mobile – Compact Modern Cards */}
+      <div className="md:hidden space-y-2">
         {items.map((t, index) => {
           const primaryText = (t.description && t.description.trim().length > 0)
             ? formatTransactionDescription(t.description)
@@ -112,107 +112,81 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
           return (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`relative overflow-hidden rounded-xl border ${colors.border} ${colors.bg} ${colors.hover} transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]`}
+              transition={{ delay: index * 0.03 }}
+              className={`relative overflow-hidden rounded-lg border ${colors.border} ${colors.bg} ${colors.hover} transition-all duration-200 hover:shadow-md hover:scale-[1.01] active:scale-[0.99]`}
             >
-              {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-current rounded-full -translate-y-16 translate-x-16"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-current rounded-full translate-y-12 -translate-x-12"></div>
-              </div>
-
-              <div className="relative p-4">
-                <div className="flex items-start justify-between gap-4">
+              <div className="relative p-3">
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    {/* Transaction Icon and Type */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2 rounded-lg ${colors.bg} border ${colors.border}`}>
-                        <div className={colors.icon}>
+                    {/* Main row - Icon, Title, Amount */}
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className={`p-1.5 rounded-md ${colors.bg} border ${colors.border}`}>
+                        <div className={`${colors.icon} w-3.5 h-3.5`}>
                           {getTypeIcon(t.type)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-base leading-tight truncate">
+                        <p className="font-medium text-gray-900 text-sm leading-tight truncate">
                           {primaryText}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${colors.text} bg-white/60 backdrop-blur-sm border ${colors.border}`}>
-                            {t.type.charAt(0).toUpperCase() + t.type.slice(1)}
-                          </span>
-                          <span className="text-gray-500 text-xs flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {formatDate(t.date)}
-                          </span>
-                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className={`text-sm font-bold ${colors.amount}`}>
+                          {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : t.type === 'transfer' ? '⇄' : '-'}{formatCurrency(t.amount)}
+                        </p>
                       </div>
                     </div>
 
-                    {/* Category and Tags */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      {showCategoryChip && (
-                        <span className="inline-flex items-center rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 px-3 py-1.5 text-sm text-gray-700">
-                          <span
-                            className="mr-2 h-2 w-2 rounded-full"
-                            style={{ backgroundColor: t.category?.color || '#9CA3AF' }}
-                          />
-                          <span className="truncate max-w-24">{t.category?.name || 'Unknown'}</span>
+                    {/* Secondary row - Category, Date, Type */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {showCategoryChip && (
+                          <span className="inline-flex items-center rounded-full bg-white/60 backdrop-blur-sm border border-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                            <span
+                              className="mr-1 h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: t.category?.color || '#9CA3AF' }}
+                            />
+                            <span className="truncate max-w-16">{t.category?.name || 'Unknown'}</span>
+                          </span>
+                        )}
+                        <span className="text-gray-500 text-xs">
+                          {formatDate(t.date)}
                         </span>
-                      )}
-                      {t.tags && t.tags.length > 0 && (
-                        <div className="flex gap-1">
-                          {t.tags.slice(0, 2).map((tag, tagIndex) => (
-                            <span key={tagIndex} className="inline-flex items-center rounded-full bg-white/60 backdrop-blur-sm border border-gray-200 px-2 py-1 text-xs text-gray-600">
-                              #{tag}
-                            </span>
-                          ))}
-                          {t.tags.length > 2 && (
-                            <span className="inline-flex items-center rounded-full bg-white/60 backdrop-blur-sm border border-gray-200 px-2 py-1 text-xs text-gray-500">
-                              +{t.tags.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Amount and Actions */}
-                  <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                    <div className="text-right">
-                      <p className={`text-lg font-bold ${colors.amount} transition-all duration-300`}>
-                        {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : t.type === 'transfer' ? '⇄' : '-'}{formatCurrency(t.amount)}
-                      </p>
-                      {t.location && (
-                        <p className="text-xs text-gray-500 mt-1 truncate max-w-24">
-                          📍 {t.location}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      {onEdit && (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="rounded-lg bg-white/80 backdrop-blur-sm border border-gray-200 p-2 text-gray-500 hover:text-gray-700 hover:bg-white transition-all duration-200 shadow-sm"
-                          aria-label="Edit"
-                          onClick={() => onEdit(t)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </motion.button>
-                      )}
-                      {onDelete && (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="rounded-lg bg-white/80 backdrop-blur-sm border border-red-200 p-2 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm"
-                          aria-label="Delete"
-                          onClick={() => onDelete(t)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </motion.button>
-                      )}
+                      </div>
+                      
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${colors.text} bg-white/60 backdrop-blur-sm border ${colors.border}`}>
+                          {t.type}
+                        </span>
+                        {(onEdit || onDelete) && (
+                          <div className="flex items-center gap-0.5 ml-1">
+                            {onEdit && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="rounded-md bg-white/60 backdrop-blur-sm border border-gray-200 p-1 text-gray-500 hover:text-gray-700 hover:bg-white transition-all duration-200"
+                                aria-label="Edit"
+                                onClick={() => onEdit(t)}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </motion.button>
+                            )}
+                            {onDelete && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="rounded-md bg-white/60 backdrop-blur-sm border border-red-200 p-1 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                                aria-label="Delete"
+                                onClick={() => onDelete(t)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </motion.button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -222,29 +196,26 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
         })}
       </div>
 
-      {/* Desktop – Modern Table */}
+      {/* Desktop – Compact Modern Table */}
       <div className="hidden md:block">
-        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Transaction
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Category
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -259,75 +230,69 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
                   return (
                     <motion.tr
                       key={t.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.03 }}
                       className="hover:bg-gray-50/50 transition-all duration-200 group"
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${colors.bg} border ${colors.border}`}>
-                            <div className={colors.icon}>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`p-1.5 rounded-md ${colors.bg} border ${colors.border}`}>
+                            <div className={`${colors.icon} w-3.5 h-3.5`}>
                               {getTypeIcon(t.type)}
                             </div>
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-gray-900 truncate">
+                            <p className="font-medium text-gray-900 text-sm truncate">
                               {primaryText}
                             </p>
                             {t.location && (
-                              <p className="text-sm text-gray-500 truncate">
+                              <p className="text-xs text-gray-500 truncate">
                                 📍 {t.location}
                               </p>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-700">
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">
                           <span
-                            className="mr-2 h-2.5 w-2.5 rounded-full"
+                            className="mr-1.5 h-2 w-2 rounded-full"
                             style={{ backgroundColor: t.category?.color || '#9CA3AF' }}
                           />
-                          <span className="truncate">{t.category?.name || 'Unknown Category'}</span>
+                          <span className="truncate max-w-24">{t.category?.name || 'Unknown'}</span>
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-4 py-3 text-xs text-gray-600">
                         {formatDate(t.date)}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium ${colors.text} ${colors.bg} border ${colors.border}`}>
-                          {getTypeIcon(t.type)}
-                          <span className="ml-1.5">{t.type.charAt(0).toUpperCase() + t.type.slice(1)}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className={`text-lg font-bold ${colors.amount} transition-all duration-300`}>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`text-sm font-bold ${colors.amount}`}>
                           {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : t.type === 'transfer' ? '⇄' : '-'}{formatCurrency(t.amount)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                           {onEdit && (
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              className="rounded-lg bg-white border border-gray-200 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200 shadow-sm"
+                              className="rounded-md bg-white border border-gray-200 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-all duration-200"
                               aria-label="Edit"
                               onClick={() => onEdit(t)}
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-3.5 w-3.5" />
                             </motion.button>
                           )}
                           {onDelete && (
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              className="rounded-lg bg-white border border-red-200 p-2 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 shadow-sm"
+                              className="rounded-md bg-white border border-red-200 p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
                               aria-label="Delete"
                               onClick={() => onDelete(t)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </motion.button>
                           )}
                         </div>

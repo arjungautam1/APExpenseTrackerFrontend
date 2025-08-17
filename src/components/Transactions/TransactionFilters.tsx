@@ -155,7 +155,7 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
   };
 
   // Helper function to check if current date range matches a specific period
-  const isCurrentPeriod = (period: 'thisMonth' | 'lastMonth' | 'thisYear') => {
+  const isCurrentPeriod = (period: 'thisMonth' | 'lastMonth' | 'thisYear' | 'last7Days') => {
     if (!value.startDate || !value.endDate) return false;
     
     const startDate = new Date(value.startDate);
@@ -178,17 +178,8 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         const lastDayOfMonth = new Date(startYear, startMonth + 1, 0);
         
         result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
-                normalizedEnd.getTime() === lastDayOfMonth.getTime();
-        
-        console.log(`isCurrentPeriod(${period}):`, {
-          normalizedStart: normalizedStart.toISOString(),
-          normalizedEnd: normalizedEnd.toISOString(),
-          firstDayOfMonth: firstDayOfMonth.toISOString(),
-          lastDayOfMonth: lastDayOfMonth.toISOString(),
-          startMonth,
-          startYear,
-          result
-        });
+                normalizedEnd.getTime() === lastDayOfMonth.getTime() &&
+                startMonth === today.getMonth() && startYear === today.getFullYear();
         break;
       }
       case 'lastMonth': {
@@ -207,18 +198,6 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
                 normalizedEnd.getTime() === lastDayOfMonth.getTime() &&
                 startMonth === expectedMonth && startYear === expectedYear;
-        
-        console.log(`isCurrentPeriod(${period}):`, {
-          normalizedStart: normalizedStart.toISOString(),
-          normalizedEnd: normalizedEnd.toISOString(),
-          firstDayOfMonth: firstDayOfMonth.toISOString(),
-          lastDayOfMonth: lastDayOfMonth.toISOString(),
-          startMonth,
-          startYear,
-          expectedMonth,
-          expectedYear,
-          result
-        });
         break;
       }
       case 'thisYear': {
@@ -230,16 +209,16 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         result = normalizedStart.getTime() === firstDayOfYear.getTime() && 
                 normalizedEnd.getTime() === lastDayOfYear.getTime() &&
                 startYear === today.getFullYear();
+        break;
+      }
+      case 'last7Days': {
+        // Check if the date range represents the last 7 days
+        const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const normalizedSevenDaysAgo = normalizeDate(sevenDaysAgo);
+        const normalizedToday = normalizeDate(today);
         
-        console.log(`isCurrentPeriod(${period}):`, {
-          normalizedStart: normalizedStart.toISOString(),
-          normalizedEnd: normalizedEnd.toISOString(),
-          firstDayOfYear: firstDayOfYear.toISOString(),
-          lastDayOfYear: lastDayOfYear.toISOString(),
-          startYear,
-          currentYear: today.getFullYear(),
-          result
-        });
+        result = normalizedStart.getTime() === normalizedSevenDaysAgo.getTime() && 
+                normalizedEnd.getTime() === normalizedToday.getTime();
         break;
       }
       default:
@@ -279,151 +258,161 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         )}
       </div>
 
-      <div className="p-4 space-y-6">
-        {/* Transaction Types */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">Transaction Type</label>
-          <div className="flex flex-wrap gap-2">
-            {(['income', 'expense', 'investment', 'transfer'] as const).map((type) => (
+      <div className="p-3 space-y-4">
+        {/* Compact Filter Row - Transaction Type and Time Period */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Transaction Types */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">Transaction Type</label>
+            <div className="flex bg-gray-50/80 backdrop-blur-sm rounded-lg p-0.5 border border-gray-200/50">
+              {(['income', 'expense', 'investment', 'transfer'] as const).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => onChange({ ...value, type: value.type === type ? undefined : type, categoryId: undefined })}
+                  className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                    value.type === type 
+                      ? (() => {
+                          switch (type) {
+                            case 'income': return 'bg-green-600 text-white shadow-sm';
+                            case 'expense': return 'bg-red-600 text-white shadow-sm';
+                            case 'investment': return 'bg-purple-600 text-white shadow-sm';
+                            case 'transfer': return 'bg-blue-600 text-white shadow-sm';
+                            default: return 'bg-gray-600 text-white shadow-sm';
+                          }
+                        })()
+                      : (() => {
+                          switch (type) {
+                            case 'income': return 'text-green-700 hover:text-green-800 hover:bg-green-50';
+                            case 'expense': return 'text-red-700 hover:text-red-800 hover:bg-red-50';
+                            case 'investment': return 'text-purple-700 hover:text-purple-800 hover:bg-purple-50';
+                            case 'transfer': return 'text-blue-700 hover:text-blue-800 hover:bg-blue-50';
+                            default: return 'text-gray-600 hover:text-gray-800 hover:bg-white/50';
+                          }
+                        })()
+                  }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Period Quick Filters */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-2">Time Period</label>
+            <div className="flex bg-gray-50/80 backdrop-blur-sm rounded-lg p-0.5 border border-gray-200/50">
               <button
-                key={type}
-                onClick={() => onChange({ ...value, type: value.type === type ? undefined : type, categoryId: undefined })}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
-                  value.type === type 
-                    ? getTypeColor(type)
-                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+                onClick={() => {
+                  const today = new Date();
+                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                  
+                  const newFilters = {
+                    ...value,
+                    startDate: firstDay.toISOString().split('T')[0],
+                    endDate: lastDay.toISOString().split('T')[0],
+                    month: undefined,
+                    year: undefined
+                  };
+                  
+                  console.log('This Month clicked - setting filters:', newFilters);
+                  onChange(newFilters);
+                }}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                  isCurrentPeriod('thisMonth')
+                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
                 }`}
               >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                This Month
               </button>
-            ))}
+              
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                  const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                  
+                  const newFilters = {
+                    ...value,
+                    startDate: firstDayLastMonth.toISOString().split('T')[0],
+                    endDate: lastDayLastMonth.toISOString().split('T')[0],
+                    month: undefined,
+                    year: undefined
+                  };
+                  
+                  console.log('Last Month clicked - setting filters:', newFilters);
+                  onChange(newFilters);
+                }}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                  isCurrentPeriod('lastMonth')
+                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
+                }`}
+              >
+                Last Month
+              </button>
+              
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const firstDayYear = new Date(today.getFullYear(), 0, 1);
+                  const lastDayYear = new Date(today.getFullYear(), 11, 31);
+                  
+                  onChange({
+                    ...value,
+                    startDate: firstDayYear.toISOString().split('T')[0],
+                    endDate: lastDayYear.toISOString().split('T')[0],
+                    month: undefined,
+                    year: undefined
+                  });
+                }}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                  isCurrentPeriod('thisYear')
+                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
+                }`}
+              >
+                This Year
+              </button>
+              
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  
+                  onChange({
+                    ...value,
+                    startDate: sevenDaysAgo.toISOString().split('T')[0],
+                    endDate: today.toISOString().split('T')[0],
+                    month: undefined,
+                    year: undefined
+                  });
+                }}
+                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
+                  isCurrentPeriod('last7Days')
+                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
+                }`}
+              >
+                Last 7 Days
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Date Filters */}
+        {/* Advanced Date Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">Time Period</label>
-          
-          {/* Quick Filters */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-            <button
-              onClick={() => {
-                const today = new Date();
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                
-                const newFilters = {
-                  ...value,
-                  startDate: firstDay.toISOString().split('T')[0],
-                  endDate: lastDay.toISOString().split('T')[0],
-                  month: undefined,
-                  year: undefined
-                };
-                
-                console.log('This Month clicked - setting filters:', newFilters);
-                onChange(newFilters);
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
-                isCurrentPeriod('thisMonth')
-                  ? 'bg-blue-100 text-blue-700 border-blue-200'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              This Month
-            </button>
-            
-            <button
-              onClick={() => {
-                const today = new Date();
-                const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                
-                const newFilters = {
-                  ...value,
-                  startDate: firstDayLastMonth.toISOString().split('T')[0],
-                  endDate: lastDayLastMonth.toISOString().split('T')[0],
-                  month: undefined,
-                  year: undefined
-                };
-                
-                console.log('Last Month clicked - setting filters:', newFilters);
-                onChange(newFilters);
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
-                isCurrentPeriod('lastMonth')
-                  ? 'bg-blue-100 text-blue-700 border-blue-200'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              Last Month
-            </button>
-            
-            <button
-              onClick={() => {
-                const today = new Date();
-                const firstDayYear = new Date(today.getFullYear(), 0, 1);
-                const lastDayYear = new Date(today.getFullYear(), 11, 31);
-                
-                onChange({
-                  ...value,
-                  startDate: firstDayYear.toISOString().split('T')[0],
-                  endDate: lastDayYear.toISOString().split('T')[0],
-                  month: undefined,
-                  year: undefined
-                });
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
-                isCurrentPeriod('thisYear')
-                  ? 'bg-blue-100 text-blue-700 border-blue-200'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              This Year
-            </button>
-            
-            <button
-              onClick={() => {
-                const today = new Date();
-                const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                
-                onChange({
-                  ...value,
-                  startDate: sevenDaysAgo.toISOString().split('T')[0],
-                  endDate: today.toISOString().split('T')[0],
-                  month: undefined,
-                  year: undefined
-                });
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all whitespace-nowrap ${
-                (() => {
-                  if (!value.startDate || !value.endDate) return false;
-                  const today = new Date();
-                  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                  const normalizedStart = normalizeDate(new Date(value.startDate));
-                  const normalizedEnd = normalizeDate(new Date(value.endDate));
-                  const normalizedSevenDaysAgo = normalizeDate(sevenDaysAgo);
-                  const normalizedToday = normalizeDate(today);
-                  return normalizedStart.getTime() === normalizedSevenDaysAgo.getTime() && 
-                         normalizedEnd.getTime() === normalizedToday.getTime();
-                })()
-                  ? 'bg-blue-100 text-blue-700 border-blue-200'
-                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-              }`}
-            >
-              Last 7 Days
-            </button>
-          </div>
-          
+          <label className="block text-xs font-medium text-gray-600 mb-2">Advanced Date Selection</label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Month */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400 z-0 pointer-events-none" />
               <select
                 name="month"
                 value={value.month || ''}
                 onChange={handleInput}
-                className="w-full pl-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
+                className="w-full pl-7 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
               >
                 <option value="">Select Month</option>
                 {getMonthOptions().map(({ value, label }) => (
@@ -434,12 +423,12 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
             
             {/* Year */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400 z-0 pointer-events-none" />
               <select
                 name="year"
                 value={value.year || ''}
                 onChange={handleInput}
-                className="w-full pl-9 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
+                className="w-full pl-7 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer"
               >
                 <option value="">Select Year</option>
                 {getYearOptions().map(({ value, label }) => (
@@ -450,28 +439,28 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
 
             {/* Start Date */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400 z-0 pointer-events-none" />
               <input
                 type="date"
                 name="startDate"
                 value={value.startDate || ''}
                 onChange={handleInput}
-                data-placeholder="From Date"
-                className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                data-placeholder="yyyy-mm-dd"
+                className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
               />
             </div>
 
             {/* End Date */}
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+              <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400 z-0 pointer-events-none" />
               <input
                 type="date"
                 name="endDate"
                 value={value.endDate || ''}
                 onChange={handleInput}
                 min={value.startDate || undefined}
-                data-placeholder="To Date"
-                className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                data-placeholder="yyyy-mm-dd"
+                className="w-full pl-7 pr-2 py-1.5 text-xs border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
               />
             </div>
           </div>
@@ -480,13 +469,13 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
         {/* Categories - Only show when type is selected */}
         {value.type && value.type !== 'transfer' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-xs font-medium text-gray-600 mb-2">
               {value.type.charAt(0).toUpperCase() + value.type.slice(1)} Categories
             </label>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => onChange({ ...value, categoryId: undefined })}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                   !value.categoryId 
                     ? getTypeColor(value.type || '')
                     : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
@@ -498,7 +487,7 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
                 <button
                   key={c.id}
                   onClick={() => onChange({ ...value, categoryId: value.categoryId === c.id ? undefined : c.id })}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all flex items-center gap-2 ${
                     value.categoryId === c.id 
                       ? getTypeColor(value.type || '')
                       : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'

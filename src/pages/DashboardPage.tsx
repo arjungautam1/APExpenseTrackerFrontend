@@ -16,7 +16,7 @@ import CountUp from 'react-countup';
 import { DashboardTour, dashboardTourSteps } from '../components/Tour/DashboardTour';
 import { useTour } from '@reactour/tour';
 import { Tooltip, PulsingHotspot } from '../components/UI/Tooltip';
-import { SuccessCelebration, useSuccessCelebration } from '../components/UI/SuccessCelebration';
+import { ModernSuccessPopup, useModernSuccessPopup } from '../components/UI/ModernSuccessPopup';
 import { LoadingSpinner, Skeleton } from '../components/UI/LoadingSpinner';
 import { LoadingOverlay } from '../components/UI/LoadingOverlay';
 import { Link } from 'react-router-dom';
@@ -43,7 +43,7 @@ export function DashboardPage() {
 
   const { formatCurrency } = useCurrencyFormatter();
   const { setSteps } = useTour();
-  const { celebration, celebrate, hideCelebration } = useSuccessCelebration();
+  const { popup, showPopup, hidePopup } = useModernSuccessPopup();
 
   // Setup tour steps when component mounts
   React.useEffect(() => {
@@ -95,15 +95,17 @@ export function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const handleTransactionAdded = () => {
+  const handleTransactionAdded = (transactionData?: any) => {
     // Refresh dashboard data when a new transaction is added
     fetchDashboardData();
     
-    // Celebrate successful transaction
-    celebrate({
-      type: 'success',
+    // Show modern success popup with transaction details
+    showPopup({
+      variant: 'floating-badge',
       title: 'Transaction Added!',
-      message: 'Your transaction has been successfully recorded.'
+      message: 'Your transaction has been successfully recorded.',
+      amount: transactionData?.amount || 100, // Default amount for demo
+      type: transactionData?.type || 'expense' // Dynamic based on transaction type
     });
   };
 
@@ -383,7 +385,7 @@ export function DashboardPage() {
               </Link>
             </div>
             
-            {/* Transaction Type Tabs */}
+            {/* Simple Transaction Type Tabs */}
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-3">
               <button
                 onClick={() => setActiveTransactionTab('all')}
@@ -504,6 +506,7 @@ export function DashboardPage() {
         </div>
       </div>
 
+
       {/* Bulk Upload Modal */}
       {showBulkUploadModal && (
         <BulkTransactionUpload
@@ -515,13 +518,15 @@ export function DashboardPage() {
       {/* Dashboard Tour */}
       <DashboardTour />
       
-      {/* Success Celebration */}
-      <SuccessCelebration
-        isVisible={celebration.isVisible}
-        type={celebration.type}
-        title={celebration.title}
-        message={celebration.message}
-        onComplete={hideCelebration}
+      {/* Modern Success Popup */}
+      <ModernSuccessPopup
+        isVisible={popup.isVisible}
+        variant={popup.variant}
+        title={popup.title}
+        message={popup.message}
+        type={popup.type}
+        amount={popup.amount}
+        onComplete={hidePopup}
       />
     </div>
     </>
