@@ -27,117 +27,26 @@ export interface CreateMonthlyBill {
 }
 
 class MonthlyBillsService {
-  private baseUrl = '/monthly-expenses'; // Using existing endpoint
-
+  // Use localStorage only to avoid authentication issues
+  
   async getAllBills(): Promise<MonthlyBill[]> {
-    try {
-      console.log('MonthlyBillsService - Fetching all bills from database');
-      const response = await apiService.get<{ data: MonthlyBill[] }>(this.baseUrl);
-      console.log('MonthlyBillsService - Fetched bills:', response.data);
-      
-      // Transform the response to ensure compatibility
-      const bills = response.data.data || response.data;
-      return Array.isArray(bills) ? bills.map(bill => ({
-        ...bill,
-        id: bill._id || bill.id // Ensure we have an id field
-      })) : [];
-    } catch (error: any) {
-      console.error('Error fetching monthly bills from database:', error);
-      
-      // Fallback to localStorage if database fails
-      console.log('MonthlyBillsService - Falling back to localStorage');
-      return this.getStoredBills();
-    }
+    console.log('MonthlyBillsService - Loading bills from localStorage');
+    return this.getStoredBills();
   }
 
   async createBill(data: CreateMonthlyBill): Promise<MonthlyBill> {
-    try {
-      console.log('MonthlyBillsService - Creating bill in database:', data);
-      
-      // Transform data to match backend expectations
-      const billData = {
-        ...data,
-        autoDeduct: data.autoDeduct ?? true,
-        tags: data.tags ?? []
-      };
-
-      const response = await apiService.post<{ data: MonthlyBill }>(this.baseUrl, billData);
-      console.log('MonthlyBillsService - Bill created successfully:', response.data);
-      
-      const newBill = response.data.data || response.data;
-      
-      // Also store in localStorage as backup
-      const existingBills = this.getStoredBills();
-      existingBills.push({
-        ...newBill,
-        id: newBill._id || newBill.id
-      });
-      localStorage.setItem('monthlyBills', JSON.stringify(existingBills));
-      
-      return {
-        ...newBill,
-        id: newBill._id || newBill.id
-      };
-    } catch (error: any) {
-      console.error('Error creating bill in database:', error);
-      
-      // Fallback to localStorage
-      console.log('MonthlyBillsService - Falling back to localStorage for create');
-      return this.createBillLocally(data);
-    }
+    console.log('MonthlyBillsService - Creating bill locally:', data);
+    return this.createBillLocally(data);
   }
 
   async updateBill(id: string, data: Partial<CreateMonthlyBill>): Promise<MonthlyBill> {
-    try {
-      console.log('MonthlyBillsService - Updating bill in database:', id, data);
-      
-      const response = await apiService.put<{ data: MonthlyBill }>(`${this.baseUrl}/${id}`, data);
-      console.log('MonthlyBillsService - Bill updated successfully:', response.data);
-      
-      const updatedBill = response.data.data || response.data;
-      
-      // Update localStorage as well
-      const existingBills = this.getStoredBills();
-      const billIndex = existingBills.findIndex(bill => bill._id === id || bill.id === id);
-      if (billIndex !== -1) {
-        existingBills[billIndex] = {
-          ...updatedBill,
-          id: updatedBill._id || updatedBill.id
-        };
-        localStorage.setItem('monthlyBills', JSON.stringify(existingBills));
-      }
-      
-      return {
-        ...updatedBill,
-        id: updatedBill._id || updatedBill.id
-      };
-    } catch (error: any) {
-      console.error('Error updating bill in database:', error);
-      
-      // Fallback to localStorage
-      console.log('MonthlyBillsService - Falling back to localStorage for update');
-      return this.updateBillLocally(id, data);
-    }
+    console.log('MonthlyBillsService - Updating bill locally:', id, data);
+    return this.updateBillLocally(id, data);
   }
 
   async deleteBill(id: string): Promise<void> {
-    try {
-      console.log('MonthlyBillsService - Deleting bill from database:', id);
-      
-      await apiService.delete(`${this.baseUrl}/${id}`);
-      console.log('MonthlyBillsService - Bill deleted successfully');
-      
-      // Also remove from localStorage
-      const existingBills = this.getStoredBills();
-      const filteredBills = existingBills.filter(bill => bill._id !== id && bill.id !== id);
-      localStorage.setItem('monthlyBills', JSON.stringify(filteredBills));
-    } catch (error: any) {
-      console.error('Error deleting bill from database:', error);
-      
-      // Fallback to localStorage
-      console.log('MonthlyBillsService - Falling back to localStorage for delete');
-      this.deleteBillLocally(id);
-    }
+    console.log('MonthlyBillsService - Deleting bill locally:', id);
+    this.deleteBillLocally(id);
   }
 
   // Fallback methods for localStorage
