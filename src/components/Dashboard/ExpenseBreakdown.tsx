@@ -430,7 +430,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
 
                 {/* Monthly Expenses by Category */}
                 <div className="space-y-4">
-                  {Object.entries(monthlyExpenses.byCategory).map(([category, amount]) => {
+                  {Object.entries(monthlyExpenses.byCategory).map(([category, amount], index) => {
                     if (amount === 0) return null;
                     
                     const categoryInfo = {
@@ -446,6 +446,13 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                     return (
                       <div key={category} className="group p-4 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
                         <div className="flex items-center space-x-4">
+                          {/* Rank Badge */}
+                          <div className="flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-gray-600">#{index + 1}</span>
+                            </div>
+                          </div>
+
                           {/* Category Icon */}
                           <div className="flex-shrink-0">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm ${categoryInfo.color}`}>
@@ -477,15 +484,21 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                               </span>
                             </div>
 
-                            {/* Additional Info */}
+                            {/* Additional Stats */}
                             <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span className="flex items-center">
-                                <Clock className="h-3 w-3 mr-1" />
-                                Recurring payment
-                              </span>
+                              <div className="flex items-center space-x-4">
+                                <span className="flex items-center">
+                                  <DollarSign className="h-3 w-3 mr-1" />
+                                  Monthly: {formatCurrency(amount)}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Recurring
+                                </span>
+                              </div>
                               <span className="flex items-center">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                Monthly billing
+                                Auto-debit
                               </span>
                             </div>
                           </div>
