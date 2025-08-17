@@ -46,14 +46,28 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <>
+      <style>
+        {`
+          select[name="currency"] option {
+            background-color: white;
+            color: #374151;
+            padding: 8px 12px;
+            font-size: 14px;
+          }
+          select[name="currency"]:focus option:hover {
+            background-color: #f3f4f6;
+          }
+        `}
+      </style>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="w-full max-w-md my-8"
       >
-        <div className="bg-white rounded-2xl shadow-2xl">
+        <div className="bg-white rounded-2xl shadow-2xl relative">
           {/* Modern Header */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 relative">
             <div className="absolute inset-0 bg-black/10"></div>
@@ -181,11 +195,13 @@ export function RegisterForm() {
                   name="currency"
                   value={formData.currency}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                  className="w-full pl-10 pr-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer relative z-10"
                   style={{ 
                     backgroundImage: 'none',
                     WebkitAppearance: 'none',
-                    MozAppearance: 'none'
+                    MozAppearance: 'none',
+                    position: 'relative',
+                    zIndex: 10
                   }}
                 >
                   {currencies.map(currency => (
@@ -237,6 +253,7 @@ export function RegisterForm() {
           </div>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </>
   );
 }
