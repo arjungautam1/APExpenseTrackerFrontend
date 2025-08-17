@@ -1,17 +1,83 @@
 import React, { useEffect, useState } from 'react';
-import { DollarSign, Calendar, Tag, FileText, X, Sparkles } from 'lucide-react';
+import { DollarSign, Calendar, Tag, FileText, X, Sparkles, TrendingUp, TrendingDown, Building, Send, Save, ArrowLeft } from 'lucide-react';
 import { Transaction, Category } from '../../types';
 import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
 import { aiService } from '../../services/ai';
 import toast from 'react-hot-toast';
 import { CategorySelect } from '../Common/CategorySelect';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TransactionEditModalProps {
   transaction: Transaction | null;
   onClose: () => void;
   onSaved: () => void;
 }
+
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'income':
+      return <TrendingUp className="h-5 w-5" />;
+    case 'expense':
+      return <TrendingDown className="h-5 w-5" />;
+    case 'investment':
+      return <Building className="h-5 w-5" />;
+    case 'transfer':
+      return <Send className="h-5 w-5" />;
+    default:
+      return <Tag className="h-5 w-5" />;
+  }
+};
+
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'income':
+      return {
+        bg: 'bg-gradient-to-r from-green-50 to-emerald-50',
+        border: 'border-green-200',
+        text: 'text-green-700',
+        icon: 'text-green-600',
+        button: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700',
+        ring: 'focus:ring-green-500'
+      };
+    case 'expense':
+      return {
+        bg: 'bg-gradient-to-r from-red-50 to-rose-50',
+        border: 'border-red-200',
+        text: 'text-red-700',
+        icon: 'text-red-600',
+        button: 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700',
+        ring: 'focus:ring-red-500'
+      };
+    case 'investment':
+      return {
+        bg: 'bg-gradient-to-r from-purple-50 to-violet-50',
+        border: 'border-purple-200',
+        text: 'text-purple-700',
+        icon: 'text-purple-600',
+        button: 'bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700',
+        ring: 'focus:ring-purple-500'
+      };
+    case 'transfer':
+      return {
+        bg: 'bg-gradient-to-r from-blue-50 to-cyan-50',
+        border: 'border-blue-200',
+        text: 'text-blue-700',
+        icon: 'text-blue-600',
+        button: 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700',
+        ring: 'focus:ring-blue-500'
+      };
+    default:
+      return {
+        bg: 'bg-gradient-to-r from-gray-50 to-slate-50',
+        border: 'border-gray-200',
+        text: 'text-gray-700',
+        icon: 'text-gray-600',
+        button: 'bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700',
+        ring: 'focus:ring-gray-500'
+      };
+  }
+};
 
 export function TransactionEditModal({ transaction, onClose, onSaved }: TransactionEditModalProps) {
   const [isSaving, setIsSaving] = useState(false);
@@ -69,6 +135,8 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
   }, [formData.type]);
 
   if (!transaction) return null;
+
+  const colors = getTypeColor(formData.type);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -139,7 +207,7 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
         description: formData.description.trim() || undefined,
         date: formData.date
       });
-      toast.success('Transaction updated');
+      toast.success('Transaction updated successfully!');
       onSaved();
       onClose();
     } catch (error: any) {
@@ -151,134 +219,246 @@ export function TransactionEditModal({ transaction, onClose, onSaved }: Transact
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={onClose} />
-        <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md">
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Edit Transaction</h3>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            {/* Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-              <div className="flex space-x-4">
-                {(['expense','income','investment','transfer'] as const).map((t) => (
-                  <label key={t} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="type"
-                      value={t}
-                      checked={formData.type === t}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 capitalize">{t}</span>
-                  </label>
-                ))}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 overflow-y-auto"
+      >
+        <div className="flex min-h-screen items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-auto overflow-hidden"
+          >
+            {/* Header */}
+            <div className={`relative p-6 ${colors.bg} border-b ${colors.border}`}>
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-current rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-current rounded-full translate-y-12 -translate-x-12"></div>
               </div>
-            </div>
-
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  required
-                  step="0.01"
-                  min="0"
-                  className="input pl-10"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            {/* Category */}
-            {formData.type !== 'transfer' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <CategorySelect
-                  value={formData.categoryId}
-                  onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
-                  type={formData.type}
-                  required
-                  placeholder="Select a category"
-                />
-              </div>
-            )}
-
-            {/* Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  required
-                  className="input pl-10"
-                />
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                Description (Optional)
-                <span className="ml-2 text-xs text-gray-500 flex items-center">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  AI-powered categorization
-                </span>
-              </label>
-              <div className="relative">
-                <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={3}
-                  className="input pl-10 resize-none"
-                  placeholder="Add a note... (e.g., 'coffee at starbucks')"
-                />
-                {isAutoCategorizing && (
-                  <div className="absolute right-3 top-3 flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                    <span className="ml-2 text-xs text-blue-600">Categorizing...</span>
+              
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className={`p-3 rounded-xl ${colors.bg} border ${colors.border} shadow-sm`}>
+                    <div className={colors.icon}>
+                      {getTypeIcon(formData.type)}
+                    </div>
                   </div>
-                )}
-                {!isAutoCategorizing && formData.description.trim().length >= 3 && formData.type !== 'transfer' && (
-                  <button
-                    type="button"
-                    onClick={() => handleAutoCategorize(formData.description.trim())}
-                    className="absolute right-3 top-3 p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                    title="Auto-categorize this transaction"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                  </button>
-                )}
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Edit Transaction</h3>
+                    <p className="text-sm text-gray-600">Update transaction details</p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white/50 rounded-lg transition-all duration-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
             </div>
 
-            <div className="flex space-x-3 pt-4">
-              <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-              <button type="submit" disabled={isSaving} className={`btn flex-1 ${formData.type === 'expense' ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500' : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'}`}>
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Transaction Type */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-4">Transaction Type</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(['expense', 'income', 'investment', 'transfer'] as const).map((type) => {
+                    const typeColors = getTypeColor(type);
+                    const isSelected = formData.type === type;
+                    
+                    return (
+                      <motion.button
+                        key={type}
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setFormData(prev => ({ ...prev, type, categoryId: '' }))}
+                        className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                          isSelected
+                            ? `${typeColors.bg} ${typeColors.border} shadow-md`
+                            : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${
+                            isSelected ? 'bg-white/80' : 'bg-gray-100'
+                          }`}>
+                            <div className={isSelected ? typeColors.icon : 'text-gray-500'}>
+                              {getTypeIcon(type)}
+                            </div>
+                          </div>
+                          <span className={`font-medium capitalize ${
+                            isSelected ? typeColors.text : 'text-gray-700'
+                          }`}>
+                            {type}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <motion.div
+                            layoutId="selectedType"
+                            className="absolute inset-0 border-2 border-current rounded-xl opacity-20"
+                            initial={false}
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Amount</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="number"
+                    name="amount"
+                    value={formData.amount}
+                    onChange={handleChange}
+                    required
+                    step="0.01"
+                    min="0"
+                    className="w-full pl-12 pr-4 py-4 text-lg font-semibold border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all placeholder-gray-400"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              {formData.type !== 'transfer' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Category</label>
+                  <CategorySelect
+                    value={formData.categoryId}
+                    onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
+                    type={formData.type}
+                    required
+                    placeholder="Select a category"
+                    className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Date</label>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleChange}
+                    required
+                    className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  Description
+                  <span className="ml-2 text-xs text-blue-600 flex items-center bg-blue-50 px-2 py-1 rounded-full">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    AI-powered
+                  </span>
+                </label>
+                <div className="relative">
+                  <FileText className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full pl-12 pr-12 py-4 text-lg border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all resize-none placeholder-gray-400"
+                    placeholder="Add a note... (e.g., 'coffee at starbucks')"
+                  />
+                  <AnimatePresence>
+                    {isAutoCategorizing && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute right-4 top-4 flex items-center bg-blue-50 px-3 py-1 rounded-full"
+                      >
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+                        <span className="ml-2 text-xs text-blue-600 font-medium">Categorizing...</span>
+                      </motion.div>
+                    )}
+                    {!isAutoCategorizing && formData.description.trim().length >= 3 && formData.type !== 'transfer' && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        type="button"
+                        onClick={() => handleAutoCategorize(formData.description.trim())}
+                        className="absolute right-4 top-4 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                        title="Auto-categorize this transaction"
+                      >
+                        <Sparkles className="h-5 w-5" />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-4 pt-6">
+                <motion.button
+                  type="button"
+                  onClick={onClose}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-6 py-4 text-lg font-semibold text-gray-600 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                  <span>Cancel</span>
+                </motion.button>
+                <motion.button
+                  type="submit"
+                  disabled={isSaving}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`flex-1 px-6 py-4 text-lg font-semibold text-white ${colors.button} disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl`}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-5 w-5" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
