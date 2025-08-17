@@ -383,7 +383,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
             {monthlyExpenses && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-gray-900">Monthly Expenses</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Monthly Expenses</h3>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-500">Recurring Payments</span>
@@ -481,11 +481,11 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                             <div className="flex items-center justify-between text-xs text-gray-500">
                               <span className="flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
-                                Monthly recurring
+                                Recurring payment
                               </span>
                               <span className="flex items-center">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                Due monthly
+                                Monthly billing
                               </span>
                             </div>
                           </div>
