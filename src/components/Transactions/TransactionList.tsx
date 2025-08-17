@@ -68,12 +68,12 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
               </div>
               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                 <p
-                  className={`text-sm font-semibold leading-tight ${
+                  className={`text-sm font-semibold leading-tight transition-all duration-300 ${
                     t.type === 'income' 
-                      ? 'text-green-600' 
+                      ? 'text-green-600 group-hover:text-green-700' 
                       : t.type === 'investment'
-                      ? 'text-purple-600'
-                      : 'text-red-600'
+                      ? 'text-purple-600 group-hover:text-purple-700 group-hover:scale-105'
+                      : 'text-red-600 group-hover:text-red-700'
                   }`}
                 >
                   {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : '-'}{formatCurrency(t.amount)}

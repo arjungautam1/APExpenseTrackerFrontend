@@ -44,8 +44,8 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white shadow-xl">
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-md" onClick={() => setSidebarOpen(false)} />
+        <div className="relative flex w-full max-w-xs flex-1 flex-col bg-white/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
@@ -61,7 +61,7 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-1 flex-col bg-white border-r border-gray-200">
+        <div className="flex flex-1 flex-col bg-white/95 backdrop-blur-xl border-r border-gray-200/60 shadow-lg">
           <SidebarContent />
         </div>
       </div>
@@ -69,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-200 px-3 py-3 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200/60 px-3 py-3 sm:px-6 lg:px-8 shadow-sm">
           <div className="flex items-center justify-between">
             <button
               type="button"

@@ -146,77 +146,95 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
         {/* Stats Cards */}
-        <div className="card">
-          <div className="card-body p-4 sm:p-6">
-            <div className="flex items-center">
+        <div className="card group hover:shadow-glow-green transition-all duration-500 hover:-translate-y-2 animate-float">
+          <div className="card-body p-4 sm:p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="flex items-center relative z-10">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-green transition-all duration-300 group-hover:scale-110">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total Income</h3>
-                <p className="text-lg sm:text-2xl font-bold text-green-600 truncate">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Total Income</h3>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 truncate group-hover:text-green-700 transition-colors animate-pulse-soft">
                   {stats ? formatCurrency(stats.totalIncome) : '$0'}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-body p-4 sm:p-6">
-            <div className="flex items-center">
+        <div className="card group hover:shadow-glow-red transition-all duration-500 hover:-translate-y-2 animate-float-delayed">
+          <div className="card-body p-4 sm:p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-rose-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="flex items-center relative z-10">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-400 to-rose-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-red transition-all duration-300 group-hover:scale-110">
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Expenses</h3>
-                <p className="text-lg sm:text-2xl font-bold text-red-600 truncate">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Expenses</h3>
+                <p className="text-lg sm:text-2xl font-bold text-red-600 truncate group-hover:text-red-700 transition-colors">
                   {stats ? formatCurrency(stats.totalExpenses) : '$0'}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <div className="card-body p-4 sm:p-6">
+        <div className="card group hover:shadow-depth-lg transition-all duration-500 hover:-translate-y-4 hover:scale-105 animate-float relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 opacity-5 group-hover:opacity-20 transition-opacity duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
+          <div className="card-body p-4 sm:p-6 relative z-10">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              <div className="flex-shrink-0 relative">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-purple transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-glow">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-lg" />
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg opacity-0 group-hover:opacity-30 blur-md transition-all duration-500 group-hover:scale-150"></div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Investments</h3>
-                <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-purple-600 transition-colors duration-300">Investments</h3>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate group-hover:text-purple-700 transition-all duration-300 group-hover:scale-105 animate-pulse-soft">
                   {stats ? formatCurrency(stats.totalInvestments) : '$0'}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-purple-500 transition-colors duration-300">This month</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card col-span-2 lg:col-span-1">
-          <div className="card-body p-4 sm:p-6">
+        <div className="card col-span-2 lg:col-span-1 group hover:shadow-glow transition-all duration-500 hover:-translate-y-2 animate-float relative overflow-hidden">
+          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+            stats && stats.totalSavings >= 0 
+              ? 'from-blue-50/50 to-cyan-100/30' 
+              : 'from-red-50/50 to-rose-100/30'
+          }`}></div>
+          <div className="card-body p-4 sm:p-6 relative z-10">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <PiggyBank className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
+                  stats && stats.totalSavings >= 0 
+                    ? 'bg-gradient-to-br from-blue-400 to-cyan-500 group-hover:shadow-glow' 
+                    : 'bg-gradient-to-br from-red-400 to-rose-500 group-hover:shadow-glow-red'
+                }`}>
+                  <PiggyBank className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">Net Savings</h3>
-                <p className={`text-lg sm:text-2xl font-bold truncate ${stats && stats.totalSavings >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Net Savings</h3>
+                <p className={`text-lg sm:text-2xl font-bold truncate transition-all duration-300 group-hover:scale-105 ${
+                  stats && stats.totalSavings >= 0 
+                    ? 'text-blue-600 group-hover:text-blue-700' 
+                    : 'text-red-600 group-hover:text-red-700'
+                }`}>
                   {stats ? formatCurrency(stats.totalSavings) : '$0'}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
             </div>
           </div>
@@ -225,9 +243,10 @@ export function DashboardPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="text-lg font-medium">Recent Transactions</h3>
+        <div className="card group hover:shadow-depth transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="card-header relative z-10">
+            <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors animate-pulse-soft">Recent Transactions</h3>
             
             {/* Transaction Type Tabs */}
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-3">
@@ -277,7 +296,7 @@ export function DashboardPage() {
               </button>
             </div>
           </div>
-          <div className="card-body">
+          <div className="card-body relative z-10">
             {filteredTransactions.length > 0 ? (
               <div className="space-y-4 max-h-96 overflow-y-auto">
               {filteredTransactions.map((t) => {
