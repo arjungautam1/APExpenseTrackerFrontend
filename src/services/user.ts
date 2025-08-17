@@ -34,17 +34,73 @@ export interface SecuritySettings {
   loginAlerts: boolean;
 }
 
+// Type guards for runtime validation
+const isUser = (data: unknown): data is User => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as any).id === 'string' &&
+    typeof (data as any).name === 'string' &&
+    typeof (data as any).email === 'string' &&
+    typeof (data as any).createdAt === 'string' &&
+    typeof (data as any).updatedAt === 'string'
+  );
+};
+
+const isNotificationSettings = (data: unknown): data is NotificationSettings => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as any).emailNotifications === 'boolean' &&
+    typeof (data as any).pushNotifications === 'boolean' &&
+    typeof (data as any).transactionAlerts === 'boolean' &&
+    typeof (data as any).weeklyReports === 'boolean' &&
+    typeof (data as any).monthlyReports === 'boolean' &&
+    typeof (data as any).investmentUpdates === 'boolean'
+  );
+};
+
+const isSecuritySettings = (data: unknown): data is SecuritySettings => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as any).twoFactorAuth === 'boolean' &&
+    typeof (data as any).sessionTimeout === 'number' &&
+    typeof (data as any).loginAlerts === 'boolean'
+  );
+};
+
+const isImageUrlResponse = (data: unknown): data is { imageUrl: string } => {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as any).imageUrl === 'string'
+  );
+};
+
 export const userService = {
   // Get current user profile
   getProfile: async (): Promise<User> => {
     const response = await apiService.get('/users/profile');
-    return response.data;
+    const data = response.data;
+    
+    if (!isUser(data)) {
+      throw new Error('Invalid user data received from server');
+    }
+    
+    return data;
   },
 
   // Update user profile
   updateProfile: async (data: ProfileUpdateData): Promise<User> => {
     const response = await apiService.put('/users/profile', data);
-    return response.data;
+    const responseData = response.data;
+    
+    if (!isUser(responseData)) {
+      throw new Error('Invalid user data received from server');
+    }
+    
+    return responseData;
   },
 
   // Change password
@@ -68,13 +124,25 @@ export const userService = {
   // Get notification settings
   getNotificationSettings: async (): Promise<NotificationSettings> => {
     const response = await apiService.get('/users/notification-settings');
-    return response.data;
+    const data = response.data;
+    
+    if (!isNotificationSettings(data)) {
+      throw new Error('Invalid notification settings data received from server');
+    }
+    
+    return data;
   },
 
   // Get security settings
   getSecuritySettings: async (): Promise<SecuritySettings> => {
     const response = await apiService.get('/users/security-settings');
-    return response.data;
+    const data = response.data;
+    
+    if (!isSecuritySettings(data)) {
+      throw new Error('Invalid security settings data received from server');
+    }
+    
+    return data;
   },
 
   // Export user data
@@ -82,6 +150,11 @@ export const userService = {
     const response = await apiService.get('/users/export-data', {
       responseType: 'blob'
     });
+    
+    if (!(response.data instanceof Blob)) {
+      throw new Error('Invalid blob data received from server');
+    }
+    
     return response.data;
   },
 
@@ -102,7 +175,14 @@ export const userService = {
         'Content-Type': 'multipart/form-data'
       }
     });
-    return response.data;
+    
+    const data = response.data;
+    
+    if (!isImageUrlResponse(data)) {
+      throw new Error('Invalid image URL response received from server');
+    }
+    
+    return data;
   }
 };
 

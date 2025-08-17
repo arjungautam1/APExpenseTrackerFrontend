@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Filter } from 'lucide-react';
+import { Calendar, Filter, TrendingUp, TrendingDown, Building, Send, X, Sparkles } from 'lucide-react';
 import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
 import { Category } from '../../types';
+import { motion } from 'framer-motion';
 import './NativeDateStyles.css';
 
 export interface TransactionFilterState {
