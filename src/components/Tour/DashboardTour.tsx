@@ -93,18 +93,14 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
     <motion.button
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
-      whileHover={{ scale: 1.1 }}
+      whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={startTour}
       className="fixed bottom-6 right-6 z-[9996] w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
       title="Take a tour"
     >
       <HelpCircle className="h-6 w-6 text-white" />
-      <motion.div
-        className="absolute inset-0 rounded-full bg-primary-400/30"
-        animate={{ scale: [1, 1.5, 1] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      />
+      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
     </motion.button>
   );
 }
@@ -114,13 +110,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="stats-cards"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">📊 Financial Overview</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">📊 Financial Overview</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           Get a quick snapshot of your financial health with real-time stats for income, expenses, investments, and savings.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Hover over cards to see enhanced details
         </div>
       </div>
@@ -130,13 +137,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="quick-actions"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">⚡ Quick Actions</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">⚡ Quick Actions</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           Add transactions instantly with Quick Add, scan receipts with AI, or upload multiple transactions at once.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Try scanning a receipt to see AI in action!
         </div>
       </div>
@@ -146,13 +164,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="recent-transactions"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">📝 Recent Transactions</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">📝 Recent Transactions</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           View your latest transactions with smart categorization and filtering. Switch between All, Income, Expense, and Investment views.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Use the tabs to filter by transaction type
         </div>
       </div>
@@ -162,13 +191,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="expense-breakdown"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">🎯 Expense Analysis</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">🎯 Expense Analysis</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           Understand your spending patterns with detailed breakdowns by category, trends over time, and monthly recurring expenses.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Switch between Categories, Trends, and Monthly views
         </div>
       </div>
@@ -178,13 +218,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="navigation"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">🧭 Navigation</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">🧭 Navigation</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           Explore different sections: Transactions for detailed history, Monthly Expenses for recurring bills, Investments for portfolio tracking, and Analytics for deep insights.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Click any menu item to explore more features
         </div>
       </div>
@@ -194,13 +245,24 @@ export const dashboardTourSteps = [
   {
     selector: '[data-tour="investment-card"]',
     content: (
-      <div>
-        <h3 className="text-lg font-semibold mb-2">💎 Investment Tracking</h3>
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">💎 Investment Tracking</h3>
+          <button
+            onClick={() => {
+              localStorage.setItem('dashboard-tour-seen', 'true');
+              window.location.reload();
+            }}
+            className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            Skip Tour
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           This special card tracks your investment portfolio. Watch it grow with beautiful animations and get insights into your wealth building journey.
         </p>
-        <div className="flex items-center text-xs text-primary-600">
-          <ArrowRight className="h-4 w-4 mr-1" />
+        <div className="flex items-center text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-md">
+          <ArrowRight className="h-3 w-3 mr-1" />
           Hover to see the enhanced visual effects!
         </div>
       </div>

@@ -359,10 +359,10 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       {/* Quick Add Button */}
       <button
         onClick={openModal}
-        className="btn-primary flex items-center space-x-2"
+        className="btn-primary flex items-center space-x-2 px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
       >
         <Plus className="h-4 w-4" />
-        <span>Quick Add</span>
+        <span className="font-medium">Quick Add</span>
       </button>
 
       {/* Modal */}

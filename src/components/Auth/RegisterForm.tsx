@@ -106,7 +106,7 @@ export function RegisterForm() {
                   onChange={handleChange}
                   required
                   minLength={6}
-                  className="input pl-10 pr-10"
+                  className="input-with-icons"
                   placeholder="Create a password"
                 />
                 <button
@@ -131,7 +131,7 @@ export function RegisterForm() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="input pl-10 pr-10"
+                  className="input-with-icons"
                   placeholder="Confirm your password"
                 />
                 <button

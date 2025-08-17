@@ -76,7 +76,7 @@ export function LoginForm() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="input pl-10 pr-10"
+                  className="input-with-icons"
                   placeholder="Enter your password"
                 />
                 <button

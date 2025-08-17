@@ -235,8 +235,8 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
-                  placeholder="e.g., Apple Inc., S&P 500 Index Fund (AI will auto-categorize)"
+                  className="input-with-icon"
+                  placeholder="e.g., Apple Inc., S&P 500 Index Fund"
                 />
                 {isAutoCategorizing && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
@@ -286,7 +286,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   value={formData.type}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                 >
                   <option value="stocks">Stocks</option>
                   <option value="mutual_funds">Mutual Funds</option>
@@ -312,7 +312,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   required
                   step="0.01"
                   min="0"
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="0.00"
                 />
               </div>
@@ -332,7 +332,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   onChange={handleChange}
                   step="0.01"
                   min="0"
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="0.00"
                 />
               </div>
@@ -351,7 +351,7 @@ export function EditInvestmentModal({ investment, onClose, onSuccess }: EditInve
                   value={formData.purchaseDate}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                 />
               </div>
             </div>

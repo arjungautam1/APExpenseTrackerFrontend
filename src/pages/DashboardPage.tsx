@@ -247,9 +247,14 @@ export function DashboardPage() {
                 <span className="xs:hidden">Upload</span>
               </motion.button>
               <ScanBillModal onSuccess={handleTransactionAdded} />
-              <PulsingHotspot tooltip="Click here to quickly add a new transaction!" position="bottom">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative group"
+              >
                 <QuickAddTransaction onSuccess={handleTransactionAdded} />
-              </PulsingHotspot>
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+              </motion.div>
             </div>
           </div>
         </div>

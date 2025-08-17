@@ -40,6 +40,10 @@
     @apply w-full rounded-lg border border-gray-300 pl-10 pr-3 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500;
   }
   
+  .input-with-icons {
+    @apply w-full rounded-lg border border-gray-300 pl-10 pr-10 py-2 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500;
+  }
+  
   .card {
     @apply bg-white rounded-xl border border-gray-200 shadow-sm;
   }

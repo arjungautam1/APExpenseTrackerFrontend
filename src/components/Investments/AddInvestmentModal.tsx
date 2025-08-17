@@ -224,7 +224,7 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="e.g., Apple Inc., S&P 500 Index Fund (AI will auto-categorize)"
                 />
                 {isAutoCategorizing && (
@@ -275,7 +275,7 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                   value={formData.type}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                 >
                   <option value="stocks">Stocks</option>
                   <option value="mutual_funds">Mutual Funds</option>
@@ -301,7 +301,7 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                   required
                   step="0.01"
                   min="0"
-                  className="input pl-10"
+                  className="input-with-icon"
                   placeholder="0.00"
                 />
               </div>
@@ -321,7 +321,7 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                   value={formData.purchaseDate}
                   onChange={handleChange}
                   required
-                  className="input pl-10"
+                  className="input-with-icon"
                 />
               </div>
             </div>
@@ -342,7 +342,7 @@ export function AddInvestmentModal({ onClose, onSuccess }: AddInvestmentModalPro
                     onChange={handleChange}
                     step="0.01"
                     min="0"
-                    className="input pl-10"
+                    className="input-with-icon"
                     placeholder="0"
                   />
                 </div>
