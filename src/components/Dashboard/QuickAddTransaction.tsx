@@ -385,7 +385,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       <TransactionSuccessNotification
         isVisible={notification.isVisible}
         onClose={hideNotification}
-        transaction={notification.transaction!}
+        transaction={notification.transaction}
         autoHide={true}
         duration={4000}
       />

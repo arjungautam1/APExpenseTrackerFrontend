@@ -294,7 +294,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       <TransactionSuccessNotification
         isVisible={notification.isVisible}
         onClose={hideNotification}
-        transaction={notification.transaction!}
+        transaction={notification.transaction}
         autoHide={true}
         duration={4000}
       />
