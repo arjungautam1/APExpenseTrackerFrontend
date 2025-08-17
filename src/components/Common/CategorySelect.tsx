@@ -114,7 +114,7 @@ export function CategorySelect({
           </option>
         ))}
         {showCreateOption && categories.length > 0 && (
-          <option value="__create_new__" disabled>
+          <option value="__separator__" disabled>
             ──────────────────────
           </option>
         )}

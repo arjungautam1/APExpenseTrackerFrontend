@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTour } from '@reactour/tour';
 import {
   Home,
   CreditCard,
@@ -13,7 +14,8 @@ import {
   Menu,
   X,
   User,
-  Calendar
+  Calendar,
+  HelpCircle
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -35,6 +37,7 @@ export function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { setIsOpen, setSteps } = useTour();
 
   const handleLogout = async () => {
     await logout();
@@ -154,6 +157,24 @@ export function Layout({ children }: LayoutProps) {
             );
           })}
         </nav>
+
+        {/* Help Section */}
+        <div className="border-t border-gray-200/60 px-2 py-4">
+          <button
+            onClick={() => {
+              // Import and set dashboard tour steps
+              import('../Tour/DashboardTour').then(({ dashboardTourSteps }) => {
+                setSteps?.(dashboardTourSteps as any);
+                setIsOpen?.(true);
+              });
+              setSidebarOpen(false);
+            }}
+            className="group flex items-center w-full rounded-lg px-3 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm transition-all duration-200"
+          >
+            <HelpCircle className="mr-3 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500" />
+            <span className="truncate">Help & Tour</span>
+          </button>
+        </div>
       </>
     );
   }

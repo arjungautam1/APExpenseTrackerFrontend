@@ -7,7 +7,7 @@ import { transactionService } from '../services/transaction';
 import { investmentService } from '../services/investment';
 import { useCurrencyFormatter } from '../utils/currency';
 import { formatTransactionDescription } from '../utils/transactionNameFormatter';
-import { TrendingUp, TrendingDown, DollarSign, PiggyBank, BarChart3, Building, Grid3X3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PiggyBank, BarChart3, Building, Grid3X3, ArrowRight } from 'lucide-react';
 import { Transaction } from '../types';
 import toast from 'react-hot-toast';
 import React from 'react';
@@ -17,6 +17,10 @@ import { DashboardTour, dashboardTourSteps } from '../components/Tour/DashboardT
 import { useTour } from '@reactour/tour';
 import { Tooltip, PulsingHotspot } from '../components/UI/Tooltip';
 import { SuccessCelebration, useSuccessCelebration } from '../components/UI/SuccessCelebration';
+import { LoadingSpinner, Skeleton } from '../components/UI/LoadingSpinner';
+import { LoadingOverlay } from '../components/UI/LoadingOverlay';
+import { Link } from 'react-router-dom';
+import { InstantCurrencyDisplay, FastCurrencyDisplay, CompactCurrencyDisplay, CurrencySkeleton } from '../components/UI/FastCurrencyDisplay';
 
 interface DashboardStats {
   totalIncome: number;
@@ -36,6 +40,7 @@ export function DashboardPage() {
   const [dateRange, setDateRange] = useState<{ startDate: string; endDate: string } | null>(null);
   const [activeTransactionTab, setActiveTransactionTab] = useState<'all' | 'income' | 'expense' | 'investment'>('all');
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
+
   const { formatCurrency } = useCurrencyFormatter();
   const { setSteps } = useTour();
   const { celebration, celebrate, hideCelebration } = useSuccessCelebration();
@@ -66,7 +71,7 @@ export function DashboardPage() {
       const [statsResponse, investmentStatsResponse, transactionsResponse] = await Promise.all([
         transactionService.getTransactionStats(startDate, endDate),
         investmentService.getInvestmentStats(startDate, endDate),
-        transactionService.getTransactions({ limit: 10 })
+        transactionService.getTransactions({ limit: 15 })
       ]);
 
       // Combine stats with investment data
@@ -103,6 +108,8 @@ export function DashboardPage() {
   };
 
 
+
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -117,101 +124,56 @@ export function DashboardPage() {
   if (loading) {
     return (
       <div className="px-3 py-4 sm:px-6 lg:px-8">
-        <div className="animate-pulse">
-          {/* Header skeleton */}
-          <div className="mb-6 sm:mb-8">
-            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-              <div>
-                <div className="h-6 sm:h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-32 sm:w-48 mb-2"></div>
-                <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-48 sm:w-64"></div>
-              </div>
-              <div className="flex space-x-2">
-                <div className="h-10 w-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
-                <div className="h-10 w-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
-              </div>
+        {/* Header skeleton */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div>
+              <Skeleton lines={2} className="w-48 sm:w-64" />
+            </div>
+            <div className="flex space-x-2">
+              <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
+              <div className="h-10 w-24 bg-gray-200 rounded-lg animate-pulse"></div>
             </div>
           </div>
+        </div>
 
-          {/* Stats cards skeleton */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 mb-8">
-            {[
-              { color: 'from-green-200 to-green-300' },
-              { color: 'from-red-200 to-red-300' },
-              { color: 'from-purple-200 to-purple-300' },
-              { color: 'from-blue-200 to-blue-300' }
-            ].map((item, i) => (
-              <div key={i} className="card hover:shadow-lg transition-all duration-300">
-                <div className="card-body p-4 sm:p-6">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${item.color} rounded-lg animate-pulse`}></div>
-                    </div>
-                    <div className="ml-2 sm:ml-4 min-w-0 flex-1">
-                      <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16 sm:w-20 mb-2"></div>
-                      <div className="h-5 sm:h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-20 sm:w-24 mb-1"></div>
-                      <div className="h-2 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-12 hidden sm:block"></div>
-                    </div>
+        {/* Stats cards skeleton */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="card group animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className="card-body p-4 sm:p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg animate-pulse"></div>
+                  </div>
+                  <div className="ml-2 sm:ml-4 min-w-0 flex-1">
+                    <Skeleton lines={3} />
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Content skeleton */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Recent Transactions skeleton */}
+          <div className="card animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+            <div className="card-header">
+              <Skeleton lines={2} />
+            </div>
+            <div className="card-body">
+              <Skeleton variant="list" lines={5} />
+            </div>
           </div>
 
-          {/* Content skeleton */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {/* Recent Transactions skeleton */}
-            <div className="card">
-              <div className="card-header">
-                <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-40 mb-3"></div>
-                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex-1 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-md"></div>
-                  ))}
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-2">
-                      <div className="flex-1">
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4 mb-2"></div>
-                        <div className="flex space-x-2">
-                          <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16"></div>
-                          <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-12"></div>
-                        </div>
-                      </div>
-                      <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Expense Breakdown skeleton */}
+          <div className="card animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+            <div className="card-header">
+              <Skeleton lines={2} />
             </div>
-
-            {/* Expense Breakdown skeleton */}
-            <div className="card">
-              <div className="card-header">
-                <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-36 mb-3"></div>
-                <div className="flex space-x-1">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-8 w-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
-                  ))}
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="space-y-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full"></div>
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-200 to-purple-300 rounded-lg"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4 mb-2"></div>
-                        <div className="h-2 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-full mb-1"></div>
-                        <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="card-body">
+              <Skeleton variant="list" lines={4} />
             </div>
           </div>
         </div>
@@ -220,7 +182,14 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="px-3 py-4 sm:px-6 lg:px-8">
+    <>
+      <LoadingOverlay 
+        isLoading={loading && !stats} 
+        text="Loading your financial dashboard..." 
+        variant="default"
+        size="xl"
+      />
+      <div className="px-3 py-4 sm:px-6 lg:px-8">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
@@ -247,14 +216,10 @@ export function DashboardPage() {
                 <span className="xs:hidden">Upload</span>
               </motion.button>
               <ScanBillModal onSuccess={handleTransactionAdded} />
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative group"
-              >
+              <div className="relative group">
                 <QuickAddTransaction onSuccess={handleTransactionAdded} />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
@@ -277,17 +242,15 @@ export function DashboardPage() {
                 </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-green-600 truncate group-hover:text-green-700 transition-colors">
                   {stats ? (
-                    <CountUp
-                      start={0}
-                      end={stats.totalIncome}
-                      duration={2.5}
-                      decimals={2}
-                      decimal="."
-                      prefix="$"
-                      preserveValue
+                    <FastCurrencyDisplay
+                      amount={stats.totalIncome}
+                      color="positive"
+                      size="lg"
+                      showAnimation={true}
+                      animationDuration={0.4}
                     />
                   ) : (
-                    '$0'
+                    <CurrencySkeleton size="lg" />
                   )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
@@ -311,18 +274,15 @@ export function DashboardPage() {
                 </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-red-600 truncate group-hover:text-red-700 transition-colors">
                   {stats ? (
-                    <CountUp
-                      start={0}
-                      end={stats.totalExpenses}
-                      duration={2.5}
-                      delay={0.5}
-                      decimals={2}
-                      decimal="."
-                      prefix="$"
-                      preserveValue
+                    <FastCurrencyDisplay
+                      amount={stats.totalExpenses}
+                      color="negative"
+                      size="lg"
+                      showAnimation={true}
+                      animationDuration={0.4}
                     />
                   ) : (
-                    '$0'
+                    <CurrencySkeleton size="lg" />
                   )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
@@ -345,18 +305,15 @@ export function DashboardPage() {
                 </Tooltip>
                 <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate group-hover:text-purple-700 transition-colors">
                   {stats ? (
-                    <CountUp
-                      start={0}
-                      end={stats.totalInvestments}
-                      duration={3}
-                      delay={1}
-                      decimals={2}
-                      decimal="."
-                      prefix="$"
-                      preserveValue
+                    <FastCurrencyDisplay
+                      amount={stats.totalInvestments}
+                      color="neutral"
+                      size="lg"
+                      showAnimation={true}
+                      animationDuration={0.4}
                     />
                   ) : (
-                    '$0'
+                    <CurrencySkeleton size="lg" />
                   )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
@@ -392,18 +349,18 @@ export function DashboardPage() {
                     : 'text-red-600 group-hover:text-red-700'
                 }`}>
                   {stats ? (
-                    <CountUp
-                      start={0}
-                      end={stats.totalSavings}
-                      duration={2.5}
-                      delay={1.5}
-                      decimals={2}
-                      decimal="."
-                      prefix={stats.totalSavings >= 0 ? '$' : '-$'}
-                      preserveValue
-                    />
+                    <>
+                      {stats.totalSavings < 0 && '-'}
+                      <FastCurrencyDisplay
+                        amount={Math.abs(stats.totalSavings)}
+                        color={stats.totalSavings >= 0 ? "positive" : "negative"}
+                        size="lg"
+                        showAnimation={true}
+                        animationDuration={0.4}
+                      />
+                    </>
                   ) : (
-                    '$0'
+                    <CurrencySkeleton size="lg" />
                   )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
@@ -418,7 +375,16 @@ export function DashboardPage() {
         <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden" data-tour="recent-transactions">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/15 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
           <div className="card-header relative z-10">
-            <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors">Recent Transactions</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors">Recent Transactions</h3>
+              <Link
+                to="/transactions"
+                className="flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              >
+                View All
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
             
             {/* Transaction Type Tabs */}
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-3">
@@ -470,53 +436,55 @@ export function DashboardPage() {
           </div>
           <div className="card-body relative z-10">
             {filteredTransactions.length > 0 ? (
-              <div className="space-y-4">
-              {filteredTransactions.map((t) => {
-                const primaryText = (t.description && t.description.trim().length > 0)
-                  ? formatTransactionDescription(t.description)
-                  : (t.category?.name || 'Transaction');
-                const showCategoryChip = Boolean(t.description && t.description.trim().length > 0);
-                return (
-                  <div key={t.id} className="flex items-center justify-between py-1.5">
-                    <div className="flex-1 min-w-0 pr-3">
-                      <p className="font-medium text-gray-900 truncate">{primaryText}</p>
-                      <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm">
-                        {showCategoryChip && (
-                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">
+              <>
+                <div className="space-y-4">
+                  {filteredTransactions.slice(0, 10).map((t) => {
+                    const primaryText = (t.description && t.description.trim().length > 0)
+                      ? formatTransactionDescription(t.description)
+                      : (t.category?.name || 'Transaction');
+                    const showCategoryChip = Boolean(t.description && t.description.trim().length > 0);
+                    return (
+                      <div key={t.id} className="flex items-center justify-between py-1.5 hover:bg-gray-50 rounded-lg px-2 -mx-2 transition-colors">
+                        <div className="flex-1 min-w-0 pr-3">
+                          <p className="font-medium text-gray-900 truncate">{primaryText}</p>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm">
+                            {showCategoryChip && (
+                              <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-gray-700">
+                                <span
+                                  className="mr-2 h-2 w-2 rounded-full"
+                                  style={{ backgroundColor: t.category?.color || '#9CA3AF' }}
+                                />
+                                {t.category?.name || 'Unknown Category'}
+                              </span>
+                            )}
+                            <span className="text-gray-500">{formatDate(t.date)}</span>
                             <span
-                              className="mr-2 h-2 w-2 rounded-full"
-                              style={{ backgroundColor: t.category?.color || '#9CA3AF' }}
-                            />
-                            {t.category?.name || 'Unknown Category'}
-                          </span>
-                        )}
-                        <span className="text-gray-500">{formatDate(t.date)}</span>
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                            t.type === 'income'
-                              ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-                              : t.type === 'investment'
-                              ? 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20'
-                              : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-                          }`}
-                        >
-                          {t.type}
-                        </span>
+                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                                t.type === 'income'
+                                  ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
+                                  : t.type === 'investment'
+                                  ? 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20'
+                                  : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
+                              }`}
+                            >
+                              {t.type}
+                            </span>
+                          </div>
+                        </div>
+                        <p className={`font-medium ${
+                          t.type === 'income' 
+                            ? 'text-green-600' 
+                            : t.type === 'investment'
+                            ? 'text-purple-600'
+                            : 'text-red-600'
+                        }`}>
+                          {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : '-'}{formatCurrency(t.amount)}
+                        </p>
                       </div>
-                    </div>
-                    <p className={`font-medium ${
-                      t.type === 'income' 
-                        ? 'text-green-600' 
-                        : t.type === 'investment'
-                        ? 'text-purple-600'
-                        : 'text-red-600'
-                    }`}>
-                      {t.type === 'income' ? '+' : t.type === 'investment' ? '⬆' : '-'}{formatCurrency(t.amount)}
-                    </p>
-                  </div>
-                );
-              })}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-500">
@@ -559,5 +527,6 @@ export function DashboardPage() {
         onComplete={hideCelebration}
       />
     </div>
+    </>
   );
 }

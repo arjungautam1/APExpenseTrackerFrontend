@@ -6,6 +6,7 @@ import { categoryService } from '../../services/category';
 import { transactionService } from '../../services/transaction';
 import { Category } from '../../types';
 import heic2any from 'heic2any';
+import { TransactionSuccessNotification, useTransactionSuccessNotification } from '../UI/TransactionSuccessNotification';
 
 interface ScanBillModalProps {
   onSuccess?: () => void;
@@ -21,6 +22,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [editableAmount, setEditableAmount] = useState<number>(0);
+  const { notification, showSuccess, hideNotification } = useTransactionSuccessNotification();
 
   useEffect(() => {
     if (isOpen) {
@@ -250,8 +252,20 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       
       console.log('Creating transaction with data:', transactionData);
       
-      await transactionService.createTransaction(transactionData);
-      toast.success(`${result?.transactionType === 'income' ? 'Income' : 'Expense'} created`);
+      const transactionResult = await transactionService.createTransaction(transactionData);
+      
+      // Find the category name for the notification
+      const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+      
+      // Show modern success notification
+      showSuccess({
+        type: (result?.transactionType as 'income' | 'expense') || 'expense',
+        amount: editableAmount,
+        description: result?.description || result?.merchant || 'Scanned document',
+        category: selectedCategory ? { name: selectedCategory.name } : undefined,
+        date: localDateString
+      });
+      
       close();
       onSuccess?.();
     } catch (error: any) {
@@ -276,6 +290,15 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
 
   return (
     <>
+      {/* Transaction Success Notification */}
+      <TransactionSuccessNotification
+        isVisible={notification.isVisible}
+        onClose={hideNotification}
+        transaction={notification.transaction!}
+        autoHide={true}
+        duration={4000}
+      />
+
       <button onClick={open} className="btn-secondary flex items-center space-x-2">
         <Camera className="h-4 w-4" />
         <span>Scan Bill</span>

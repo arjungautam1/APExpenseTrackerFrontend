@@ -7,6 +7,9 @@ import { aiService } from '../../services/ai';
 import { Category } from '../../types';
 import toast from 'react-hot-toast';
 import { CategorySelect } from '../Common/CategorySelect';
+import { LoadingSpinner } from '../UI/LoadingSpinner';
+import { LoadingButton } from '../UI/LoadingOverlay';
+import { TransactionSuccessNotification, useTransactionSuccessNotification } from '../UI/TransactionSuccessNotification';
 
 interface QuickAddTransactionProps {
   onClose?: () => void;
@@ -21,6 +24,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryUsage, setCategoryUsage] = useState<{[key: string]: number}>({});
   const [autoCategorizeTimeout, setAutoCategorizeTimeout] = useState<NodeJS.Timeout | null>(null);
+  const { notification, showSuccess, hideNotification } = useTransactionSuccessNotification();
   const [formData, setFormData] = useState({
     amount: '',
     type: 'expense' as 'income' | 'expense' | 'investment',
@@ -246,6 +250,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     setIsLoading(true);
 
     try {
@@ -285,7 +290,14 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
           })
         ]);
 
-        toast.success('Investment added successfully!');
+        // Show modern success notification for investment
+        showSuccess({
+          type: 'investment',
+          amount: parseFloat(formData.amount),
+          description: formData.description.trim() || 'Investment',
+          category: { name: 'Investment' },
+          date: formData.date + 'T12:00:00'
+        });
       } else {
         // Create transaction for income/expense
         const transactionData = {
@@ -296,8 +308,19 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
           date: formData.date + 'T12:00:00'
         };
 
-        await transactionService.createTransaction(transactionData);
-        toast.success(`${formData.type === 'income' ? 'Income' : 'Expense'} added successfully!`);
+        const transactionResult = await transactionService.createTransaction(transactionData);
+        
+        // Find the category name for the notification
+        const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
+        
+        // Show modern success notification
+        showSuccess({
+          type: formData.type,
+          amount: parseFloat(formData.amount),
+          description: formData.description.trim(),
+          category: selectedCategory ? { name: selectedCategory.name } : undefined,
+          date: formData.date + 'T12:00:00'
+        });
       }
       
       // Reset form
@@ -345,7 +368,9 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
   const openModal = () => {
     console.log('Opening Quick Add Transaction modal');
+    console.log('Current modal state:', isModalOpen);
     setIsModalOpen(true);
+    console.log('Modal state after setting:', true);
   };
   const closeModal = () => {
     setIsModalOpen(false);
@@ -356,10 +381,21 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
   return (
     <>
+      {/* Transaction Success Notification */}
+      <TransactionSuccessNotification
+        isVisible={notification.isVisible}
+        onClose={hideNotification}
+        transaction={notification.transaction!}
+        autoHide={true}
+        duration={4000}
+      />
+
       {/* Quick Add Button */}
       <button
         onClick={openModal}
-        className="btn-primary flex items-center space-x-2 px-4 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
+        className="btn-primary flex items-center space-x-2 px-4 py-2.5"
+        style={{ cursor: 'pointer' }}
+        type="button"
       >
         <Plus className="h-4 w-4" />
         <span className="font-medium">Quick Add</span>
@@ -368,11 +404,10 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={closeModal} />
-            
-            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={closeModal} />
+          <div className="flex min-h-screen items-center justify-center p-4 relative z-10">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
                 <h3 className="text-lg font-semibold text-gray-900">Quick Add Transaction</h3>
                 <button
                   onClick={closeModal}
@@ -382,7 +417,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleSubmit} className="p-6 space-y-5">
                 {/* Transaction Type Tabs */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -430,7 +465,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
                 {/* Description/Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                     {formData.type === 'investment' ? 'Investment Name' : 'Description'}
                     {formData.type !== 'investment' && (
                       <span className="ml-2 text-xs text-gray-500 flex items-center">
@@ -440,18 +475,18 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                     )}
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <FileText className="absolute left-3 top-3 h-5 w-5 text-gray-400 z-10" />
                     <textarea
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
                       rows={3}
-                      className="input pl-10 resize-none"
+                      className="input-with-icon resize-none"
                       placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction... (e.g., "coffee at starbucks")'}
                     />
                     {isAutoCategorizing && (
                       <div className="absolute right-3 top-3 flex items-center bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <LoadingSpinner size="sm" variant="default" />
                         <span className="ml-2 text-xs text-blue-600 font-medium">AI Categorizing...</span>
                       </div>
                     )}
@@ -474,13 +509,48 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   </div>
                 </div>
 
+                {/* Category for all types */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center justify-between">
+                    Category
+                    {formData.description.trim().length >= 3 && formData.type !== 'investment' && (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoCategorize(formData.description.trim())}
+                        disabled={isAutoCategorizing}
+                        className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
+                      </button>
+                    )}
+                  </label>
+                  {formData.type === 'investment' ? (
+                    <CategorySelect
+                      value={formData.categoryId}
+                      onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
+                      type="investment"
+                      required={false}
+                      placeholder="Select investment category"
+                    />
+                  ) : (
+                    <CategorySelect
+                      value={formData.categoryId}
+                      onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
+                      type={formData.type}
+                      required={false}
+                      placeholder="Select a category"
+                    />
+                  )}
+                </div>
+
                 {/* Amount */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     Amount
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
                     <input
                       type="number"
                       name="amount"
@@ -495,41 +565,14 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   </div>
                 </div>
 
-                {/* Category for Income/Expense */}
-                {formData.type !== 'investment' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
-                      Category
-                      {formData.description.trim().length >= 3 && (
-                        <button
-                          type="button"
-                          onClick={() => handleAutoCategorize(formData.description.trim())}
-                          disabled={isAutoCategorizing}
-                          className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
-                        >
-                          <Sparkles className="h-3 w-3" />
-                          <span>{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
-                        </button>
-                      )}
-                    </label>
-                    <CategorySelect
-                      value={formData.categoryId}
-                      onChange={(categoryId) => setFormData(prev => ({ ...prev, categoryId }))}
-                      type={formData.type}
-                      required
-                      placeholder="Select a category"
-                    />
-                  </div>
-                )}
-
                 {/* Investment Type */}
                 {formData.type === 'investment' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Investment Type
                     </label>
                     <div className="relative">
-                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
                       <select
                         name="investmentType"
                         value={formData.investmentType}
@@ -549,11 +592,11 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
                 {/* Date */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
                     Date
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
                     <input
                       type="date"
                       name="date"
@@ -568,7 +611,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                 {/* Platform for Investments */}
                 {formData.type === 'investment' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       Platform (Optional)
                     </label>
                     <input
@@ -591,26 +634,15 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                   >
                     Cancel
                   </button>
-                  <button
+                  <LoadingButton
                     type="submit"
-                    disabled={isLoading}
-                    className={`btn flex-1 ${
-                      formData.type === 'expense' 
-                        ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500' 
-                        : formData.type === 'income'
-                        ? 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
-                        : 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    isLoading={isLoading}
+                    loadingText="Adding..."
+                    variant={formData.type === 'expense' ? 'error' : formData.type === 'income' ? 'success' : 'investment'}
+                    className="flex-1"
                   >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Adding...
-                      </div>
-                    ) : (
-                      `Add ${formData.type === 'expense' ? 'Expense' : formData.type === 'income' ? 'Income' : 'Investment'}`
-                    )}
-                  </button>
+                    {`Add ${formData.type === 'expense' ? 'Expense' : formData.type === 'income' ? 'Income' : 'Investment'}`}
+                  </LoadingButton>
                 </div>
               </form>
             </div>
