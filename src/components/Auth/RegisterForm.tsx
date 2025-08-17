@@ -60,16 +60,16 @@ export function RegisterForm() {
           }
         `}
       </style>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="w-full max-w-md my-8"
+        className="w-full max-w-md my-4"
       >
         <div className="bg-white rounded-2xl shadow-2xl relative">
           {/* Modern Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 relative">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 sm:p-4 relative">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -96,10 +96,10 @@ export function RegisterForm() {
           </div>
 
           {/* Form */}
-          <div className="p-4 sm:p-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="p-3 sm:p-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
                 Full Name
               </label>
               <div className="relative">
@@ -110,14 +110,14 @@ export function RegisterForm() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="Enter your full name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
                 Email Address
               </label>
               <div className="relative">
@@ -128,14 +128,14 @@ export function RegisterForm() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
                 Password
               </label>
               <div className="relative">
@@ -147,7 +147,7 @@ export function RegisterForm() {
                   onChange={handleChange}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-10 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="Create a password"
                 />
                 <button
@@ -161,7 +161,7 @@ export function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
                 Confirm Password
               </label>
               <div className="relative">
@@ -172,7 +172,7 @@ export function RegisterForm() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-10 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                   placeholder="Confirm your password"
                 />
                 <button
@@ -186,7 +186,7 @@ export function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-800 mb-1">
                 Preferred Currency
               </label>
               <div className="relative">
@@ -195,7 +195,7 @@ export function RegisterForm() {
                   name="currency"
                   value={formData.currency}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer relative z-10"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer relative z-10"
                   style={{ 
                     backgroundImage: 'none',
                     WebkitAppearance: 'none',
