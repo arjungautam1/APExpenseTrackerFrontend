@@ -47,9 +47,20 @@ const categories = [
 const monthlyExpenseAPI = {
   async create(data: CreateMonthlyExpenseData): Promise<MonthlyExpense> {
     const token = localStorage.getItem('token');
+    console.log('MonthlyExpenseAPI - Token check:', {
+      hasToken: !!token,
+      tokenValue: token ? token.substring(0, 20) + '...' : 'none',
+      tokenLength: token?.length
+    });
+    
     if (!token) {
       throw new Error('No authentication token');
     }
+
+    console.log('MonthlyExpenseAPI - Making request with headers:', {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token.substring(0, 20)}...`
+    });
 
     const response = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/monthly-expenses', {
       method: 'POST',
@@ -60,8 +71,12 @@ const monthlyExpenseAPI = {
       body: JSON.stringify(data)
     });
 
+    console.log('MonthlyExpenseAPI - Response status:', response.status);
+    console.log('MonthlyExpenseAPI - Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('MonthlyExpenseAPI - Error response:', errorData);
       throw new Error(errorData.message || 'Failed to create monthly expense');
     }
 
@@ -168,6 +183,55 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     setLoading(true);
     try {
       console.log('Submitting monthly expense with data:', formData);
+      
+      // First, test if the token is valid by making a simple request
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.log('Testing token validity...');
+        try {
+          const testResponse = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/auth/me', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          console.log('Token test response status:', testResponse.status);
+          
+          if (testResponse.status === 401) {
+            console.log('Token is invalid, attempting refresh...');
+            // Try to refresh the token
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+              const refreshResponse = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refreshToken })
+              });
+              
+              if (refreshResponse.ok) {
+                const refreshData = await refreshResponse.json();
+                const { token: newToken, refreshToken: newRefreshToken } = refreshData.data;
+                localStorage.setItem('token', newToken);
+                localStorage.setItem('refreshToken', newRefreshToken);
+                console.log('Token refreshed successfully');
+              } else {
+                console.log('Token refresh failed');
+                toast.error('Session expired. Please log in again.');
+                return;
+              }
+            } else {
+              console.log('No refresh token available');
+              toast.error('Session expired. Please log in again.');
+              return;
+            }
+          }
+        } catch (testError) {
+          console.error('Token test failed:', testError);
+        }
+      }
       
       if (isEditing && expense) {
         await monthlyExpenseAPI.update(expense._id, formData);
