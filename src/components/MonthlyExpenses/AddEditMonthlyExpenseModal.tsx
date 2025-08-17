@@ -108,11 +108,46 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
       console.error('Error response:', error.response?.data);
       console.error('Error status:', error.response?.status);
       
-      // Let the API interceptor handle authentication errors
+      // Handle 401 errors specifically for monthly expenses
       if (error.response?.status === 401) {
-        // The API interceptor will handle the redirect
-        console.log('401 error - API interceptor will handle authentication');
-        toast.error('Authentication error - please try again');
+        console.log('401 error on monthly expense - attempting to refresh token and retry');
+        
+        try {
+          // Try to refresh the token manually
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            console.log('Attempting manual token refresh...');
+            
+            // Import authService for token refresh
+            const { authService } = await import('../../services/auth');
+            const response = await authService.refreshToken();
+            const { token, refreshToken: newRefreshToken } = response.data.data;
+            
+            localStorage.setItem('token', token);
+            localStorage.setItem('refreshToken', newRefreshToken);
+            
+            console.log('Token refreshed successfully, retrying monthly expense creation...');
+            
+            // Retry the request with the new token
+            if (isEditing && expense) {
+              await monthlyExpenseService.updateMonthlyExpense(expense._id, formData);
+              toast.success('Monthly expense updated successfully');
+            } else {
+              await monthlyExpenseService.createMonthlyExpense(formData);
+              toast.success('Monthly expense added successfully');
+            }
+            onSuccess();
+            onClose();
+            return;
+          }
+        } catch (refreshError) {
+          console.error('Manual token refresh failed:', refreshError);
+        }
+        
+        // If refresh failed or no refresh token, show error
+        toast.error('Session expired. Please log in again.');
+        console.log('Redirecting to login due to authentication failure');
+        window.location.href = '/login';
       } else {
         toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
       }
