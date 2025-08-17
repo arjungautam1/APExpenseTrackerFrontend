@@ -13,7 +13,7 @@ import { TransactionSuccessNotification, useTransactionSuccessNotification } fro
 
 interface QuickAddTransactionProps {
   onClose?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (transactionData?: any) => void;
 }
 
 export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionProps) {
@@ -327,6 +327,14 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
           category: selectedCategory ? { name: selectedCategory.name } : undefined,
           date: formData.date + 'T12:00:00'
         });
+        
+        // Call onSuccess with transaction data
+        if (onSuccess) onSuccess({
+          amount: notificationAmount,
+          type: formData.type,
+          description: formData.description.trim(),
+          category: selectedCategory ? { name: selectedCategory.name } : undefined
+        });
       }
       
       // Reset form
@@ -349,7 +357,6 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       setAutoCategorized(false);
       
       setIsModalOpen(false);
-      if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (error: any) {
       console.error('Failed to create:', error);

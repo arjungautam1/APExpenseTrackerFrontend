@@ -100,13 +100,15 @@ export function DashboardPage() {
     fetchDashboardData();
     
     // Show modern success popup with transaction details
-    showPopup({
-      variant: 'floating-badge',
-      title: 'Transaction Added!',
-      message: 'Your transaction has been successfully recorded.',
-      amount: transactionData?.amount || 100, // Default amount for demo
-      type: transactionData?.type || 'expense' // Dynamic based on transaction type
-    });
+    if (transactionData?.amount) {
+      showPopup({
+        variant: 'floating-badge',
+        title: 'Transaction Added!',
+        message: 'Your transaction has been successfully recorded.',
+        amount: transactionData.amount,
+        type: transactionData.type || 'expense'
+      });
+    }
   };
 
 

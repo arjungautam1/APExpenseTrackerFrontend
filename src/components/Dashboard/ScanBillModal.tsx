@@ -9,7 +9,7 @@ import heic2any from 'heic2any';
 import { TransactionSuccessNotification, useTransactionSuccessNotification } from '../UI/TransactionSuccessNotification';
 
 interface ScanBillModalProps {
-  onSuccess?: () => void;
+  onSuccess?: (transactionData?: any) => void;
 }
 
 export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
@@ -273,7 +273,12 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       });
       
       close();
-      onSuccess?.();
+      onSuccess?.({
+        amount: notificationAmount,
+        type: (result?.transactionType as 'income' | 'expense') || 'expense',
+        description: result?.description || result?.merchant || 'Scanned document',
+        category: selectedCategory ? { name: selectedCategory.name } : undefined
+      });
     } catch (error: any) {
       console.error('Transaction creation error:', error);
       console.error('Error response:', error.response?.data);
