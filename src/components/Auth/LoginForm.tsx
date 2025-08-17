@@ -136,8 +136,9 @@ export function LoginForm() {
               )}
             </motion.button>
           </form>
+        </div>
 
-          <div className="mt-6 text-center">
+        <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link
