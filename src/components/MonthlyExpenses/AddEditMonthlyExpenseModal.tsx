@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Home, Phone, Wifi, Dumbbell, CreditCard } from 'lucide-react';
 import { MonthlyExpenseDto, CreateMonthlyExpenseDto, UpdateMonthlyExpenseDto, monthlyExpenseService } from '../../services/monthlyExpense';
-import { authService } from '../../services/auth';
 import toast from 'react-hot-toast';
 
 interface AddEditMonthlyExpenseModalProps {
@@ -86,26 +85,6 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check authentication status
-    const token = localStorage.getItem('token');
-    const isAuthenticated = authService.isAuthenticated();
-    
-    console.log('MonthlyExpenseModal - Authentication check:', {
-      hasToken: !!token,
-      tokenValue: token ? token.substring(0, 20) + '...' : 'none',
-      isAuthenticated: isAuthenticated
-    });
-    
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to login');
-      toast.error('Please log in to continue');
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
-      return;
-    }
-    
     if (!validateForm()) {
       return;
     }
@@ -124,12 +103,10 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     } catch (error: any) {
       console.error('Error saving monthly expense:', error);
       
-      // Handle authentication errors specifically
+      // Let the API interceptor handle authentication errors
       if (error.response?.status === 401) {
-        toast.error('Session expired. Please log in again.');
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // The API interceptor will handle the redirect
+        console.log('401 error - API interceptor will handle authentication');
       } else {
         toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
       }
