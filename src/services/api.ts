@@ -74,28 +74,29 @@ class ApiService {
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return this.api(originalRequest);
             } else {
-              console.log('No refresh token available, redirecting to login');
-              // No refresh token, redirect to login
-              localStorage.removeItem('token');
-              localStorage.removeItem('refreshToken');
-              console.log('About to redirect to login page...');
-              window.location.href = '/login';
+              console.log('No refresh token available - NOT redirecting for debugging');
+              // Temporarily disable redirect for debugging
+              // localStorage.removeItem('token');
+              // localStorage.removeItem('refreshToken');
+              // console.log('About to redirect to login page...');
+              // window.location.href = '/login';
             }
           } catch (refreshError) {
             console.log('Token refresh failed:', refreshError);
-            // Refresh failed, redirect to login
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            console.log('About to redirect to login page due to refresh failure...');
-            window.location.href = '/login';
+            // Temporarily disable redirect for debugging
+            // localStorage.removeItem('token');
+            // localStorage.removeItem('refreshToken');
+            // console.log('About to redirect to login page due to refresh failure...');
+            // window.location.href = '/login';
           }
         } else if (error.response?.status === 401 && originalRequest._retry) {
           // Already tried to refresh, redirect to login
-          console.log('Token refresh already attempted, redirecting to login');
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          console.log('About to redirect to login page due to retry failure...');
-          window.location.href = '/login';
+          console.log('Token refresh already attempted - NOT redirecting for debugging');
+          // Temporarily disable redirect for debugging
+          // localStorage.removeItem('token');
+          // localStorage.removeItem('refreshToken');
+          // console.log('About to redirect to login page due to retry failure...');
+          // window.location.href = '/login';
         }
 
         return Promise.reject(error);

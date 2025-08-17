@@ -91,6 +91,9 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
 
     setLoading(true);
     try {
+      console.log('Submitting monthly expense with data:', formData);
+      console.log('Current token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+      
       if (isEditing && expense) {
         await monthlyExpenseService.updateMonthlyExpense(expense._id, formData);
         toast.success('Monthly expense updated successfully');
@@ -102,11 +105,14 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
       onClose();
     } catch (error: any) {
       console.error('Error saving monthly expense:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       
       // Let the API interceptor handle authentication errors
       if (error.response?.status === 401) {
         // The API interceptor will handle the redirect
         console.log('401 error - API interceptor will handle authentication');
+        toast.error('Authentication error - please try again');
       } else {
         toast.error(isEditing ? 'Failed to update expense' : 'Failed to add expense');
       }
