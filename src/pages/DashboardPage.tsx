@@ -333,7 +333,6 @@ export function DashboardPage() {
 
         {/* Expense Breakdown */}
         <ExpenseBreakdown 
-          dateRange={dateRange || undefined}
           limit={8} 
           showTrends={true} 
         />

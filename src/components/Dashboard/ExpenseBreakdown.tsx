@@ -36,7 +36,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
       const monthName = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       return `${monthName} Expense Breakdown`;
     }
-    return dateRange ? 'Expense Breakdown' : 'All-Time Expense Breakdown';
+    return dateRange ? 'Expense Breakdown' : 'Expense Breakdown';
   };
 
   const fetchExpenseBreakdown = async () => {
@@ -497,56 +497,6 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
               </div>
             )}
 
-            {/* Category Trends Section */}
-            {showTrends && breakdown.monthlyTrends.length > 0 && (
-              <div className="pt-8 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-medium text-gray-900">Category Trends</h3>
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-500">Monthly Patterns</span>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  {breakdown.monthlyTrends.map((trend) => (
-                    <div key={trend.categoryId} className="p-4 rounded-xl border border-gray-100">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-4">{trend.categoryName}</h4>
-                      <div className="space-y-3">
-                        {trend.monthlyData.map((month, index) => {
-                          const monthName = new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', {
-                            month: 'short',
-                            year: 'numeric'
-                          });
-                          const maxAmount = Math.max(...breakdown.monthlyTrends.flatMap(t => t.monthlyData.map(m => m.amount)));
-                          const percentage = maxAmount > 0 ? (month.amount / maxAmount) * 100 : 0;
-
-                          return (
-                            <div key={`${month._id.year}-${month._id.month}`} className="flex items-center space-x-4">
-                              <span className="text-sm text-gray-600 w-20 font-medium">{monthName}</span>
-                              <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                                <div
-                                  className="h-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                              <div className="flex items-center space-x-3">
-                                <span className="text-sm font-semibold text-gray-900 w-20 text-right">
-                                  {formatCurrency(month.amount)}
-                                </span>
-                                <span className="text-xs text-gray-500 w-8 text-right">
-                                  {month.count}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
