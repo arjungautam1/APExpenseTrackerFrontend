@@ -1,6 +1,7 @@
 import React from 'react';
 import { Transaction } from '../../types';
 import { useCurrencyFormatter } from '../../utils/currency';
+import { formatTransactionDescription } from '../../utils/transactionNameFormatter';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface TransactionListProps {
@@ -28,7 +29,7 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
       <div className="md:hidden space-y-3">
         {items.map((t) => {
           const primaryText = (t.description && t.description.trim().length > 0)
-            ? t.description
+            ? formatTransactionDescription(t.description)
             : (t.category?.name || 'Transaction');
           const showCategoryChip = Boolean(t.description && t.description.trim().length > 0);
           return (
@@ -121,7 +122,7 @@ export function TransactionList({ items, onEdit, onDelete }: TransactionListProp
               <tr key={t.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 align-middle">
                   <p className="font-medium text-gray-900 truncate">
-                    {(t.description && t.description.trim().length > 0) ? t.description : (t.category?.name || 'Transaction')}
+                    {(t.description && t.description.trim().length > 0) ? formatTransactionDescription(t.description) : (t.category?.name || 'Transaction')}
                   </p>
                 </td>
                 <td className="px-4 py-3 align-middle">

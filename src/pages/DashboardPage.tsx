@@ -6,6 +6,7 @@ import { BulkTransactionUpload } from '../components/Dashboard/BulkTransactionUp
 import { transactionService } from '../services/transaction';
 import { investmentService } from '../services/investment';
 import { useCurrencyFormatter } from '../utils/currency';
+import { formatTransactionDescription } from '../utils/transactionNameFormatter';
 import { TrendingUp, TrendingDown, DollarSign, PiggyBank, BarChart3, Building, Grid3X3 } from 'lucide-react';
 import { Transaction } from '../types';
 import toast from 'react-hot-toast';
@@ -274,7 +275,7 @@ export function DashboardPage() {
               <div className="space-y-4 max-h-96 overflow-y-auto">
               {filteredTransactions.map((t) => {
                 const primaryText = (t.description && t.description.trim().length > 0)
-                  ? t.description
+                  ? formatTransactionDescription(t.description)
                   : (t.category?.name || 'Transaction');
                 const showCategoryChip = Boolean(t.description && t.description.trim().length > 0);
                 return (
