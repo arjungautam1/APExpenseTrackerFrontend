@@ -44,6 +44,15 @@ export function LoginForm() {
             <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
             <p className="text-gray-600 mt-2">Sign in to your account</p>
           </div>
+          
+          <div className="text-center mb-4">
+            <Link
+              to="/"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              ← Back to Home
+            </Link>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
