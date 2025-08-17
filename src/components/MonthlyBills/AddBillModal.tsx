@@ -29,6 +29,8 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
     category: 'other',
     description: ''
   });
+
+  const [amountDisplay, setAmountDisplay] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -41,6 +43,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
         category: editingBill.category,
         description: editingBill.description || ''
       });
+      setAmountDisplay(editingBill.amount.toString());
     } else {
       setFormData({
         name: '',
@@ -49,6 +52,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
         category: 'other',
         description: ''
       });
+      setAmountDisplay('');
     }
     setErrors({});
   }, [editingBill, isOpen]);
@@ -109,6 +113,22 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
       setErrors(prev => ({
         ...prev,
         [field]: ''
+      }));
+    }
+  };
+
+  const handleAmountChange = (value: string) => {
+    setAmountDisplay(value);
+    const numValue = parseFloat(value) || 0;
+    setFormData(prev => ({
+      ...prev,
+      amount: numValue
+    }));
+    
+    if (errors.amount) {
+      setErrors(prev => ({
+        ...prev,
+        amount: ''
       }));
     }
   };
@@ -194,15 +214,13 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
                   <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.amount}
-                    onChange={(e) => handleInputChange('amount', parseFloat(e.target.value) || 0)}
+                    type="text"
+                    value={amountDisplay}
+                    onChange={(e) => handleAmountChange(e.target.value)}
                     className={`w-full pl-7 pr-3 py-2.5 bg-gray-50 border rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${
                       errors.amount ? 'border-red-300 bg-red-50' : 'border-gray-200'
                     }`}
-                    placeholder="0.00"
+                    placeholder="123.45"
                   />
                 </div>
                 {errors.amount && (
@@ -225,7 +243,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                       <option key={day} value={day}>
-                        {day}{day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th'}
+                        {day}
                       </option>
                     ))}
                   </select>
