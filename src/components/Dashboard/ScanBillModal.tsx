@@ -258,9 +258,15 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
       const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
       
       // Show modern success notification
+      const notificationAmount = parseFloat(editableAmount.toString());
+      console.log('ScanBillModal - Amount being passed to notification:', {
+        originalAmount: editableAmount,
+        parsedAmount: notificationAmount,
+        type: typeof notificationAmount
+      });
       showSuccess({
         type: (result?.transactionType as 'income' | 'expense') || 'expense',
-        amount: editableAmount,
+        amount: notificationAmount,
         description: result?.description || result?.merchant || 'Scanned document',
         category: selectedCategory ? { name: selectedCategory.name } : undefined,
         date: localDateString

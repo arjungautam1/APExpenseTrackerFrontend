@@ -43,6 +43,13 @@ export function TransactionSuccessNotification({
     return null;
   }
 
+  // Debug logging
+  console.log('TransactionSuccessNotification - Received transaction:', {
+    amount: transaction.amount,
+    type: typeof transaction.amount,
+    formattedAmount: formatCurrency(transaction.amount)
+  });
+
   const getTypeIcon = () => {
     switch (transaction.type) {
       case 'income':

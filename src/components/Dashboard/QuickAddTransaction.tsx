@@ -314,9 +314,15 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
         const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
         
         // Show modern success notification
+        const notificationAmount = parseFloat(formData.amount);
+        console.log('QuickAddTransaction - Amount being passed to notification:', {
+          originalAmount: formData.amount,
+          parsedAmount: notificationAmount,
+          type: typeof notificationAmount
+        });
         showSuccess({
           type: formData.type,
-          amount: parseFloat(formData.amount),
+          amount: notificationAmount,
           description: formData.description.trim(),
           category: selectedCategory ? { name: selectedCategory.name } : undefined,
           date: formData.date + 'T12:00:00'
