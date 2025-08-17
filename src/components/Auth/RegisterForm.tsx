@@ -41,7 +41,7 @@ export function RegisterForm() {
     const success = await register(registerData);
     
     if (success) {
-      navigate('/');
+      navigate('/dashboard');
     }
   };
 
