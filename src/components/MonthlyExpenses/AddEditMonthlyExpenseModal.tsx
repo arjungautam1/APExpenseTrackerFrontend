@@ -43,69 +43,35 @@ const categories = [
   { key: 'other', name: 'Other', icon: CreditCard, color: 'bg-orange-100 text-orange-600' }
 ];
 
+// Use the existing API service that works for other endpoints
+import { apiService } from '../../services/api';
+
 // Simple API service for monthly expenses
 const monthlyExpenseAPI = {
   async create(data: CreateMonthlyExpenseData): Promise<MonthlyExpense> {
-    const token = localStorage.getItem('token');
-    console.log('MonthlyExpenseAPI - Token check:', {
-      hasToken: !!token,
-      tokenValue: token ? token.substring(0, 20) + '...' : 'none',
-      tokenLength: token?.length
-    });
+    console.log('MonthlyExpenseAPI - Using apiService for create request');
     
-    if (!token) {
-      throw new Error('No authentication token');
+    try {
+      const response = await apiService.post<{ data: MonthlyExpense }>('/monthly-expenses', data);
+      console.log('MonthlyExpenseAPI - Create successful via apiService');
+      return response.data.data;
+    } catch (error: any) {
+      console.log('MonthlyExpenseAPI - Create failed via apiService:', error);
+      throw error;
     }
-
-    console.log('MonthlyExpenseAPI - Making request with headers:', {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token.substring(0, 20)}...`
-    });
-
-    const response = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/monthly-expenses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(data)
-    });
-
-    console.log('MonthlyExpenseAPI - Response status:', response.status);
-    console.log('MonthlyExpenseAPI - Response headers:', Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log('MonthlyExpenseAPI - Error response:', errorData);
-      throw new Error(errorData.message || 'Failed to create monthly expense');
-    }
-
-    const result = await response.json();
-    return result.data;
   },
 
   async update(id: string, data: Partial<CreateMonthlyExpenseData>): Promise<MonthlyExpense> {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No authentication token');
+    console.log('MonthlyExpenseAPI - Using apiService for update request');
+    
+    try {
+      const response = await apiService.put<{ data: MonthlyExpense }>(`/monthly-expenses/${id}`, data);
+      console.log('MonthlyExpenseAPI - Update successful via apiService');
+      return response.data.data;
+    } catch (error: any) {
+      console.log('MonthlyExpenseAPI - Update failed via apiService:', error);
+      throw error;
     }
-
-    const response = await fetch(`https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/monthly-expenses/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update monthly expense');
-    }
-
-    const result = await response.json();
-    return result.data;
   }
 };
 
@@ -184,55 +150,6 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     try {
       console.log('Submitting monthly expense with data:', formData);
       
-      // First, test if the token is valid by making a simple request
-      const token = localStorage.getItem('token');
-      if (token) {
-        console.log('Testing token validity...');
-        try {
-          const testResponse = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/auth/me', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          console.log('Token test response status:', testResponse.status);
-          
-          if (testResponse.status === 401) {
-            console.log('Token is invalid, attempting refresh...');
-            // Try to refresh the token
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (refreshToken) {
-              const refreshResponse = await fetch('https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api/auth/refresh', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ refreshToken })
-              });
-              
-              if (refreshResponse.ok) {
-                const refreshData = await refreshResponse.json();
-                const { token: newToken, refreshToken: newRefreshToken } = refreshData.data;
-                localStorage.setItem('token', newToken);
-                localStorage.setItem('refreshToken', newRefreshToken);
-                console.log('Token refreshed successfully');
-              } else {
-                console.log('Token refresh failed');
-                toast.error('Session expired. Please log in again.');
-                return;
-              }
-            } else {
-              console.log('No refresh token available');
-              toast.error('Session expired. Please log in again.');
-              return;
-            }
-          }
-        } catch (testError) {
-          console.error('Token test failed:', testError);
-        }
-      }
-      
       if (isEditing && expense) {
         await monthlyExpenseAPI.update(expense._id, formData);
         toast.success('Monthly expense updated successfully');
@@ -245,9 +162,11 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
     } catch (error: any) {
       console.error('Error saving monthly expense:', error);
       
-      if (error.message.includes('authentication') || error.message.includes('token')) {
+      // Handle different types of errors
+      if (error.response?.status === 401) {
+        toast.error('Authentication error. Please try logging in again.');
+      } else if (error.message?.includes('authentication') || error.message?.includes('token')) {
         toast.error('Please log in again to continue');
-        // Don't redirect automatically - let user decide
       } else {
         toast.error(error.message || (isEditing ? 'Failed to update expense' : 'Failed to add expense'));
       }
