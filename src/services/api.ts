@@ -22,6 +22,12 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token');
+        console.log('API Request - Token check:', {
+          hasToken: !!token,
+          tokenValue: token ? token.substring(0, 20) + '...' : 'none',
+          url: config.url,
+          method: config.method
+        });
         if (token && token !== 'mock-jwt-token') {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -38,8 +44,16 @@ class ApiService {
       async (error) => {
         const originalRequest = error.config;
 
+        console.log('API Response Error:', {
+          status: error.response?.status,
+          url: originalRequest.url,
+          method: originalRequest.method,
+          message: error.response?.data?.message
+        });
+
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
+          console.log('Attempting token refresh...');
 
           try {
             const refreshToken = localStorage.getItem('refreshToken');
@@ -50,11 +64,16 @@ class ApiService {
               localStorage.setItem('token', token);
               localStorage.setItem('refreshToken', newRefreshToken);
               
+              console.log('Token refresh successful, retrying request');
+              
               // Retry original request
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return this.api(originalRequest);
+            } else {
+              console.log('No refresh token available');
             }
           } catch (refreshError) {
+            console.log('Token refresh failed:', refreshError);
             // Refresh failed, redirect to login
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');

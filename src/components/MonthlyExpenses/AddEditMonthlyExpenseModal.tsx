@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Home, Phone, Wifi, Dumbbell, CreditCard } from 'lucide-react';
 import { MonthlyExpenseDto, CreateMonthlyExpenseDto, UpdateMonthlyExpenseDto, monthlyExpenseService } from '../../services/monthlyExpense';
+import { authService } from '../../services/auth';
 import toast from 'react-hot-toast';
 
 interface AddEditMonthlyExpenseModalProps {
@@ -84,6 +85,14 @@ const AddEditMonthlyExpenseModal: React.FC<AddEditMonthlyExpenseModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check authentication status
+    const token = localStorage.getItem('token');
+    console.log('MonthlyExpenseModal - Authentication check:', {
+      hasToken: !!token,
+      tokenValue: token ? token.substring(0, 20) + '...' : 'none',
+      isAuthenticated: authService.isAuthenticated()
+    });
     
     if (!validateForm()) {
       return;
