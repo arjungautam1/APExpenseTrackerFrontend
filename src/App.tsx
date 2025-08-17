@@ -14,6 +14,7 @@ import { LoansPage } from './pages/LoansPage'
 import { TransfersPage } from './pages/TransfersPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ProfileSettingsPage } from './pages/ProfileSettingsPage'
 import MonthlyExpensesPage from './pages/MonthlyExpensesPage'
 
 function App() {
@@ -102,6 +103,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <SettingsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile-settings"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ProfileSettingsPage />
               </Layout>
             </ProtectedRoute>
           }

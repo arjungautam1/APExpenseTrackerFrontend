@@ -22,6 +22,7 @@ interface AuthContextType extends AuthState {
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -161,6 +162,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUser = (userData: Partial<User>): void => {
+    if (state.user) {
+      const updatedUser = { ...state.user, ...userData };
+      dispatch({ type: 'SET_USER', payload: updatedUser });
+    }
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -171,6 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     register,
     logout,
     checkAuth,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

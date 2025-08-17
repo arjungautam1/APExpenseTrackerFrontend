@@ -216,10 +216,7 @@ export function DashboardPage() {
                 <span className="xs:hidden">Upload</span>
               </motion.button>
               <ScanBillModal onSuccess={handleTransactionAdded} />
-              <div className="relative group">
-                <QuickAddTransaction onSuccess={handleTransactionAdded} />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-              </div>
+              <QuickAddTransaction onSuccess={handleTransactionAdded} />
             </div>
           </div>
         </div>

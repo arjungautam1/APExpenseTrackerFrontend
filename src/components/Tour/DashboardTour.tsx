@@ -88,21 +88,8 @@ export function DashboardTour({ onClose }: DashboardTourProps) {
     );
   }
 
-  // Floating help button for returning users
-  return (
-    <motion.button
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={startTour}
-      className="fixed bottom-6 right-6 z-[9996] w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center group"
-      title="Take a tour"
-    >
-      <HelpCircle className="h-6 w-6 text-white" />
-      <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-    </motion.button>
-  );
+  // Return null to hide the floating help button
+  return null;
 }
 
 // Tour step configurations

@@ -4,6 +4,7 @@ export interface User {
   email: string;
   currency: string;
   timezone: string;
+  language?: string;
   isVerified: boolean;
   avatar?: string;
 }

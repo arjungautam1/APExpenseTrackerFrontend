@@ -74,34 +74,99 @@ export function Layout({ children }: LayoutProps) {
         {/* Top bar */}
         <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-200/70 px-3 py-3 sm:px-6 lg:px-8 shadow-sm">
           <div className="flex items-center justify-between">
-            <button
-              type="button"
-              className="lg:hidden -ml-0.5 -mt-0.5 h-10 w-10 sm:h-12 sm:w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                className="lg:hidden -ml-0.5 -mt-0.5 h-10 w-10 sm:h-12 sm:w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+              
+              {/* Help Button */}
+              <button
+                type="button"
+                className="h-10 w-10 sm:h-12 sm:w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  // Import and set dashboard tour steps
+                  import('../Tour/DashboardTour').then(({ dashboardTourSteps }) => {
+                    setSteps?.(dashboardTourSteps as any);
+                    setIsOpen?.(true);
+                  });
+                }}
+                title="Help & Tour"
+              >
+                <HelpCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+            </div>
             
-            <div className="flex items-center space-x-2 sm:space-x-4 ml-auto">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-gray-900 truncate max-w-24 sm:max-w-none">{user?.name}</p>
-                  <p className="text-xs text-gray-500 truncate max-w-24 sm:max-w-none">{user?.email}</p>
-                </div>
-                <div className="flex-shrink-0">
-                  <div className="h-7 w-7 sm:h-8 sm:w-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <div className="flex items-center space-x-3 ml-auto">
+              {/* Modern User Profile Dropdown */}
+              <div className="relative group">
+                <button className="flex items-center space-x-3 p-2 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200/60 hover:border-gray-300/60 transition-all duration-300 hover:shadow-md">
+                  <div className="flex-shrink-0">
+                    <div className="h-8 w-8 sm:h-9 sm:w-9 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <User className="h-4 w-4 sm:h-5 sm:w-5 text-white drop-shadow-sm" />
+                    </div>
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <p className="text-sm font-semibold text-gray-900 truncate max-w-32">{user?.name}</p>
+                    <p className="text-xs text-gray-500 truncate max-w-32">{user?.email}</p>
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  </div>
+                </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-full mt-2 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100 z-50">
+                  <div className="bg-white/95 backdrop-blur-md border border-gray-200/60 rounded-xl shadow-xl p-4">
+                    {/* User Info Section */}
+                    <div className="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                      <div className="h-10 w-10 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-full flex items-center justify-center shadow-lg">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    </div>
+                    
+                    {/* Menu Items */}
+                    <div className="py-2 space-y-1">
+                      <Link
+                        to="/profile-settings"
+                        className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors duration-200"
+                      >
+                        <div className="w-5 h-5 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <User className="h-3 w-3 text-blue-600" />
+                        </div>
+                        <span>Profile Settings</span>
+                      </Link>
+                      
+                      <button className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors duration-200">
+                        <div className="w-5 h-5 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <Settings className="h-3 w-3 text-purple-600" />
+                        </div>
+                        <span>Preferences</span>
+                      </button>
+                      
+                      <div className="border-t border-gray-100 my-2"></div>
+                      
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors duration-200"
+                      >
+                        <div className="w-5 h-5 bg-red-100 rounded-lg flex items-center justify-center">
+                          <LogOut className="h-3 w-3 text-red-600" />
+                        </div>
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <button
-                onClick={handleLogout}
-                className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
-                title="Logout"
-              >
-                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
             </div>
           </div>
         </div>
