@@ -51,11 +51,11 @@ export function RegisterForm() {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md my-8"
       >
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl">
           {/* Modern Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 sm:p-6 relative">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -76,13 +76,13 @@ export function RegisterForm() {
             </div>
             
             {/* Decorative elements */}
-            <div className="absolute -bottom-4 right-6 p-3 rounded-full bg-white shadow-lg">
-              <Sparkles className="h-6 w-6 text-blue-600" />
+            <div className="absolute -bottom-3 right-6 p-2 rounded-full bg-white shadow-lg">
+              <Sparkles className="h-5 w-5 text-blue-600" />
             </div>
           </div>
 
           {/* Form */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2">
