@@ -51,7 +51,7 @@ export function DashboardPage() {
       const [statsResponse, investmentStatsResponse, transactionsResponse] = await Promise.all([
         transactionService.getTransactionStats(startDate, endDate),
         investmentService.getInvestmentStats(startDate, endDate),
-        transactionService.getTransactions({ limit: 5 })
+        transactionService.getTransactions({ limit: 15 })
       ]);
 
       // Combine stats with investment data
@@ -271,7 +271,7 @@ export function DashboardPage() {
           </div>
           <div className="card-body">
             {filteredTransactions.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-96 overflow-y-auto">
               {filteredTransactions.map((t) => {
                 const primaryText = (t.description && t.description.trim().length > 0)
                   ? t.description
