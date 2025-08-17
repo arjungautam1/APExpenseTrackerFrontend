@@ -272,8 +272,8 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
             {/* Category Breakdown List */}
             <div className="space-y-3 sm:space-y-4">
               {breakdown.breakdown.map((item: ExpenseBreakdownItem, index: number) => (
-                <div key={item.categoryId} className="group p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-depth transition-all duration-300 active:scale-[0.98] sm:active:scale-100 hover:-translate-y-1 relative overflow-hidden bg-white/50 backdrop-blur-sm">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
+                <div key={item.categoryId} className="group p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 active:scale-[0.98] sm:active:scale-100 relative overflow-hidden bg-white/90 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
                   <div className="flex items-center space-x-3 sm:space-x-4 relative z-10">
                     {/* Rank Badge */}
                     <div className="flex-shrink-0">
@@ -285,8 +285,8 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
                     {/* Category Icon */}
                     <div className="flex-shrink-0">
                       <div 
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg group-hover:shadow-depth transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
-                        style={{ backgroundColor: item.categoryColor, boxShadow: `0 4px 20px ${item.categoryColor}30` }}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:scale-105"
+                        style={{ backgroundColor: item.categoryColor }}
                       >
                         <span className="text-lg sm:text-xl">{getCategoryIcon(item.categoryIcon)}</span>
                       </div>

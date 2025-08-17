@@ -52,7 +52,7 @@ export function DashboardPage() {
       const [statsResponse, investmentStatsResponse, transactionsResponse] = await Promise.all([
         transactionService.getTransactionStats(startDate, endDate),
         investmentService.getInvestmentStats(startDate, endDate),
-        transactionService.getTransactions({ limit: 15 })
+        transactionService.getTransactions({ limit: 10 })
       ]);
 
       // Combine stats with investment data
@@ -95,20 +95,103 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="px-3 py-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">
-          <div className="mb-8">
-            <div className="h-6 bg-gray-200 rounded w-48 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-64"></div>
+          {/* Header skeleton */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div>
+                <div className="h-6 sm:h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-32 sm:w-48 mb-2"></div>
+                <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-48 sm:w-64"></div>
+              </div>
+              <div className="flex space-x-2">
+                <div className="h-10 w-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+                <div className="h-10 w-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="card">
-                <div className="card-body">
-                  <div className="h-16 bg-gray-200 rounded"></div>
+
+          {/* Stats cards skeleton */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 mb-8">
+            {[
+              { color: 'from-green-200 to-green-300' },
+              { color: 'from-red-200 to-red-300' },
+              { color: 'from-purple-200 to-purple-300' },
+              { color: 'from-blue-200 to-blue-300' }
+            ].map((item, i) => (
+              <div key={i} className="card hover:shadow-lg transition-all duration-300">
+                <div className="card-body p-4 sm:p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${item.color} rounded-lg animate-pulse`}></div>
+                    </div>
+                    <div className="ml-2 sm:ml-4 min-w-0 flex-1">
+                      <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16 sm:w-20 mb-2"></div>
+                      <div className="h-5 sm:h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-20 sm:w-24 mb-1"></div>
+                      <div className="h-2 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-12 hidden sm:block"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Content skeleton */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {/* Recent Transactions skeleton */}
+            <div className="card">
+              <div className="card-header">
+                <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-40 mb-3"></div>
+                <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex-1 h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-md"></div>
+                  ))}
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-2">
+                      <div className="flex-1">
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4 mb-2"></div>
+                        <div className="flex space-x-2">
+                          <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16"></div>
+                          <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-12"></div>
+                        </div>
+                      </div>
+                      <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-16"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Expense Breakdown skeleton */}
+            <div className="card">
+              <div className="card-header">
+                <div className="h-5 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-36 mb-3"></div>
+                <div className="flex space-x-1">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-8 w-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
+              <div className="card-body">
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center space-x-3">
+                      <div className="w-6 h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full"></div>
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-200 to-purple-300 rounded-lg"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4 mb-2"></div>
+                        <div className="h-2 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-full mb-1"></div>
+                        <div className="h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-1/2"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -120,18 +203,21 @@ export function DashboardPage() {
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1 flex items-center">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
               {currentMonth ? `Financial overview for ${currentMonth}` : 'Get an overview of your financial health'}
             </p>
           </div>
           
-          {/* Mobile action buttons */}
+          {/* Action buttons */}
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
             <div className="flex space-x-2 sm:space-x-3">
               <button
                 onClick={() => setShowBulkUploadModal(true)}
-                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2"
+                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2 hover:scale-105 transition-transform"
               >
                 <Grid3X3 className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Bulk Upload</span>
@@ -146,18 +232,18 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
         {/* Stats Cards */}
-        <div className="card group hover:shadow-glow-green transition-all duration-500 hover:-translate-y-2 animate-float">
+        <div className="card group hover:shadow-lg transition-all duration-300">
           <div className="card-body p-4 sm:p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50/30 to-emerald-100/20 opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
             <div className="flex items-center relative z-10">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-green transition-all duration-300 group-hover:scale-110">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
                 <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Total Income</h3>
-                <p className="text-lg sm:text-2xl font-bold text-green-600 truncate group-hover:text-green-700 transition-colors animate-pulse-soft">
+                <p className="text-lg sm:text-2xl font-bold text-green-600 truncate group-hover:text-green-700 transition-colors">
                   {stats ? formatCurrency(stats.totalIncome) : '$0'}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
@@ -166,12 +252,12 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card group hover:shadow-glow-red transition-all duration-500 hover:-translate-y-2 animate-float-delayed">
+        <div className="card group hover:shadow-lg transition-all duration-300">
           <div className="card-body p-4 sm:p-6 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-rose-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-red-50/30 to-rose-100/20 opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
             <div className="flex items-center relative z-10">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-400 to-rose-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-red transition-all duration-300 group-hover:scale-110">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-400 to-rose-500 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
               </div>
@@ -186,41 +272,38 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card group hover:shadow-depth-lg transition-all duration-500 hover:-translate-y-4 hover:scale-105 animate-float relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 opacity-5 group-hover:opacity-20 transition-opacity duration-500"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
-          <div className="card-body p-4 sm:p-6 relative z-10">
+        <div className="card group hover:shadow-lg transition-all duration-300">
+          <div className="card-body p-4 sm:p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0 relative">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-glow-purple transition-all duration-500 group-hover:scale-125 group-hover:rotate-12 animate-glow">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-lg" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg opacity-0 group-hover:opacity-30 blur-md transition-all duration-500 group-hover:scale-150"></div>
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-purple-600 transition-colors duration-300">Investments</h3>
-                <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate group-hover:text-purple-700 transition-all duration-300 group-hover:scale-105 animate-pulse-soft">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate group-hover:text-gray-600 transition-colors">Investments</h3>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 truncate group-hover:text-purple-700 transition-colors">
                   {stats ? formatCurrency(stats.totalInvestments) : '$0'}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-purple-500 transition-colors duration-300">This month</p>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block group-hover:text-gray-600 transition-colors">This month</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="card col-span-2 lg:col-span-1 group hover:shadow-glow transition-all duration-500 hover:-translate-y-2 animate-float relative overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+        <div className="card col-span-2 lg:col-span-1 group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-30 transition-opacity duration-300 ${
             stats && stats.totalSavings >= 0 
-              ? 'from-blue-50/50 to-cyan-100/30' 
-              : 'from-red-50/50 to-rose-100/30'
+              ? 'from-blue-50/30 to-cyan-100/20' 
+              : 'from-red-50/30 to-rose-100/20'
           }`}></div>
           <div className="card-body p-4 sm:p-6 relative z-10">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg ${
                   stats && stats.totalSavings >= 0 
-                    ? 'bg-gradient-to-br from-blue-400 to-cyan-500 group-hover:shadow-glow' 
-                    : 'bg-gradient-to-br from-red-400 to-rose-500 group-hover:shadow-glow-red'
+                    ? 'bg-gradient-to-br from-blue-400 to-cyan-500' 
+                    : 'bg-gradient-to-br from-red-400 to-rose-500'
                 }`}>
                   <PiggyBank className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-sm" />
                 </div>
@@ -243,10 +326,10 @@ export function DashboardPage() {
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Transactions */}
-        <div className="card group hover:shadow-depth transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/15 opacity-0 group-hover:opacity-50 transition-opacity duration-300"></div>
           <div className="card-header relative z-10">
-            <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors animate-pulse-soft">Recent Transactions</h3>
+            <h3 className="text-lg font-medium group-hover:text-gray-800 transition-colors">Recent Transactions</h3>
             
             {/* Transaction Type Tabs */}
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-3">
@@ -298,7 +381,7 @@ export function DashboardPage() {
           </div>
           <div className="card-body relative z-10">
             {filteredTransactions.length > 0 ? (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="space-y-4">
               {filteredTransactions.map((t) => {
                 const primaryText = (t.description && t.description.trim().length > 0)
                   ? formatTransactionDescription(t.description)
