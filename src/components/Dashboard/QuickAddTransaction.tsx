@@ -406,31 +406,32 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       {/* Quick Add Button */}
       <button
         onClick={openModal}
-        className="btn-primary flex items-center space-x-2 px-4 py-2.5"
+        className="btn-primary flex items-center justify-center flex-1 xs:flex-none text-xs sm:text-sm px-3 py-2 space-x-1 sm:space-x-2"
         style={{ cursor: 'pointer' }}
         type="button"
       >
         <Plus className="h-4 w-4" />
-        <span className="font-medium">Quick Add</span>
+        <span className="font-medium hidden xs:inline">Quick Add</span>
+        <span className="font-medium xs:hidden">Add</span>
       </button>
 
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={closeModal} />
-          <div className="flex min-h-screen items-center justify-center p-4 relative z-10">
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
-                <h3 className="text-lg font-semibold text-gray-900">Quick Add Transaction</h3>
+          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4 relative z-10">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-2 sm:mx-0 max-h-[95vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900">Quick Add Transaction</h3>
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 p-1"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto max-h-[calc(95vh-80px)]">
                 {/* Transaction Type Tabs */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -440,48 +441,51 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, type: 'expense', categoryId: '' }))}
-                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`flex-1 flex items-center justify-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                         formData.type === 'expense'
                           ? 'bg-white text-red-600 shadow-sm'
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      <TrendingDown className="h-4 w-4 mr-1" />
-                      Expense
+                      <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden xs:inline">Expense</span>
+                      <span className="xs:hidden">Exp</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, type: 'income', categoryId: '' }))}
-                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`flex-1 flex items-center justify-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                         formData.type === 'income'
                           ? 'bg-white text-green-600 shadow-sm'
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      Income
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden xs:inline">Income</span>
+                      <span className="xs:hidden">Inc</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, type: 'investment', categoryId: '' }))}
-                      className={`flex-1 flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      className={`flex-1 flex items-center justify-center px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
                         formData.type === 'investment'
                           ? 'bg-white text-purple-600 shadow-sm'
                           : 'text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      <Building className="h-4 w-4 mr-1" />
-                      Investment
+                      <Building className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden xs:inline">Investment</span>
+                      <span className="xs:hidden">Inv</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Description/Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                    {formData.type === 'investment' ? 'Investment Name' : 'Description'}
+                  <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex flex-col xs:flex-row xs:items-center">
+                    <span className="mb-1 xs:mb-0">{formData.type === 'investment' ? 'Investment Name' : 'Description'}</span>
                     {formData.type !== 'investment' && (
-                      <span className="ml-2 text-xs text-gray-500 flex items-center">
+                      <span className="text-xs text-gray-500 flex items-center xs:ml-2">
                         <Sparkles className="h-3 w-3 mr-1" />
                         AI-powered categorization
                       </span>
@@ -493,30 +497,32 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
-                      rows={3}
-                      className="input-with-icon resize-none"
-                      placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction... (e.g., "coffee at starbucks")'}
+                      rows={2}
+                      className="input-with-icon resize-none text-sm"
+                      placeholder={formData.type === 'investment' ? 'e.g., Apple Stock, S&P 500 ETF' : 'Add a note about this transaction...'}
                     />
                     {isAutoCategorizing && (
-                      <div className="absolute right-3 top-3 flex items-center bg-blue-50 px-2 py-1 rounded-md border border-blue-200">
+                      <div className="absolute right-2 sm:right-3 top-2 sm:top-3 flex items-center bg-blue-50 px-1 sm:px-2 py-1 rounded-md border border-blue-200">
                         <LoadingSpinner size="sm" variant="default" />
-                        <span className="ml-2 text-xs text-blue-600 font-medium">AI Categorizing...</span>
+                        <span className="ml-1 sm:ml-2 text-xs text-blue-600 font-medium hidden xs:inline">AI Categorizing...</span>
+                        <span className="ml-1 text-xs text-blue-600 font-medium xs:hidden">AI...</span>
                       </div>
                     )}
                     {!isAutoCategorizing && formData.description.trim().length >= 3 && formData.type !== 'investment' && !autoCategorized && (
                       <button
                         type="button"
                         onClick={() => handleAutoCategorize(formData.description.trim())}
-                        className="absolute right-3 top-3 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                        className="absolute right-2 sm:right-3 top-2 sm:top-3 p-1 sm:p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
                         title="Auto-categorize this transaction"
                       >
-                        <Sparkles className="h-4 w-4" />
+                        <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
                       </button>
                     )}
                     {autoCategorized && !isAutoCategorizing && (
-                      <div className="absolute right-3 top-3 flex items-center bg-green-50 px-2 py-1 rounded-md border border-green-200">
-                        <Sparkles className="h-4 w-4 text-green-600" />
-                        <span className="ml-2 text-xs text-green-600 font-medium">AI Categorized</span>
+                      <div className="absolute right-2 sm:right-3 top-2 sm:top-3 flex items-center bg-green-50 px-1 sm:px-2 py-1 rounded-md border border-green-200">
+                        <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+                        <span className="ml-1 sm:ml-2 text-xs text-green-600 font-medium hidden xs:inline">AI Categorized</span>
+                        <span className="ml-1 text-xs text-green-600 font-medium xs:hidden">✓</span>
                       </div>
                     )}
                   </div>
@@ -524,17 +530,18 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
 
                 {/* Category for all types */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center justify-between">
-                    Category
+                  <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3 flex flex-col xs:flex-row xs:items-center xs:justify-between">
+                    <span className="mb-2 xs:mb-0">Category</span>
                     {formData.description.trim().length >= 3 && formData.type !== 'investment' && (
                       <button
                         type="button"
                         onClick={() => handleAutoCategorize(formData.description.trim())}
                         disabled={isAutoCategorizing}
-                        className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
+                        className="flex items-center space-x-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors disabled:opacity-50 self-start xs:self-auto"
                       >
                         <Sparkles className="h-3 w-3" />
-                        <span>{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
+                        <span className="hidden xs:inline">{isAutoCategorizing ? 'Categorizing...' : 'Auto-Categorize'}</span>
+                        <span className="xs:hidden">{isAutoCategorizing ? 'AI...' : 'AI'}</span>
                       </button>
                     )}
                   </label>
@@ -639,11 +646,11 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                 )}
 
                 {/* Submit Buttons */}
-                <div className="flex space-x-3 pt-4">
+                <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-3 pt-4">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="btn-secondary flex-1"
+                    className="btn-secondary flex-1 order-2 xs:order-1"
                   >
                     Cancel
                   </button>
@@ -652,7 +659,7 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
                     isLoading={isLoading}
                     loadingText="Adding..."
                     variant={formData.type === 'expense' ? 'error' : formData.type === 'income' ? 'success' : 'investment'}
-                    className="flex-1"
+                    className="flex-1 order-1 xs:order-2"
                   >
                     {`Add ${formData.type === 'expense' ? 'Expense' : formData.type === 'income' ? 'Income' : 'Investment'}`}
                   </LoadingButton>

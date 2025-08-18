@@ -310,32 +310,33 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
         duration={1500}
       />
 
-      <button onClick={open} className="btn-secondary flex items-center space-x-2">
+      <button onClick={open} className="btn-secondary flex items-center justify-center flex-1 xs:flex-none text-xs sm:text-sm px-3 py-2 space-x-1 sm:space-x-2">
         <Camera className="h-4 w-4" />
-        <span>Scan Bill</span>
+        <span className="hidden xs:inline">Scan Bill</span>
+        <span className="xs:hidden">Scan</span>
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={close} />
 
-            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[85vh] overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h3 className="text-base font-semibold text-gray-900">Scan Bill & Extract Details</h3>
-                <button onClick={close} className="text-gray-400 hover:text-gray-600">
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[95vh] sm:max-h-[85vh] overflow-hidden mx-2 sm:mx-0">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900">Scan Bill & Extract Details</h3>
+                <button onClick={close} className="text-gray-400 hover:text-gray-600 p-1">
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="flex h-[calc(85vh-80px)]">
+              <div className="flex flex-col lg:flex-row h-[calc(95vh-60px)] sm:h-[calc(85vh-80px)]">
                 {/* Left Side - Image Upload & Preview */}
-                <div className="w-1/2 p-4 border-r border-gray-200 overflow-y-auto">
+                <div className="w-full lg:w-1/2 p-3 sm:p-4 border-b lg:border-b-0 lg:border-r border-gray-200 overflow-y-auto">
                   {!imagePreview ? (
-                    <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 transition-colors">
+                    <label className="block border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-6 text-center cursor-pointer hover:border-primary-400 transition-colors">
                       <input type="file" accept="image/*" onChange={onFileChange} className="hidden" />
-                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-3" />
-                      <p className="text-base text-gray-700 font-medium mb-1">Upload a bill photo</p>
+                      <Upload className="h-6 w-6 sm:h-8 sm:w-8 mx-auto text-gray-400 mb-2 sm:mb-3" />
+                      <p className="text-sm sm:text-base text-gray-700 font-medium mb-1">Upload a bill photo</p>
                       <p className="text-xs text-gray-500">PNG, JPG, HEIC up to ~5MB</p>
                     </label>
                   ) : (
@@ -353,21 +354,23 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="flex-shrink-0 pt-3">
+                      <div className="flex-shrink-0 pt-2 sm:pt-3">
                         <button 
                           onClick={handleScan} 
                           disabled={scanning} 
-                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {scanning ? (
                             <>
-                              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                              Analyzing image...
+                              <span className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-1 sm:mr-2"></span>
+                              <span className="hidden xs:inline">Analyzing image...</span>
+                              <span className="xs:hidden">Analyzing...</span>
                             </>
                           ) : (
                             <>
-                              <Sparkles className="h-4 w-4 mr-2" /> 
-                              Analyze Bill
+                              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" /> 
+                              <span className="hidden xs:inline">Analyze Bill</span>
+                              <span className="xs:hidden">Analyze</span>
                             </>
                           )}
                         </button>
@@ -377,71 +380,67 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
                 </div>
 
                 {/* Right Side - Analysis Results */}
-                <div className="w-1/2 p-4 overflow-y-auto">
+                <div className="w-full lg:w-1/2 p-3 sm:p-4 overflow-y-auto">
                   {!result ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center justify-center h-full min-h-[200px] lg:min-h-0">
                       <div className="text-center text-gray-500">
-                        <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                        <p className="text-base font-medium">Upload and analyze a bill</p>
+                        <ImageIcon className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 sm:mb-3 text-gray-300" />
+                        <p className="text-sm sm:text-base font-medium">Upload and analyze a bill</p>
                         <p className="text-xs">Extracted details will appear here</p>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       {/* Header */}
-                      <div className="text-center pb-3 border-b border-gray-200">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-1">Extracted Details</h4>
+                      <div className="text-center pb-2 sm:pb-3 border-b border-gray-200">
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Extracted Details</h4>
                         <p className="text-xs text-gray-600">Review and edit the information below</p>
                       </div>
 
                       {/* Key Details Grid */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gradient-to-r from-green-50 to-green-100 p-3 rounded-lg border border-green-200">
+                      <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 sm:gap-3">
+                        <div className="xs:col-span-2 bg-gradient-to-r from-green-50 to-green-100 p-2 sm:p-3 rounded-lg border border-green-200">
                           <p className="text-xs font-medium text-green-700 mb-1">Amount</p>
                           <div className="flex items-center">
-                            <span className="text-lg font-bold text-green-800 mr-1">$</span>
+                            <span className="text-base sm:text-lg font-bold text-green-800 mr-1">$</span>
                             <input
                               type="number"
                               step="0.01"
                               min="0"
-                              className="text-lg font-bold text-green-800 bg-transparent border-none outline-none w-full"
+                              className="text-base sm:text-lg font-bold text-green-800 bg-transparent border-none outline-none w-full"
                               value={editableAmount}
                               onChange={(e) => setEditableAmount(parseFloat(e.target.value) || 0)}
                             />
                           </div>
                         </div>
-                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg border border-blue-200">
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-2 sm:p-3 rounded-lg border border-blue-200">
                           <p className="text-xs font-medium text-blue-700 mb-1">Type</p>
                           <p className="text-sm font-semibold text-blue-800 capitalize">{result.transactionType || 'expense'}</p>
                         </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border">
-                          <p className="text-xs font-medium text-gray-600 mb-1">Currency</p>
-                          <p className="text-sm font-semibold text-gray-800">{result.currency || 'USD'}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border">
+                        <div className="bg-gray-50 p-2 sm:p-3 rounded-lg border">
                           <p className="text-xs font-medium text-gray-600 mb-1">Date</p>
-                          <p className="text-sm font-semibold text-gray-800">{result.date || 'Not detected'}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800">{result.date || 'Not detected'}</p>
                         </div>
                       </div>
 
                       {/* Merchant & Description */}
-                      <div className="space-y-3">
-                        <div className="bg-gray-50 p-3 rounded-lg border">
+                      <div className="space-y-2 sm:space-y-3">
+                        <div className="bg-gray-50 p-2 sm:p-3 rounded-lg border">
                           <p className="text-xs font-medium text-gray-600 mb-1">Merchant</p>
-                          <p className="text-sm font-semibold text-gray-800">{result.merchant || 'Not detected'}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words">{result.merchant || 'Not detected'}</p>
                         </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border">
+                        <div className="bg-gray-50 p-2 sm:p-3 rounded-lg border">
                           <p className="text-xs font-medium text-gray-600 mb-1">Description</p>
-                          <p className="text-sm font-semibold text-gray-800 break-words">{result.description || 'Not detected'}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words">{result.description || 'Not detected'}</p>
                         </div>
                       </div>
 
                       {/* Form Fields */}
-                      <div className="space-y-3 pt-3 border-t border-gray-200">
+                      <div className="space-y-2 sm:space-y-3 pt-2 sm:pt-3 border-t border-gray-200">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
                           <select 
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={selectedCategoryId} 
                             onChange={(e) => setSelectedCategoryId(e.target.value)}
                           >
@@ -456,7 +455,7 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
                           <label className="block text-xs font-medium text-gray-700 mb-1">Transaction Date</label>
                           <input
                             type="date"
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                           />
@@ -467,10 +466,10 @@ export function ScanBillModal({ onSuccess }: ScanBillModalProps) {
 
                         <button 
                           onClick={handleCreate} 
-                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-2 sm:py-3 px-3 sm:px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={!canCreate}
                         >
-                          <span className="mr-2">✓</span>
+                          <span className="mr-1 sm:mr-2">✓</span>
                           Create {result.transactionType === 'income' ? 'Income' : 'Expense'}
                         </button>
                       </div>

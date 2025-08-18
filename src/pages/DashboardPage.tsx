@@ -207,20 +207,22 @@ export function DashboardPage() {
           </div>
           
           {/* Action buttons */}
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3" data-tour="quick-actions">
-            <div className="flex space-x-2 sm:space-x-3">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3" data-tour="quick-actions">
+            <div className="flex flex-col xs:flex-row space-y-2 xs:space-y-0 xs:space-x-2 sm:space-x-3">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowBulkUploadModal(true)}
-                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-sm px-3 py-2 transition-transform"
+                className="btn-secondary flex items-center justify-center flex-1 sm:flex-none text-xs sm:text-sm px-3 py-2 transition-transform"
               >
                 <Grid3X3 className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden xs:inline">Bulk Upload</span>
-                <span className="xs:hidden">Upload</span>
+                <span className="xs:hidden">Bulk</span>
               </motion.button>
-              <ScanBillModal onSuccess={handleTransactionAdded} />
-              <QuickAddTransaction onSuccess={handleTransactionAdded} />
+              <div className="flex space-x-2 xs:space-x-2 sm:space-x-3">
+                <ScanBillModal onSuccess={handleTransactionAdded} />
+                <QuickAddTransaction onSuccess={handleTransactionAdded} />
+              </div>
             </div>
           </div>
         </div>
