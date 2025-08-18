@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, DollarSign, Calendar, BarChart3 } from 'lucide-react';
+import { Plus, Edit, Trash2, DollarSign, Calendar, BarChart3, CheckCircle } from 'lucide-react';
 import { MonthlyBill, monthlyBillsService } from '../services/monthlyBills';
 import AddBillModal from '../components/MonthlyBills/AddBillModal';
 import DeleteConfirmModal from '../components/UI/DeleteConfirmModal';
+import { PaymentStatusBadge } from '../components/MonthlyBills/PaymentStatusBadge';
 import { useCurrencyFormatter } from '../utils/currency';
 import toast from 'react-hot-toast';
 
@@ -95,7 +96,7 @@ export default function MonthlyExpensesPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-blue-100">
@@ -131,6 +132,20 @@ export default function MonthlyExpensesPage() {
             </div>
           </div>
         </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-emerald-100">
+              <CheckCircle className="h-6 w-6 text-emerald-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Paid This Month</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {bills.filter(bill => monthlyBillsService.isBillPaidForMonth(bill._id)).length}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Bills List */}
@@ -163,14 +178,18 @@ export default function MonthlyExpensesPage() {
                       <div className="text-2xl">{categoryInfo.icon}</div>
                       <div>
                         <h3 className="text-lg font-medium text-gray-900">{bill.name}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryInfo.color}`}>
                             {categoryInfo.label}
                           </span>
                           <span>Due on {bill.dueDate}{bill.dueDate === 1 ? 'st' : bill.dueDate === 2 ? 'nd' : bill.dueDate === 3 ? 'rd' : 'th'}</span>
                         </div>
+                        <PaymentStatusBadge 
+                          billId={bill._id} 
+                          onStatusChange={loadBills}
+                        />
                         {bill.description && (
-                          <p className="text-sm text-gray-500 mt-1">{bill.description}</p>
+                          <p className="text-sm text-gray-500 mt-2">{bill.description}</p>
                         )}
                       </div>
                     </div>

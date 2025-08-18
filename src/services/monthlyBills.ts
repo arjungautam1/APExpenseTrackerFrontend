@@ -14,6 +14,9 @@ export interface MonthlyBill {
   tags?: string[];
   createdAt: string;
   updatedAt: string;
+  // Payment tracking
+  paidMonths?: string[]; // Array of "YYYY-MM" strings for paid months
+  lastPaidDate?: string; // ISO date string of last payment
 }
 
 export interface CreateMonthlyBill {
@@ -119,6 +122,97 @@ class MonthlyBillsService {
       totalMonthly,
       activeCount: activeBills.length,
       categories
+    };
+  }
+
+  // Payment tracking methods
+  markBillAsPaid(billId: string, month?: string): void {
+    const bills = this.getStoredBills();
+    const billIndex = bills.findIndex(bill => bill._id === billId || bill.id === billId);
+    
+    if (billIndex === -1) return;
+
+    const currentMonth = month || new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const bill = bills[billIndex];
+    
+    // Initialize paidMonths array if it doesn't exist
+    if (!bill.paidMonths) {
+      bill.paidMonths = [];
+    }
+    
+    // Add current month if not already paid
+    if (!bill.paidMonths.includes(currentMonth)) {
+      bill.paidMonths.push(currentMonth);
+    }
+    
+    // Update last paid date
+    bill.lastPaidDate = new Date().toISOString();
+    bill.updatedAt = new Date().toISOString();
+    
+    // Save updated bills
+    localStorage.setItem('monthlyBills', JSON.stringify(bills));
+  }
+
+  isBillPaidForMonth(billId: string, month?: string): boolean {
+    const bills = this.getStoredBills();
+    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
+    
+    if (!bill || !bill.paidMonths) return false;
+    
+    const currentMonth = month || new Date().toISOString().slice(0, 7);
+    return bill.paidMonths.includes(currentMonth);
+  }
+
+  getNextDueMonth(billId: string): string {
+    const bills = this.getStoredBills();
+    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
+    
+    if (!bill || !bill.paidMonths || bill.paidMonths.length === 0) {
+      return new Date().toISOString().slice(0, 7); // Current month if never paid
+    }
+    
+    // Find the latest paid month
+    const latestPaidMonth = bill.paidMonths.sort().pop()!;
+    const [year, month] = latestPaidMonth.split('-').map(Number);
+    
+    // Calculate next month
+    let nextYear = year;
+    let nextMonth = month + 1;
+    
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear++;
+    }
+    
+    return `${nextYear}-${nextMonth.toString().padStart(2, '0')}`;
+  }
+
+  getPaymentStatus(billId: string): {
+    isPaid: boolean;
+    currentMonth: string;
+    nextDueMonth: string;
+    lastPaidDate?: string;
+  } {
+    const bills = this.getStoredBills();
+    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
+    
+    if (!bill) {
+      return {
+        isPaid: false,
+        currentMonth: new Date().toISOString().slice(0, 7),
+        nextDueMonth: new Date().toISOString().slice(0, 7)
+      };
+    }
+    
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const isPaid = this.isBillPaidForMonth(billId, currentMonth);
+    const nextDueMonth = this.getNextDueMonth(billId);
+    
+    return {
+      isPaid,
+      currentMonth,
+      nextDueMonth,
+      lastPaidDate: bill.lastPaidDate
     };
   }
 }
