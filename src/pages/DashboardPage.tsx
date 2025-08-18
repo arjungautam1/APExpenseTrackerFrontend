@@ -125,6 +125,26 @@ export function DashboardPage() {
     ? recentTransactions 
     : recentTransactions.filter(t => t.type === activeTransactionTab);
 
+  const getTypeVisuals = (type: 'income' | 'expense' | 'investment') => {
+    switch (type) {
+      case 'income':
+        return {
+          classes: 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20',
+          Icon: TrendingUp
+        };
+      case 'investment':
+        return {
+          classes: 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20',
+          Icon: Building
+        };
+      default:
+        return {
+          classes: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20',
+          Icon: TrendingDown
+        };
+    }
+  };
+
   if (loading) {
     return (
       <div className="px-3 py-4 sm:px-6 lg:px-8">
@@ -460,17 +480,26 @@ export function DashboardPage() {
                               </span>
                             )}
                             <span className="text-gray-500">{formatDate(t.date)}</span>
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                                t.type === 'income'
-                                  ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'
-                                  : t.type === 'investment'
-                                  ? 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20'
-                                  : 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20'
-                              }`}
-                            >
-                              {t.type}
-                            </span>
+                            {(() => {
+                              const { classes, Icon } = getTypeVisuals(t.type as 'income' | 'expense' | 'investment');
+                              return (
+                                <>
+                                  {/* Icon-only on small screens */}
+                                  <span
+                                    className={`sm:hidden inline-flex items-center justify-center rounded-full w-6 h-6 ${classes}`}
+                                    aria-label={t.type}
+                                  >
+                                    <Icon className="h-3.5 w-3.5" />
+                                  </span>
+                                  {/* Text badge on sm and up */}
+                                  <span
+                                    className={`hidden sm:inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${classes}`}
+                                  >
+                                    {t.type}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                         <p className={`font-medium ${
