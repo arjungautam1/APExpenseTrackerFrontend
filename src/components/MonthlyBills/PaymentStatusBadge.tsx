@@ -5,16 +5,27 @@ import { monthlyBillsService } from '../../services/monthlyBills';
 
 interface PaymentStatusBadgeProps {
   billId: string;
+  dueDay: number;
   onStatusChange?: () => void;
 }
 
-export function PaymentStatusBadge({ billId, onStatusChange }: PaymentStatusBadgeProps) {
+export function PaymentStatusBadge({ billId, dueDay, onStatusChange }: PaymentStatusBadgeProps) {
   const paymentStatus = monthlyBillsService.getPaymentStatus(billId);
   
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  const formatExactDueDate = (monthString: string, dueDay: number) => {
+    const [year, month] = monthString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, dueDay);
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
   };
 
   const handleMarkAsPaid = () => {
@@ -31,7 +42,7 @@ export function PaymentStatusBadge({ billId, onStatusChange }: PaymentStatusBadg
       >
         <CheckCircle className="h-4 w-4 text-emerald-600" />
         <span className="text-sm font-medium text-emerald-700">
-          Paid for {formatMonth(paymentStatus.currentMonth)}
+          Paid for {formatExactDueDate(paymentStatus.currentMonth, dueDay)}
         </span>
         <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
       </motion.div>
@@ -47,7 +58,7 @@ export function PaymentStatusBadge({ billId, onStatusChange }: PaymentStatusBadg
       <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full">
         <Clock className="h-4 w-4 text-amber-600" />
         <span className="text-sm font-medium text-amber-700">
-          Due for {formatMonth(paymentStatus.nextDueMonth)}
+          Due on {formatExactDueDate(paymentStatus.nextDueMonth, dueDay)}
         </span>
       </div>
       

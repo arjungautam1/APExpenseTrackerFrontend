@@ -182,10 +182,11 @@ export default function MonthlyExpensesPage() {
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryInfo.color}`}>
                             {categoryInfo.label}
                           </span>
-                          <span>Due on {bill.dueDate}{bill.dueDate === 1 ? 'st' : bill.dueDate === 2 ? 'nd' : bill.dueDate === 3 ? 'rd' : 'th'}</span>
+                          <span>Due on {bill.dueDate}{bill.dueDate === 1 ? 'st' : bill.dueDate === 2 ? 'nd' : bill.dueDate === 3 ? 'rd' : 'th'} of each month</span>
                         </div>
                         <PaymentStatusBadge 
                           billId={bill._id} 
+                          dueDay={bill.dueDate}
                           onStatusChange={loadBills}
                         />
                         {bill.description && (
