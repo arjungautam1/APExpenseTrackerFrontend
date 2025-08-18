@@ -119,7 +119,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
 
   if (loading) {
     return (
-      <div className="card">
+      <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
         <div className="card-header">
           <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
@@ -143,7 +143,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
 
   if (error) {
     return (
-      <div className="card">
+      <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
         <div className="card-header">
           <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
@@ -168,7 +168,7 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
 
   if (!breakdown || breakdown.breakdown.length === 0) {
     return (
-      <div className="card">
+      <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
         <div className="card-header">
           <h3 className="text-lg font-medium">{getTitle()}</h3>
         </div>
@@ -188,7 +188,8 @@ export function ExpenseBreakdown({ dateRange, limit = 5, showTrends = false }: E
   }
 
   return (
-    <div className="card">
+    <div className="card group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/20 via-transparent to-purple-50/20 opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
       <div className="card-header flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <h3 className="text-base sm:text-lg font-medium">{getTitle()}</h3>
         <div className="flex flex-wrap gap-1 sm:space-x-1">

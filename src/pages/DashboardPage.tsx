@@ -293,8 +293,9 @@ export function DashboardPage() {
         </div>
 
         <div className="card group hover:shadow-lg transition-all duration-300" data-tour="investment-card">
-          <div className="card-body p-4 sm:p-6">
-            <div className="flex items-center">
+          <div className="card-body p-4 sm:p-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/30 to-violet-100/20 opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
+            <div className="flex items-center relative z-10">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
                   <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white drop-shadow-lg" />
@@ -323,7 +324,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="card col-span-2 lg:col-span-1 group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+        <div className="card lg:col-span-1 group hover:shadow-lg transition-all duration-300 relative overflow-hidden">
           <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-30 transition-opacity duration-300 ${
             stats && stats.totalSavings >= 0 
               ? 'from-blue-50/30 to-cyan-100/20' 
