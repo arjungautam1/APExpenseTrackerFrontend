@@ -1,16 +1,17 @@
-name: apexpensetracker
+name: ap
 region: tor
 services:
-  - name: backend
+  - name: apexpensetrackerbackend2
     source_dir: /
     github:
       repo: arjungautam1/APExpenseTrackerBackend
       branch: main
+      deploy_on_push: true
     build_command: npm install
     run_command: npm start
     environment_slug: node-js
     instance_count: 1
-    instance_size_slug: basic-xxs
+    instance_size_slug: apps-s-1vcpu-0.5gb
     http_port: 8080
     envs:
       - key: NODE_ENV
@@ -36,7 +37,7 @@ services:
         value: 30d
       - key: CLIENT_URL
         scope: RUN_AND_BUILD_TIME
-        value: https://ap-bhaoh.ondigitalocean.app
+        value: https://smartexpenseai.com
       - key: GROQ_API_KEY
         scope: RUN_AND_BUILD_TIME
         value: ${GROQ_API_KEY}
@@ -44,28 +45,40 @@ services:
         scope: RUN_AND_BUILD_TIME
         value: ${GROQ_TEXT}
 
-static_sites:
-  - name: frontend
+  - name: apfront
     source_dir: /
     github:
       repo: arjungautam1/APExpenseTrackerFrontend
       branch: main
+      deploy_on_push: true
     build_command: npm install && npm run build
-    output_dir: dist
+    run_command: nginx -g 'daemon off;'
+    environment_slug: nginx
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    http_port: 8080
     envs:
       - key: VITE_API_URL
         scope: BUILD_TIME
-        value: https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api
+        value: https://smartexpenseai.com/apexpensetrackerbackend2/api
+
+domains:
+  - domain: smartexpenseai.com
+    type: PRIMARY
 
 ingress:
   rules:
     - component:
-        name: backend
+        name: apexpensetrackerbackend2
       match:
+        authority:
+          exact: ""
         path:
-          prefix: /api
+          prefix: /apexpensetrackerbackend2
     - component:
-        name: frontend
+        name: apfront
       match:
+        authority:
+          exact: ""
         path:
           prefix: /
