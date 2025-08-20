@@ -188,14 +188,14 @@ export function CategorySelect({
             <div className="flex space-x-3 p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-6 py-4 text-sm font-semibold text-gray-600 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 shadow-sm"
+                className="flex-1 px-4 py-3 sm:px-6 sm:py-4 text-sm font-semibold text-gray-600 bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 rounded-xl transition-all duration-200 shadow-sm touch-manipulation min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateCategory}
                 disabled={isCreating || !newCategoryName.trim()}
-                className="flex-1 px-6 py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                className="flex-1 px-4 py-3 sm:px-6 sm:py-4 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] touch-manipulation min-h-[44px]"
               >
                 {isCreating ? (
                   <>

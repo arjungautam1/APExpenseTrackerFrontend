@@ -145,26 +145,28 @@ export function TransactionsPage() {
 
   return (
     <div className="px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
           {transactions.length > 0 && (
             <button
               onClick={() => setShowDeleteAllConfirm(true)}
-              className="btn-danger flex items-center"
+              className="btn-danger flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium rounded-lg shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 touch-manipulation min-h-[44px]"
               disabled={loading}
               title="Delete all transactions"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete All ({transactions.length})
+              <span className="hidden xs:inline">Delete All ({transactions.length})</span>
+              <span className="xs:hidden">Delete ({transactions.length})</span>
             </button>
           )}
           <button
             onClick={() => setShowBulkUploadModal(true)}
-            className="btn-secondary flex items-center"
+            className="btn-secondary flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white/95 backdrop-blur-sm hover:bg-gray-50/95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 touch-manipulation min-h-[44px]"
           >
             <Grid3X3 className="h-4 w-4 mr-2" />
-            Bulk Upload
+            <span className="hidden xs:inline">Bulk Upload</span>
+            <span className="xs:hidden">Upload</span>
           </button>
         </div>
       </div>

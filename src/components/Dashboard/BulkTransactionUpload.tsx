@@ -364,29 +364,29 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
   return (
     <>
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={onClose} />
 
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-7xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Bulk Transaction Upload</h3>
-                <p className="text-sm text-gray-600">Upload a screenshot of your bank transactions</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Bulk Transaction Upload</h3>
+                <p className="text-sm text-gray-600 mt-1">Upload a screenshot of your bank transactions</p>
               </div>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex h-[calc(90vh-80px)]">
+            <div className="flex flex-col lg:flex-row h-[calc(95vh-80px)] sm:h-[calc(90vh-100px)]">
               {/* Left Side - Image Upload & Preview */}
-              <div className="w-1/2 p-4 border-r border-gray-200 overflow-y-auto">
+              <div className="w-full lg:w-1/2 p-4 lg:border-r border-gray-200 overflow-y-auto">
                 {/* Upload Section */}
                 {!uploadedImage && (
-                  <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-primary-400 transition-colors">
+                  <label className="block border-2 border-dashed border-gray-300 rounded-lg p-6 sm:p-8 text-center cursor-pointer hover:border-primary-400 transition-colors min-h-[200px] flex flex-col items-center justify-center">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -394,9 +394,9 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
                       onChange={handleFileSelect}
                       className="hidden"
                     />
-                    <FileImage className="h-8 w-8 mx-auto text-gray-400 mb-3" />
-                    <p className="text-base text-gray-700 font-medium mb-1">Upload bank transaction screenshot</p>
-                    <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                    <FileImage className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-base sm:text-lg text-gray-700 font-medium mb-2">Upload bank transaction screenshot</p>
+                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
                   </label>
                 )}
 
@@ -420,21 +420,23 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
                         </div>
                       </div>
                     </div>
-                    <div className="flex-shrink-0 pt-3">
+                    <div className="flex-shrink-0 pt-4">
                       <button
                         onClick={processImage}
                         disabled={isProcessing}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 sm:py-4 px-4 rounded-lg shadow-md transition-all duration-200 flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[48px]"
                       >
                         {isProcessing ? (
                           <>
                             <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                            Processing... ({processingProgress}%)
+                            <span className="hidden sm:inline">Processing... ({processingProgress}%)</span>
+                            <span className="sm:hidden">Processing...</span>
                           </>
                         ) : (
                           <>
                             <Eye className="h-4 w-4 mr-2" />
-                            Extract Transactions
+                            <span className="hidden sm:inline">Extract Transactions</span>
+                            <span className="sm:hidden">Extract</span>
                           </>
                         )}
                       </button>
@@ -444,7 +446,7 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
               </div>
 
               {/* Right Side - Results */}
-              <div className="w-1/2 p-4 overflow-y-auto">
+              <div className="w-full lg:w-1/2 p-4 overflow-y-auto border-t lg:border-t-0 border-gray-200">
                 {/* Processing State */}
                 {isProcessing && (
                   <div className="flex items-center justify-center h-full">
@@ -546,20 +548,22 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
                       )}
                     </div>
                     
-                    <div className="flex space-x-3 pt-3 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
                       <button
                         onClick={handleRemoveDuplicates}
-                        className="flex-1 btn-secondary flex items-center justify-center"
+                        className="flex-1 btn-secondary flex items-center justify-center py-3 touch-manipulation min-h-[48px]"
                       >
                         <X className="h-4 w-4 mr-2" />
-                        Remove Duplicates
+                        <span className="hidden sm:inline">Remove Duplicates</span>
+                        <span className="sm:hidden">Remove</span>
                       </button>
                       <button
                         onClick={handleKeepAll}
-                        className="flex-1 btn-primary flex items-center justify-center"
+                        className="flex-1 btn-primary flex items-center justify-center py-3 touch-manipulation min-h-[48px]"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
-                        Keep All
+                        <span className="hidden sm:inline">Keep All</span>
+                        <span className="sm:hidden">Keep</span>
                       </button>
                     </div>
                   </div>
@@ -745,17 +749,17 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex space-x-3 pt-3 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
                       <button
                         onClick={onClose}
-                        className="flex-1 btn-secondary"
+                        className="flex-1 btn-secondary py-3 touch-manipulation min-h-[48px]"
                         disabled={isUploading}
                       >
                         Cancel
                       </button>
                       <button
                         onClick={saveTransactions}
-                        className="flex-1 btn-primary flex items-center justify-center"
+                        className="flex-1 btn-primary flex items-center justify-center py-3 touch-manipulation min-h-[48px]"
                         disabled={isUploading}
                       >
                         {isUploading ? (
@@ -763,7 +767,12 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
                         ) : (
                           <CheckCircle className="h-4 w-4 mr-2" />
                         )}
-                        {isUploading ? 'Saving...' : `Save ${extractedTransactions.length} Transactions`}
+                        <span className="hidden sm:inline">
+                          {isUploading ? 'Saving...' : `Save ${extractedTransactions.length} Transactions`}
+                        </span>
+                        <span className="sm:hidden">
+                          {isUploading ? 'Saving...' : `Save ${extractedTransactions.length}`}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -776,28 +785,28 @@ export function BulkTransactionUpload({ onClose, onSuccess }: BulkTransactionUpl
 
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && deleteIndex !== null && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center mb-4">
-              <AlertTriangle className="h-6 w-6 text-red-600 mr-3" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <div className="flex items-center mb-6">
+              <AlertTriangle className="h-6 w-6 text-red-600 mr-3 flex-shrink-0" />
               <h3 className="text-lg font-semibold text-gray-900">Remove Transaction</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">
               Are you sure you want to remove "{extractedTransactions[deleteIndex]?.description}"? This action cannot be undone.
             </p>
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setDeleteIndex(null);
                 }}
-                className="btn-secondary"
+                className="btn-secondary py-3 touch-manipulation min-h-[48px] order-2 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteTransaction}
-                className="btn-primary bg-red-600 hover:bg-red-700"
+                className="btn-primary bg-red-600 hover:bg-red-700 py-3 touch-manipulation min-h-[48px] order-1 sm:order-2"
               >
                 Remove
               </button>

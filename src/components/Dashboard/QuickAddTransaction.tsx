@@ -406,12 +406,13 @@ export function QuickAddTransaction({ onClose, onSuccess }: QuickAddTransactionP
       {/* Quick Add Button */}
       <button
         onClick={openModal}
-        className="btn-primary flex items-center space-x-2 px-4 py-2.5"
+        className="btn-primary flex items-center justify-center space-x-2 flex-1 sm:flex-none px-3 py-2 sm:px-4 sm:py-3 min-h-[44px] touch-manipulation transition-all duration-200"
         style={{ cursor: 'pointer' }}
         type="button"
       >
         <Plus className="h-4 w-4" />
-        <span className="font-medium">Quick Add</span>
+        <span className="font-medium hidden xs:inline">Quick Add</span>
+        <span className="font-medium xs:hidden">Add</span>
       </button>
 
       {/* Modal */}

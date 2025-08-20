@@ -147,7 +147,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4"
         onClick={onClose}
       >
         <motion.div
@@ -155,18 +155,18 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ type: "spring", damping: 30, stiffness: 400 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+          className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Clean Header */}
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className={`p-2 bg-gradient-to-br from-${selectedCategory.color}-400 to-${selectedCategory.color}-600 rounded-lg shadow-sm`}>
-                  <span className="text-xl">{selectedCategory.icon}</span>
+                  <span className="text-lg sm:text-xl">{selectedCategory.icon}</span>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                     {editingBill ? 'Edit Bill' : 'New Monthly Bill'}
                   </h2>
                   <p className="text-xs text-gray-500">
@@ -176,7 +176,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation min-h-[44px] min-w-[44px]"
               >
                 <X className="h-4 w-4 text-gray-400" />
               </button>
@@ -184,7 +184,8 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
           </div>
 
           {/* Clean Form */}
-          <form onSubmit={handleSubmit} className="p-6">
+          <div className="overflow-y-auto flex-1">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6">
             {/* Bill Name - Clean Input */}
             <div className="mb-5">
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
@@ -259,7 +260,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
               <label className="block text-xs font-medium text-gray-600 mb-2">
                 CATEGORY
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 max-h-32 sm:max-h-none overflow-y-auto">
                 {categories.map(cat => {
                   const isSelected = formData.category === cat.value;
                   return (
@@ -267,7 +268,7 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                       key={cat.value}
                       type="button"
                       onClick={() => handleInputChange('category', cat.value)}
-                      className={`px-3 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+                      className={`px-3 py-2 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 touch-manipulation min-h-[36px] ${
                         isSelected 
                           ? `bg-${cat.color}-100 text-${cat.color}-700 ring-2 ring-${cat.color}-500 ring-offset-1` 
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -311,14 +312,14 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-3 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 active:bg-gray-300 transition-colors touch-manipulation min-h-[48px]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+                className="flex-1 px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg hover:from-blue-700 hover:to-blue-800 active:from-blue-800 active:to-blue-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md touch-manipulation min-h-[48px]"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -337,7 +338,8 @@ export default function AddBillModal({ isOpen, onClose, onSuccess, editingBill }
                 )}
               </button>
             </div>
-          </form>
+            </form>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

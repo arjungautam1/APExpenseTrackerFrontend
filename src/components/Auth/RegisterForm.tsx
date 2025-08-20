@@ -96,10 +96,10 @@ export function RegisterForm() {
           </div>
 
           {/* Form */}
-          <div className="p-3 sm:p-4">
-            <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="p-4 sm:p-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Full Name
               </label>
               <div className="relative">
@@ -110,14 +110,14 @@ export function RegisterForm() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all touch-manipulation min-h-[48px]"
                   placeholder="Enter your full name"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -128,14 +128,14 @@ export function RegisterForm() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-3 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all touch-manipulation min-h-[48px]"
                   placeholder="Enter your email"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -147,13 +147,13 @@ export function RegisterForm() {
                   onChange={handleChange}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-10 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-12 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all touch-manipulation min-h-[48px]"
                   placeholder="Create a password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-gray-600 touch-manipulation"
                 >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
@@ -161,7 +161,7 @@ export function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
@@ -172,13 +172,13 @@ export function RegisterForm() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-10 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full pl-10 pr-12 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all touch-manipulation min-h-[48px]"
                   placeholder="Confirm your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 hover:text-gray-600 touch-manipulation"
                 >
                   {showConfirmPassword ? <EyeOff /> : <Eye />}
                 </button>
@@ -186,7 +186,7 @@ export function RegisterForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Preferred Currency
               </label>
               <div className="relative">
@@ -195,13 +195,11 @@ export function RegisterForm() {
                   name="currency"
                   value={formData.currency}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer relative z-10"
+                  className="w-full pl-10 pr-10 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg text-base focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer touch-manipulation min-h-[48px]"
                   style={{ 
                     backgroundImage: 'none',
                     WebkitAppearance: 'none',
-                    MozAppearance: 'none',
-                    position: 'relative',
-                    zIndex: 10
+                    MozAppearance: 'none'
                   }}
                 >
                   {currencies.map(currency => (
@@ -211,7 +209,7 @@ export function RegisterForm() {
                   ))}
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -221,36 +219,41 @@ export function RegisterForm() {
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+              className="w-full px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-md hover:shadow-lg touch-manipulation min-h-[48px]"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Creating account...</span>
                 </div>
               ) : (
                 <div className="flex items-center justify-center space-x-2">
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="h-5 w-5" />
                   <span>Create Account</span>
                 </div>
               )}
             </motion.button>
-          </form>
-
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-center text-gray-600 text-sm">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-              >
-                Sign in
-              </Link>
-            </p>
+            </form>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.4 }}
+              className="mt-8 pt-6 border-t border-gray-200/50 text-center"
+            >
+              <p className="text-gray-600 text-sm">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="text-blue-600 hover:text-blue-700 font-semibold transition-all duration-200 hover:underline underline-offset-2"
+                >
+                  Sign in here
+                </Link>
+              </p>
+            </motion.div>
           </div>
-        </div>
         </div>
       </motion.div>
       </div>

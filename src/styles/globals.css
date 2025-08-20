@@ -92,7 +92,7 @@
   }
   
   .btn-primary {
-    @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 hover:scale-105 hover:shadow-lg relative overflow-hidden;
+    @apply inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 hover:scale-105 hover:shadow-lg relative overflow-hidden touch-manipulation min-h-[44px];
   }
   
   .btn-primary::before {
@@ -105,16 +105,16 @@
   }
   
   .btn-secondary {
-    @apply inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white/95 backdrop-blur-sm hover:bg-gray-50/95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200;
+    @apply inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white/95 backdrop-blur-sm hover:bg-gray-50/95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 touch-manipulation min-h-[44px];
   }
   
   /* Glassmorphism input styles */
   .input {
-    @apply w-full px-3 py-2 border border-gray-300/70 rounded-lg shadow-sm bg-white/95 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+    @apply w-full px-4 py-3 border border-gray-300/70 rounded-lg shadow-sm bg-white/95 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 touch-manipulation min-h-[48px] text-base;
   }
   
   .select {
-    @apply w-full px-3 py-2 border border-gray-300/70 rounded-lg shadow-sm bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200;
+    @apply w-full px-4 py-3 border border-gray-300/70 rounded-lg shadow-sm bg-white/95 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 touch-manipulation min-h-[48px] text-base;
   }
 }
 
@@ -168,4 +168,61 @@ html {
 /* Custom focus styles */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+}
+
+/* Mobile-friendly interactive styles */
+.touch-target {
+  @apply touch-manipulation min-h-[44px] min-w-[44px];
+}
+
+/* Responsive text utilities */
+@layer utilities {
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+  
+  .spacing-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+  
+  .gap-responsive {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+  
+  .grid-responsive-auto {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  }
+  
+  .grid-responsive-2 {
+    @apply grid-cols-1 sm:grid-cols-2;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .flex-responsive {
+    @apply flex-col sm:flex-row;
+  }
+  
+  /* Responsive button utilities */
+  .btn-responsive {
+    @apply px-3 py-2 sm:px-4 sm:py-2 lg:px-5 lg:py-3;
+  }
+  
+  .btn-compact {
+    @apply px-2 py-1.5 sm:px-3 sm:py-2;
+  }
+  
+  .btn-mobile-friendly {
+    @apply px-3 py-2 text-sm min-h-[44px] touch-manipulation;
+  }
 }
