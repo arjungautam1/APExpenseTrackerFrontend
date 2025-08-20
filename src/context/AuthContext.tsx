@@ -153,10 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const user = await authService.getCurrentUser();
-      console.log('Auth check - received user data:', user);
       dispatch({ type: 'SET_USER', payload: user });
     } catch (error) {
-      console.log('Auth check failed:', error);
       authService.clearTokens();
       dispatch({ type: 'LOGIN_FAILURE' });
     }

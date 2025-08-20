@@ -1,261 +1,200 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { transactionService } from '../services/transaction';
-import { Transaction } from '../types';
-import { TransactionFilters, TransactionFilterState } from '../components/Transactions/TransactionFilters';
+import React, { useEffect, useState, useCallback } from 'react';
 import { TransactionList } from '../components/Transactions/TransactionList';
+import { TransactionFilters } from '../components/Transactions/TransactionFilters';
 import { TransactionEditModal } from '../components/Transactions/TransactionEditModal';
 import { ConfirmDialog } from '../components/Common/ConfirmDialog';
-import { BulkTransactionUpload } from '../components/Dashboard/BulkTransactionUpload';
-import { useCurrencyFormatter } from '../utils/currency';
-import { Grid3X3, Trash2 } from 'lucide-react';
+import { transactionService, TransactionFilters as Filters } from '../services/transaction';
+import { Transaction } from '../types';
+import { Plus, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export function TransactionsPage() {
-  const [filters, setFilters] = useState<TransactionFilterState>({});
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const { formatCurrency } = useCurrencyFormatter();
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<Transaction | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<Transaction | null>(null);
-  const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
-  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
-  const [deletingAll, setDeletingAll] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    page: 1,
+    limit: 20
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 0
+  });
 
-  // Calculate totals based on filtered transactions
-  const totals = useMemo(() => {
-    const income = transactions
-      .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const expense = transactions
-      .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const investment = transactions
-      .filter(t => t.type === 'investment')
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const transfer = transactions
-      .filter(t => t.type === 'transfer')
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    return { income, expense, investment, transfer };
-  }, [transactions]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async (newFilters?: Filters) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      console.log('Fetching transactions with filters:', filters);
-      
-      // Convert month/year filters to date ranges
-      let startDate = filters.startDate;
-      let endDate = filters.endDate;
-      
-      if (filters.month && filters.year) {
-        startDate = `${filters.year}-${filters.month}-01`;
-        // Get last day of the month
-        const lastDay = new Date(parseInt(filters.year), parseInt(filters.month), 0).getDate();
-        endDate = `${filters.year}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
-      } else if (filters.year) {
-        startDate = `${filters.year}-01-01`;
-        endDate = `${filters.year}-12-31`;
-      } else if (filters.month) {
-        // If only month is selected, use current year
-        const currentYear = new Date().getFullYear();
-        startDate = `${currentYear}-${filters.month}-01`;
-        // Get last day of the month
-        const lastDay = new Date(currentYear, parseInt(filters.month), 0).getDate();
-        endDate = `${currentYear}-${filters.month}-${lastDay.toString().padStart(2, '0')}`;
-      }
-      
-      console.log('API call parameters:', { type: filters.type, categoryId: filters.categoryId, startDate, endDate });
-      
-      const res = await transactionService.getTransactions({
-        type: filters.type,
-        categoryId: filters.categoryId,
-        startDate,
-        endDate,
-        limit: 20,
-        page: 1
-      });
-      
-      console.log('API response:', res);
+      const currentFilters = newFilters || filters;
+      const res = await transactionService.getTransactions(currentFilters);
       setTransactions(res.data);
+      setPagination(res.pagination);
     } catch (error: any) {
-      console.error('Failed to fetch transactions:', error);
-      toast.error('Failed to load transactions');
+      toast.error(error?.response?.data?.message || 'Failed to fetch transactions');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchTransactions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.type, filters.categoryId, filters.startDate, filters.endDate, filters.month, filters.year]);
+  }, [fetchTransactions]);
 
-  const clearFilters = () => setFilters({});
-
-  // Debug filter changes
-  useEffect(() => {
-    console.log('Filters changed:', filters);
-  }, [filters]);
-
-  const handleEdit = (t: Transaction) => setEditing(t);
-  const handleDelete = (t: Transaction) => {
-    setPendingDelete(t);
-    setConfirmOpen(true);
+  const handleFiltersChange = (newFilters: Filters) => {
+    const updatedFilters = { ...filters, ...newFilters, page: 1 };
+    setFilters(updatedFilters);
+    fetchTransactions(updatedFilters);
   };
 
-  const confirmDelete = async () => {
-    if (!pendingDelete || deletingId) return;
+  const handlePageChange = (page: number) => {
+    const updatedFilters = { ...filters, page };
+    setFilters(updatedFilters);
+    fetchTransactions(updatedFilters);
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowEditModal(true);
+  };
+
+  const handleDelete = (transaction: Transaction) => {
+    setDeletingTransaction(transaction);
+    setShowDeleteDialog(true);
+  };
+
+  const handleEditSave = async (updatedTransaction: Transaction) => {
     try {
-      setDeletingId(pendingDelete.id);
-      await transactionService.deleteTransaction(pendingDelete.id);
-      toast.success('Transaction deleted');
-      setConfirmOpen(false);
-      setPendingDelete(null);
-      fetchTransactions();
+      await transactionService.updateTransaction(updatedTransaction.id, {
+        amount: updatedTransaction.amount,
+        type: updatedTransaction.type,
+        categoryId: updatedTransaction.categoryId,
+        description: updatedTransaction.description,
+        date: updatedTransaction.date,
+        location: updatedTransaction.location,
+        tags: updatedTransaction.tags
+      });
+      
+      setTransactions(prev => 
+        prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+      );
+      setShowEditModal(false);
+      setEditingTransaction(null);
+      toast.success('Transaction updated successfully');
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Failed to delete transaction';
-      toast.error(message);
-    } finally {
-      setDeletingId(null);
+      toast.error(error?.response?.data?.message || 'Failed to update transaction');
     }
   };
 
-  const confirmDeleteAll = async () => {
-    if (deletingAll) return;
+  const handleDeleteConfirm = async () => {
+    if (!deletingTransaction) return;
+    
     try {
-      setDeletingAll(true);
-      const result = await transactionService.deleteAllTransactions();
-      toast.success(`Successfully deleted ${result.deletedCount} transactions`);
-      setShowDeleteAllConfirm(false);
-      fetchTransactions();
+      await transactionService.deleteTransaction(deletingTransaction.id);
+      setTransactions(prev => prev.filter(t => t.id !== deletingTransaction.id));
+      setShowDeleteDialog(false);
+      setDeletingTransaction(null);
+      toast.success('Transaction deleted successfully');
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'Failed to delete all transactions';
-      toast.error(message);
-    } finally {
-      setDeletingAll(false);
+      toast.error(error?.response?.data?.message || 'Failed to delete transaction');
     }
   };
 
   return (
-    <div className="px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mb-4 flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-        <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3">
-          {transactions.length > 0 && (
-            <button
-              onClick={() => setShowDeleteAllConfirm(true)}
-              className="btn-danger flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium rounded-lg shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 touch-manipulation min-h-[44px]"
-              disabled={loading}
-              title="Delete all transactions"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              <span className="hidden xs:inline">Delete All ({transactions.length})</span>
-              <span className="xs:hidden">Delete ({transactions.length})</span>
-            </button>
-          )}
+    <div className="px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+            <p className="text-gray-600">Manage your income and expenses</p>
+          </div>
           <button
-            onClick={() => setShowBulkUploadModal(true)}
-            className="btn-secondary flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white/95 backdrop-blur-sm hover:bg-gray-50/95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 touch-manipulation min-h-[44px]"
+            onClick={() => {
+              setEditingTransaction(null);
+              setShowEditModal(true);
+            }}
+            className="btn btn-primary inline-flex items-center"
           >
-            <Grid3X3 className="h-4 w-4 mr-2" />
-            <span className="hidden xs:inline">Bulk Upload</span>
-            <span className="xs:hidden">Upload</span>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Transaction
           </button>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <TransactionFilters value={filters} onChange={setFilters} onClear={clearFilters} />
+      <div className="space-y-6">
+        <TransactionFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+        />
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-700">Transaction List</h3>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-3 text-xs">
-                  {totals.income > 0 && (
-                    <span className="text-green-600 font-medium">
-                      +{formatCurrency(totals.income)}
-                    </span>
-                  )}
-                  {totals.expense > 0 && (
-                    <span className="text-red-600 font-medium">
-                      -{formatCurrency(totals.expense)}
-                    </span>
-                  )}
-                  {totals.investment > 0 && (
-                    <span className="text-purple-600 font-medium">
-                      ⬆{formatCurrency(totals.investment)}
-                    </span>
-                  )}
-                  {totals.transfer > 0 && (
-                    <span className="text-blue-600 font-medium">
-                      ⇄{formatCurrency(totals.transfer)}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs text-gray-500">{transactions.length} transactions</span>
-              </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          </div>
+        ) : (
+          <TransactionList
+            items={transactions}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
+
+        {/* Pagination */}
+        {pagination.pages > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+              {pagination.total} results
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page <= 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-2 text-sm text-gray-700">
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page >= pagination.pages}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
           </div>
-          <div className="p-0">
-            {loading ? (
-              <div className="p-4 space-y-3">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-100 rounded" />
-                ))}
-              </div>
-            ) : (
-              <TransactionList items={transactions} onEdit={handleEdit} onDelete={handleDelete} />
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
-      {editing && (
+      {/* Edit Modal */}
+      {showEditModal && (
         <TransactionEditModal
-          transaction={editing}
-          onClose={() => setEditing(null)}
-          onSaved={fetchTransactions}
+          transaction={editingTransaction}
+          onSave={handleEditSave}
+          onCancel={() => {
+            setShowEditModal(false);
+            setEditingTransaction(null);
+          }}
         />
       )}
 
-      <ConfirmDialog
-        open={confirmOpen}
-        title="Delete transaction?"
-        description={pendingDelete ? `This will permanently delete "${pendingDelete.description || 'transaction'}".` : 'This will permanently delete the transaction.'}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
-        loading={!!deletingId}
-        onConfirm={confirmDelete}
-        onClose={() => { setConfirmOpen(false); setPendingDelete(null); }}
-      />
-
-      <ConfirmDialog
-        open={showDeleteAllConfirm}
-        title="Delete all transactions?"
-        description={`This will permanently delete ALL ${transactions.length} transactions. This action cannot be undone and will remove all your transaction history.`}
-        confirmText="Delete All"
-        cancelText="Cancel"
-        variant="danger"
-        loading={deletingAll}
-        onConfirm={confirmDeleteAll}
-        onClose={() => setShowDeleteAllConfirm(false)}
-      />
-
-      {/* Bulk Upload Modal */}
-      {showBulkUploadModal && (
-        <BulkTransactionUpload
-          onClose={() => setShowBulkUploadModal(false)}
-          onSuccess={fetchTransactions}
+      {/* Delete Confirmation */}
+      {showDeleteDialog && deletingTransaction && (
+        <ConfirmDialog
+          title="Delete Transaction"
+          message={`Are you sure you want to delete the transaction "${deletingTransaction.description || 'Untitled'}"? This action cannot be undone.`}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => {
+            setShowDeleteDialog(false);
+            setDeletingTransaction(null);
+          }}
         />
       )}
     </div>

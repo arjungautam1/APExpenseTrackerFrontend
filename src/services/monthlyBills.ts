@@ -1,219 +1,249 @@
 // Monthly Bills Service - Database Integration
-import { apiService } from './api';
+import { MonthlyBill } from '../types';
 
-export interface MonthlyBill {
-  _id: string;
-  id?: string; // For compatibility
+export interface CreateMonthlyBillData {
   name: string;
   amount: number;
-  dueDate: number; // Day of month (1-31)
+  dueDate: string;
   category: string;
-  description?: string;
-  isActive: boolean;
-  autoDeduct?: boolean;
-  tags?: string[];
-  createdAt: string;
-  updatedAt: string;
-  // Payment tracking
-  paidMonths?: string[]; // Array of "YYYY-MM" strings for paid months
-  lastPaidDate?: string; // ISO date string of last payment
+  isPaid: boolean;
+  paymentMethod?: string;
+  notes?: string;
 }
 
-export interface CreateMonthlyBill {
-  name: string;
-  amount: number;
-  dueDate: number;
-  category: string;
-  description?: string;
-  autoDeduct?: boolean;
-  tags?: string[];
+export interface UpdateMonthlyBillData extends Partial<CreateMonthlyBillData> {}
+
+export interface MonthlyBillFilters {
+  isPaid?: boolean;
+  category?: string;
+  month?: string;
+  year?: string;
 }
 
-class MonthlyBillsService {
-  // Use localStorage only to avoid authentication issues
-  
-  async getAllBills(): Promise<MonthlyBill[]> {
-    console.log('MonthlyBillsService - Loading bills from localStorage');
-    return this.getStoredBills();
+export class MonthlyBillsService {
+  private bills: MonthlyBill[] = [];
+
+  constructor() {
+    this.loadBills();
   }
 
-  async createBill(data: CreateMonthlyBill): Promise<MonthlyBill> {
-    console.log('MonthlyBillsService - Creating bill locally:', data);
-    return this.createBillLocally(data);
+  private loadBills(): void {
+    // Use localStorage only to avoid authentication issues
+    try {
+      const stored = localStorage.getItem('monthlyBills');
+      if (stored) {
+        this.bills = JSON.parse(stored);
+      }
+    } catch (error) {
+      this.bills = [];
+    }
   }
 
-  async updateBill(id: string, data: Partial<CreateMonthlyBill>): Promise<MonthlyBill> {
-    console.log('MonthlyBillsService - Updating bill locally:', id, data);
-    return this.updateBillLocally(id, data);
+  async getBills(filters?: MonthlyBillFilters): Promise<MonthlyBill[]> {
+    let filteredBills = [...this.bills];
+
+    if (filters) {
+      if (filters.isPaid !== undefined) {
+        filteredBills = filteredBills.filter(bill => bill.isPaid === filters.isPaid);
+      }
+      if (filters.category) {
+        filteredBills = filteredBills.filter(bill => bill.category === filters.category);
+      }
+      if (filters.month && filters.year) {
+        const targetMonth = parseInt(filters.month);
+        const targetYear = parseInt(filters.year);
+        filteredBills = filteredBills.filter(bill => {
+          const billDate = new Date(bill.dueDate);
+          return billDate.getMonth() === targetMonth && billDate.getFullYear() === targetYear;
+        });
+      }
+    }
+
+    return filteredBills.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   }
 
-  async deleteBill(id: string): Promise<void> {
-    console.log('MonthlyBillsService - Deleting bill locally:', id);
-    this.deleteBillLocally(id);
-  }
-
-  // Fallback methods for localStorage
-  private createBillLocally(data: CreateMonthlyBill): MonthlyBill {
+  async createBill(data: CreateMonthlyBillData): Promise<MonthlyBill> {
     const newBill: MonthlyBill = {
-      _id: Date.now().toString(),
       id: Date.now().toString(),
+      userId: 'local',
       ...data,
-      isActive: true,
-      autoDeduct: data.autoDeduct ?? true,
-      tags: data.tags ?? [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    const existingBills = this.getStoredBills();
-    existingBills.push(newBill);
-    localStorage.setItem('monthlyBills', JSON.stringify(existingBills));
-
+    this.bills.push(newBill);
+    this.saveBills();
     return newBill;
   }
 
-  private updateBillLocally(id: string, data: Partial<CreateMonthlyBill>): MonthlyBill {
-    const existingBills = this.getStoredBills();
-    const billIndex = existingBills.findIndex(bill => bill._id === id || bill.id === id);
-    
-    if (billIndex === -1) {
+  async updateBill(id: string, data: UpdateMonthlyBillData): Promise<MonthlyBill> {
+    const index = this.bills.findIndex(bill => bill.id === id);
+    if (index === -1) {
       throw new Error('Bill not found');
     }
 
-    const updatedBill = {
-      ...existingBills[billIndex],
+    this.bills[index] = {
+      ...this.bills[index],
       ...data,
       updatedAt: new Date().toISOString()
     };
 
-    existingBills[billIndex] = updatedBill;
-    localStorage.setItem('monthlyBills', JSON.stringify(existingBills));
-
-    return updatedBill;
+    this.saveBills();
+    return this.bills[index];
   }
 
-  private deleteBillLocally(id: string): void {
-    const existingBills = this.getStoredBills();
-    const filteredBills = existingBills.filter(bill => bill._id !== id && bill.id !== id);
-    localStorage.setItem('monthlyBills', JSON.stringify(filteredBills));
+  async deleteBill(id: string): Promise<void> {
+    this.bills = this.bills.filter(bill => bill.id !== id);
+    this.saveBills();
   }
 
-  private getStoredBills(): MonthlyBill[] {
+  async markAsPaid(id: string, paymentMethod?: string): Promise<MonthlyBill> {
+    return this.updateBill(id, { isPaid: true, paymentMethod });
+  }
+
+  async markAsUnpaid(id: string): Promise<MonthlyBill> {
+    return this.updateBill(id, { isPaid: false });
+  }
+
+  async getBillsByMonth(month: number, year: number): Promise<MonthlyBill[]> {
+    return this.getBills({ month: month.toString(), year: year.toString() });
+  }
+
+  async getUpcomingBills(days: number = 30): Promise<MonthlyBill[]> {
+    const today = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(today.getDate() + days);
+
+    return this.bills.filter(bill => {
+      const dueDate = new Date(bill.dueDate);
+      return dueDate >= today && dueDate <= futureDate && !bill.isPaid;
+    }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
+
+  async getOverdueBills(): Promise<MonthlyBill[]> {
+    const today = new Date();
+    return this.bills.filter(bill => {
+      const dueDate = new Date(bill.dueDate);
+      return dueDate < today && !bill.isPaid;
+    }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
+
+  async getBillsSummary(): Promise<{
+    total: number;
+    paid: number;
+    unpaid: number;
+    overdue: number;
+    totalAmount: number;
+    paidAmount: number;
+    unpaidAmount: number;
+  }> {
+    const today = new Date();
+    const summary = {
+      total: this.bills.length,
+      paid: 0,
+      unpaid: 0,
+      overdue: 0,
+      totalAmount: 0,
+      paidAmount: 0,
+      unpaidAmount: 0
+    };
+
+    this.bills.forEach(bill => {
+      summary.totalAmount += bill.amount;
+      
+      if (bill.isPaid) {
+        summary.paid++;
+        summary.paidAmount += bill.amount;
+      } else {
+        summary.unpaid++;
+        summary.unpaidAmount += bill.amount;
+        
+        const dueDate = new Date(bill.dueDate);
+        if (dueDate < today) {
+          summary.overdue++;
+        }
+      }
+    });
+
+    return summary;
+  }
+
+  private saveBills(): void {
+    localStorage.setItem('monthlyBills', JSON.stringify(this.bills));
+  }
+
+  // Fallback methods for localStorage
+  async getBillsFromStorage(): Promise<MonthlyBill[]> {
     try {
       const stored = localStorage.getItem('monthlyBills');
       return stored ? JSON.parse(stored) : [];
-    } catch {
+    } catch (error) {
       return [];
     }
   }
 
-  getSummary(): { totalMonthly: number; activeCount: number; categories: Record<string, number> } {
-    const bills = this.getStoredBills();
-    const activeBills = bills.filter(bill => bill.isActive);
-    
-    const totalMonthly = activeBills.reduce((sum, bill) => sum + bill.amount, 0);
-    const categories: Record<string, number> = {};
-    
-    activeBills.forEach(bill => {
-      categories[bill.category] = (categories[bill.category] || 0) + bill.amount;
-    });
-
-    return {
-      totalMonthly,
-      activeCount: activeBills.length,
-      categories
-    };
-  }
-
-  // Payment tracking methods
-  markBillAsPaid(billId: string, month?: string): void {
-    const bills = this.getStoredBills();
-    const billIndex = bills.findIndex(bill => bill._id === billId || bill.id === billId);
-    
-    if (billIndex === -1) return;
-
-    const currentMonth = month || new Date().toISOString().slice(0, 7); // YYYY-MM format
-    const bill = bills[billIndex];
-    
-    // Initialize paidMonths array if it doesn't exist
-    if (!bill.paidMonths) {
-      bill.paidMonths = [];
-    }
-    
-    // Add current month if not already paid
-    if (!bill.paidMonths.includes(currentMonth)) {
-      bill.paidMonths.push(currentMonth);
-    }
-    
-    // Update last paid date
-    bill.lastPaidDate = new Date().toISOString();
-    bill.updatedAt = new Date().toISOString();
-    
-    // Save updated bills
+  async saveBillsToStorage(bills: MonthlyBill[]): Promise<void> {
     localStorage.setItem('monthlyBills', JSON.stringify(bills));
   }
 
-  isBillPaidForMonth(billId: string, month?: string): boolean {
-    const bills = this.getStoredBills();
-    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
-    
-    if (!bill || !bill.paidMonths) return false;
-    
-    const currentMonth = month || new Date().toISOString().slice(0, 7);
-    return bill.paidMonths.includes(currentMonth);
+  async clearBillsFromStorage(): Promise<void> {
+    localStorage.removeItem('monthlyBills');
   }
 
-  getNextDueMonth(billId: string): string {
-    const bills = this.getStoredBills();
-    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
-    
-    if (!bill || !bill.paidMonths || bill.paidMonths.length === 0) {
-      return new Date().toISOString().slice(0, 7); // Current month if never paid
-    }
-    
-    // Find the latest paid month
-    const latestPaidMonth = bill.paidMonths.sort().pop()!;
-    const [year, month] = latestPaidMonth.split('-').map(Number);
-    
-    // Calculate next month
-    let nextYear = year;
-    let nextMonth = month + 1;
-    
-    if (nextMonth > 12) {
-      nextMonth = 1;
-      nextYear++;
-    }
-    
-    return `${nextYear}-${nextMonth.toString().padStart(2, '0')}`;
+  // Bulk operations
+  async createMultipleBills(billsData: CreateMonthlyBillData[]): Promise<MonthlyBill[]> {
+    const newBills: MonthlyBill[] = billsData.map((data, index) => ({
+      id: (Date.now() + index).toString(),
+      userId: 'local',
+      ...data,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+
+    this.bills.push(...newBills);
+    this.saveBills();
+    return newBills;
   }
 
-  getPaymentStatus(billId: string): {
-    isPaid: boolean;
-    currentMonth: string;
-    nextDueMonth: string;
-    lastPaidDate?: string;
-  } {
-    const bills = this.getStoredBills();
-    const bill = bills.find(bill => bill._id === billId || bill.id === billId);
+  async deleteMultipleBills(ids: string[]): Promise<void> {
+    this.bills = this.bills.filter(bill => !ids.includes(bill.id));
+    this.saveBills();
+  }
+
+  async markMultipleAsPaid(ids: string[], paymentMethod?: string): Promise<MonthlyBill[]> {
+    const updatedBills: MonthlyBill[] = [];
     
-    if (!bill) {
-      return {
-        isPaid: false,
-        currentMonth: new Date().toISOString().slice(0, 7),
-        nextDueMonth: new Date().toISOString().slice(0, 7)
-      };
+    for (const id of ids) {
+      const updatedBill = await this.markAsPaid(id, paymentMethod);
+      updatedBills.push(updatedBill);
     }
     
-    const currentMonth = new Date().toISOString().slice(0, 7);
-    const isPaid = this.isBillPaidForMonth(billId, currentMonth);
-    const nextDueMonth = this.getNextDueMonth(billId);
-    
-    return {
-      isPaid,
-      currentMonth,
-      nextDueMonth,
-      lastPaidDate: bill.lastPaidDate
-    };
+    return updatedBills;
+  }
+
+  // Data export/import
+  async exportBills(): Promise<string> {
+    return JSON.stringify(this.bills, null, 2);
+  }
+
+  async importBills(billsJson: string): Promise<MonthlyBill[]> {
+    try {
+      const importedBills = JSON.parse(billsJson);
+      if (Array.isArray(importedBills)) {
+        this.bills = importedBills.map(bill => ({
+          ...bill,
+          id: bill.id || Date.now().toString(),
+          userId: bill.userId || 'local',
+          createdAt: bill.createdAt || new Date().toISOString(),
+          updatedAt: bill.updatedAt || new Date().toISOString()
+        }));
+        this.saveBills();
+        return this.bills;
+      }
+      throw new Error('Invalid bills data format');
+    } catch (error) {
+      throw new Error('Failed to import bills: ' + (error as Error).message);
+    }
   }
 }
 

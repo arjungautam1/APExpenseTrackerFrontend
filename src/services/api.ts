@@ -4,15 +4,15 @@ class ApiService {
   private api: AxiosInstance;
 
   constructor() {
-    // Use deployed backend API for all environments
+    // Use the same domain as the frontend for API calls
     const getApiUrl = () => {
-      // Always use the deployed backend API
-      return 'https://ap-bhaoh.ondigitalocean.app/apexpensetrackerbackend2/api';
+      // Use the same domain as the frontend
+      return 'https://smartexpenseai.com/api';
     };
 
     this.api = axios.create({
       baseURL: getApiUrl(),
-      timeout: 30000, // Increased from 10000ms to 30000ms for AI processing
+      timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -22,13 +22,6 @@ class ApiService {
     this.api.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token');
-        console.log('API Request - Token check:', {
-          hasToken: !!token,
-          tokenValue: token ? token.substring(0, 20) + '...' : 'none',
-          url: config.url,
-          method: config.method,
-          isMonthlyExpense: config.url?.includes('monthly-expenses')
-        });
         if (token && token !== 'mock-jwt-token') {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -45,22 +38,11 @@ class ApiService {
       async (error) => {
         const originalRequest = error.config;
 
-        console.log('API Response Error:', {
-          status: error.response?.status,
-          url: originalRequest.url,
-          method: originalRequest.method,
-          message: error.response?.data?.message,
-          isMonthlyExpense: originalRequest.url?.includes('monthly-expenses'),
-          willRedirect: error.response?.status === 401
-        });
-
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          console.log('Attempting token refresh...');
 
           try {
             const refreshToken = localStorage.getItem('refreshToken');
-            console.log('Token refresh attempt - refresh token available:', !!refreshToken);
             if (refreshToken) {
               const response = await this.refreshToken(refreshToken);
               const { token, refreshToken: newRefreshToken } = response.data.data;
@@ -68,31 +50,23 @@ class ApiService {
               localStorage.setItem('token', token);
               localStorage.setItem('refreshToken', newRefreshToken);
               
-              console.log('Token refresh successful, retrying request');
-              
               // Retry original request
               originalRequest.headers.Authorization = `Bearer ${token}`;
               return this.api(originalRequest);
             } else {
-              console.log('No refresh token available, redirecting to login');
               localStorage.removeItem('token');
               localStorage.removeItem('refreshToken');
-              console.log('About to redirect to login page...');
               window.location.href = '/login';
             }
           } catch (refreshError) {
-            console.log('Token refresh failed:', refreshError);
             localStorage.removeItem('token');
             localStorage.removeItem('refreshToken');
-            console.log('About to redirect to login page due to refresh failure...');
             window.location.href = '/login';
           }
         } else if (error.response?.status === 401 && originalRequest._retry) {
           // Already tried to refresh, redirect to login
-          console.log('Token refresh already attempted, redirecting to login');
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
-          console.log('About to redirect to login page due to retry failure...');
           window.location.href = '/login';
         }
 

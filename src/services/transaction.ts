@@ -123,9 +123,7 @@ export class TransactionService {
   }
 
   async createTransaction(data: CreateTransactionData): Promise<Transaction> {
-    console.log('Creating transaction with data:', data);
     const response = await apiService.post<ApiResponse<any>>('/transactions', data);
-    console.log('Transaction response:', response.data);
     
     // Map MongoDB _id to id for frontend consistency
     const transaction = response.data.data;
