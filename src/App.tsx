@@ -18,6 +18,24 @@ import { SettingsPage } from './pages/SettingsPage'
 import { ProfileSettingsPage } from './pages/ProfileSettingsPage'
 import MonthlyExpensesPage from './pages/MonthlyExpensesPage'
 
+// 404 Page Component
+function NotFoundPage() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <p className="text-xl text-gray-600 mb-8">The requested page was not found.</p>
+        <a 
+          href="/" 
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+        >
+          Go back home
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -119,6 +137,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        {/* Catch-all route for 404 */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </TourProvider>
     </AuthProvider>
