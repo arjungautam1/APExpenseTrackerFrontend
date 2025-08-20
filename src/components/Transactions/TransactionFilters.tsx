@@ -16,12 +16,11 @@ export interface TransactionFilterState {
 }
 
 interface TransactionFiltersProps {
-  value: TransactionFilterState;
-  onChange: (next: TransactionFilterState) => void;
-  onClear?: () => void;
+  filters: TransactionFilterState;
+  onFiltersChange: (filters: TransactionFilterState) => void;
 }
 
-export function TransactionFilters({ value, onChange, onClear }: TransactionFiltersProps) {
+export function TransactionFilters({ filters, onFiltersChange }: TransactionFiltersProps) {
   const [categories, setCategories] = useState<{
     income: Category[];
     expense: Category[];
@@ -68,7 +67,7 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const next: TransactionFilterState = { ...valueStateRef(), [name]: value || undefined };
+    const next: TransactionFilterState = { ...filters, [name]: value || undefined };
     
     // Clear category when type changes
     if (name === 'type') {
@@ -87,10 +86,8 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
       next.year = undefined;
     }
     
-    onChange(next);
+    onFiltersChange(next);
   };
-
-  const valueStateRef = () => value;
 
   // Generate month options
   const getMonthOptions = () => {
@@ -111,504 +108,180 @@ export function TransactionFilters({ value, onChange, onClear }: TransactionFilt
     return months;
   };
 
-  // Generate year options (last 10 years)
+  // Generate year options (current year + 5 years back)
   const getYearOptions = () => {
-    const options = [];
     const currentYear = new Date().getFullYear();
-    for (let year = currentYear; year >= currentYear - 9; year--) {
-      options.push({ value: year.toString(), label: year.toString() });
+    const years = [];
+    for (let i = currentYear; i >= currentYear - 5; i--) {
+      years.push({ value: i.toString(), label: i.toString() });
     }
-    return options;
+    return years;
   };
 
-  const getFilteredCategories = () => {
-    if (!value.type) return [];
-    const typeCategories = categories[value.type as keyof typeof categories] || [];
-    
-    // Sort categories by usage frequency (most used first)
-    return typeCategories.sort((a, b) => {
-      const aUsage = categoryUsage[a.id] || 0;
-      const bUsage = categoryUsage[b.id] || 0;
-      return bUsage - aUsage; // Descending order (most used first)
-    });
+  const clearFilters = () => {
+    onFiltersChange({});
   };
 
-  const getActiveFiltersCount = () => {
-    let count = 0;
-    if (value.type) count++;
-    if (value.categoryId) count++;
-    if (value.month) count++;
-    if (value.year) count++;
-    if (value.startDate) count++;
-    if (value.endDate) count++;
-    return count;
+  const getActiveFilterCount = () => {
+    return Object.values(filters).filter(Boolean).length;
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'income': return 'bg-green-100 text-green-700 border-green-200';
-      case 'expense': return 'bg-red-100 text-red-700 border-red-200';
-      case 'investment': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'transfer': return 'bg-blue-100 text-blue-700 border-blue-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+  const getCurrentCategories = () => {
+    if (filters.type === 'income') return categories.income;
+    if (filters.type === 'expense') return categories.expense;
+    if (filters.type === 'investment') return categories.investment;
+    return [...categories.income, ...categories.expense, ...categories.investment];
   };
 
-  // Helper function to check if current date range matches a specific period
-  const isCurrentPeriod = (period: 'thisMonth' | 'lastMonth' | 'thisYear' | 'last7Days') => {
-    if (!value.startDate || !value.endDate) return false;
-    
-    const startDate = new Date(value.startDate);
-    const endDate = new Date(value.endDate);
-    const today = new Date();
-    
-    // Normalize dates to start of day for comparison
-    const normalizeDate = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const normalizedStart = normalizeDate(startDate);
-    const normalizedEnd = normalizeDate(endDate);
-    
-    let result = false;
-    
-    switch (period) {
-      case 'thisMonth': {
-        // Check if the date range represents a full month (1st to last day)
-        const startMonth = startDate.getMonth();
-        const startYear = startDate.getFullYear();
-        const firstDayOfMonth = new Date(startYear, startMonth, 1);
-        const lastDayOfMonth = new Date(startYear, startMonth + 1, 0);
-        
-        result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
-                normalizedEnd.getTime() === lastDayOfMonth.getTime() &&
-                startMonth === today.getMonth() && startYear === today.getFullYear();
-        break;
-      }
-      case 'lastMonth': {
-        // Check if the date range represents the previous month
-        const startMonth = startDate.getMonth();
-        const startYear = startDate.getFullYear();
-        const firstDayOfMonth = new Date(startYear, startMonth, 1);
-        const lastDayOfMonth = new Date(startYear, startMonth + 1, 0);
-        
-        // Check if this is the month before the current month
-        const currentMonth = today.getMonth();
-        const currentYear = today.getFullYear();
-        const expectedMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const expectedYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-        
-        result = normalizedStart.getTime() === firstDayOfMonth.getTime() && 
-                normalizedEnd.getTime() === lastDayOfMonth.getTime() &&
-                startMonth === expectedMonth && startYear === expectedYear;
-        break;
-      }
-      case 'thisYear': {
-        // Check if the date range represents the full current year
-        const startYear = startDate.getFullYear();
-        const firstDayOfYear = new Date(startYear, 0, 1);
-        const lastDayOfYear = new Date(startYear, 11, 31);
-        
-        result = normalizedStart.getTime() === firstDayOfYear.getTime() && 
-                normalizedEnd.getTime() === lastDayOfYear.getTime() &&
-                startYear === today.getFullYear();
-        break;
-      }
-      case 'last7Days': {
-        // Check if the date range represents the last 7 days
-        const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const normalizedSevenDaysAgo = normalizeDate(sevenDaysAgo);
-        const normalizedToday = normalizeDate(today);
-        
-        result = normalizedStart.getTime() === normalizedSevenDaysAgo.getTime() && 
-                normalizedEnd.getTime() === normalizedToday.getTime();
-        break;
-      }
-      default:
-        result = false;
-    }
-    
-    return result;
-  };
-
-  // Debug current filter values
-  console.log('TransactionFilters render - current value:', value);
-  
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
-            <Filter className="h-4 w-4 text-white" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">Filters</h3>
-            {getActiveFiltersCount() > 0 && (
-              <p className="text-xs text-blue-600 font-medium">
-                {getActiveFiltersCount()} active filter{getActiveFiltersCount() !== 1 ? 's' : ''}
-              </p>
+      <div className="px-4 py-3 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <h3 className="text-sm font-medium text-gray-900">Filters</h3>
+            {getActiveFilterCount() > 0 && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {getActiveFilterCount()}
+              </span>
             )}
           </div>
+          <div className="flex items-center space-x-2">
+            {getActiveFilterCount() > 0 && (
+              <button
+                onClick={clearFilters}
+                className="text-xs text-gray-500 hover:text-gray-700 flex items-center space-x-1"
+              >
+                <X className="h-3 w-3" />
+                <span>Clear</span>
+              </button>
+            )}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs text-gray-500 hover:text-gray-700"
+            >
+              {isExpanded ? 'Hide' : 'Show'} Filters
+            </button>
+          </div>
         </div>
-        {onClear && getActiveFiltersCount() > 0 && (
-          <button 
-            onClick={onClear}
-            className="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            Clear All
-          </button>
-        )}
       </div>
 
-      <div className="p-3 space-y-4">
-        {/* Compact Filter Row - Transaction Type and Time Period */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Transaction Types */}
+      {/* Filter Content */}
+      {isExpanded && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="p-4 space-y-4"
+        >
+          {/* Type Filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">Transaction Type</label>
-            <div className="flex bg-gray-50/80 backdrop-blur-sm rounded-lg p-0.5 border border-gray-200/50">
-              {(['income', 'expense', 'investment', 'transfer'] as const).map((type) => (
+            <label className="block text-xs font-medium text-gray-700 mb-2">Transaction Type</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { value: 'income', label: 'Income', icon: TrendingUp, color: 'green' },
+                { value: 'expense', label: 'Expense', icon: TrendingDown, color: 'red' },
+                { value: 'transfer', label: 'Transfer', icon: Send, color: 'blue' },
+                { value: 'investment', label: 'Investment', icon: Building, color: 'purple' }
+              ].map(({ value, label, icon: Icon, color }) => (
                 <button
-                  key={type}
-                  onClick={() => onChange({ ...value, type: value.type === type ? undefined : type, categoryId: undefined })}
-                  className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                    value.type === type 
-                      ? (() => {
-                          switch (type) {
-                            case 'income': return 'bg-green-600 text-white shadow-sm';
-                            case 'expense': return 'bg-red-600 text-white shadow-sm';
-                            case 'investment': return 'bg-purple-600 text-white shadow-sm';
-                            case 'transfer': return 'bg-blue-600 text-white shadow-sm';
-                            default: return 'bg-gray-600 text-white shadow-sm';
-                          }
-                        })()
-                      : (() => {
-                          switch (type) {
-                            case 'income': return 'text-green-700 hover:text-green-800 hover:bg-green-50';
-                            case 'expense': return 'text-red-700 hover:text-red-800 hover:bg-red-50';
-                            case 'investment': return 'text-purple-700 hover:text-purple-800 hover:bg-purple-50';
-                            case 'transfer': return 'text-blue-700 hover:text-blue-800 hover:bg-blue-50';
-                            default: return 'text-gray-600 hover:text-gray-800 hover:bg-white/50';
-                          }
-                        })()
+                  key={value}
+                  type="button"
+                  onClick={() => handleInput({ target: { name: 'type', value } } as any)}
+                  className={`flex items-center justify-center space-x-1 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
+                    filters.type === value
+                      ? `bg-${color}-100 border-${color}-300 text-${color}-700`
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <Icon className="h-3 w-3" />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Time Period Quick Filters */}
+          {/* Category Filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">Time Period</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:hidden">
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                  
-                  const newFilters = {
-                    ...value,
-                    startDate: firstDay.toISOString().split('T')[0],
-                    endDate: lastDay.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  };
-                  
-                  console.log('This Month clicked - setting filters:', newFilters);
-                  onChange(newFilters);
-                }}
-                className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 touch-manipulation ${
-                  isCurrentPeriod('thisMonth')
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                This Month
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                  const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                  
-                  const newFilters = {
-                    ...value,
-                    startDate: firstDayLastMonth.toISOString().split('T')[0],
-                    endDate: lastDayLastMonth.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  };
-                  
-                  console.log('Last Month clicked - setting filters:', newFilters);
-                  onChange(newFilters);
-                }}
-                className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 touch-manipulation ${
-                  isCurrentPeriod('lastMonth')
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                Last Month
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDayYear = new Date(today.getFullYear(), 0, 1);
-                  const lastDayYear = new Date(today.getFullYear(), 11, 31);
-                  
-                  onChange({
-                    ...value,
-                    startDate: firstDayYear.toISOString().split('T')[0],
-                    endDate: lastDayYear.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  });
-                }}
-                className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 touch-manipulation ${
-                  isCurrentPeriod('thisYear')
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                This Year
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  
-                  onChange({
-                    ...value,
-                    startDate: sevenDaysAgo.toISOString().split('T')[0],
-                    endDate: today.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  });
-                }}
-                className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all duration-200 touch-manipulation ${
-                  isCurrentPeriod('last7Days')
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                Last 7 Days
-              </button>
-            </div>
-            
-            {/* Desktop layout - horizontal */}
-            <div className="hidden sm:flex bg-gray-50/80 backdrop-blur-sm rounded-lg p-0.5 border border-gray-200/50">
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                  const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                  
-                  const newFilters = {
-                    ...value,
-                    startDate: firstDay.toISOString().split('T')[0],
-                    endDate: lastDay.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  };
-                  
-                  console.log('This Month clicked - setting filters:', newFilters);
-                  onChange(newFilters);
-                }}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                  isCurrentPeriod('thisMonth')
-                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
-                }`}
-              >
-                This Month
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDayLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                  const lastDayLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-                  
-                  const newFilters = {
-                    ...value,
-                    startDate: firstDayLastMonth.toISOString().split('T')[0],
-                    endDate: lastDayLastMonth.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  };
-                  
-                  console.log('Last Month clicked - setting filters:', newFilters);
-                  onChange(newFilters);
-                }}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                  isCurrentPeriod('lastMonth')
-                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
-                }`}
-              >
-                Last Month
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const firstDayYear = new Date(today.getFullYear(), 0, 1);
-                  const lastDayYear = new Date(today.getFullYear(), 11, 31);
-                  
-                  onChange({
-                    ...value,
-                    startDate: firstDayYear.toISOString().split('T')[0],
-                    endDate: lastDayYear.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  });
-                }}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                  isCurrentPeriod('thisYear')
-                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
-                }`}
-              >
-                This Year
-              </button>
-              
-              <button
-                onClick={() => {
-                  const today = new Date();
-                  const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                  
-                  onChange({
-                    ...value,
-                    startDate: sevenDaysAgo.toISOString().split('T')[0],
-                    endDate: today.toISOString().split('T')[0],
-                    month: undefined,
-                    year: undefined
-                  });
-                }}
-                className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
-                  isCurrentPeriod('last7Days')
-                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-white/80 hover:shadow-sm'
-                }`}
-              >
-                Last 7 Days
-              </button>
-            </div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">Category</label>
+            <select
+              name="categoryId"
+              value={filters.categoryId || ''}
+              onChange={handleInput}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Categories</option>
+              {getCurrentCategories().map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name} ({categoryUsage[category.id] || 0})
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        {/* Advanced Date Selection */}
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-2">Advanced Date Selection</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Month */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
-              <select
-                name="month"
-                value={value.month || ''}
-                onChange={handleInput}
-                className="w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer touch-manipulation min-h-[48px]"
-              >
-                <option value="">Select Month</option>
-                {getMonthOptions().map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-            
-            {/* Year */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
-              <select
-                name="year"
-                value={value.year || ''}
-                onChange={handleInput}
-                className="w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white appearance-none cursor-pointer touch-manipulation min-h-[48px]"
-              >
-                <option value="">Select Year</option>
-                {getYearOptions().map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Start Date */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+          {/* Date Range Filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">Start Date</label>
               <input
                 type="date"
                 name="startDate"
-                value={value.startDate || ''}
+                value={filters.startDate || ''}
                 onChange={handleInput}
-                data-placeholder="yyyy-mm-dd"
-                className="w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white touch-manipulation min-h-[48px]"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-
-            {/* End Date */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-0 pointer-events-none" />
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">End Date</label>
               <input
                 type="date"
                 name="endDate"
-                value={value.endDate || ''}
+                value={filters.endDate || ''}
                 onChange={handleInput}
-                min={value.startDate || undefined}
-                data-placeholder="yyyy-mm-dd"
-                className="w-full pl-10 pr-3 py-3 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white touch-manipulation min-h-[48px]"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
-        </div>
 
-        {/* Categories - Only show when type is selected */}
-        {value.type && value.type !== 'transfer' && (
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">
-              {value.type.charAt(0).toUpperCase() + value.type.slice(1)} Categories
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => onChange({ ...value, categoryId: undefined })}
-                className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all touch-manipulation min-h-[44px] ${
-                  !value.categoryId 
-                    ? getTypeColor(value.type || '')
-                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-                }`}
+          {/* Month/Year Filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">Month</label>
+              <select
+                name="month"
+                value={filters.month || ''}
+                onChange={handleInput}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                All Categories
-              </button>
-              {getFilteredCategories().map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onChange({ ...value, categoryId: value.categoryId === c.id ? undefined : c.id })}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 touch-manipulation min-h-[44px] ${
-                    value.categoryId === c.id 
-                      ? getTypeColor(value.type || '')
-                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  <div 
-                    className="w-3 h-3 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: c.color || '#9CA3AF' }}
-                  />
-                  <span className="truncate">{c.name}</span>
-                  {categoryUsage[c.id] && (
-                    <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-xs font-medium flex-shrink-0">
-                      {categoryUsage[c.id]}
-                    </span>
-                  )}
-                </button>
-              ))}
+                <option value="">All Months</option>
+                {getMonthOptions().map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-2">Year</label>
+              <select
+                name="year"
+                value={filters.year || ''}
+                onChange={handleInput}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Years</option>
+                {getYearOptions().map((year) => (
+                  <option key={year.value} value={year.value}>
+                    {year.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        )}
-      </div>
+        </motion.div>
+      )}
     </div>
   );
 }

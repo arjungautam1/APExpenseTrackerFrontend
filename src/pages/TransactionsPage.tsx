@@ -66,27 +66,12 @@ export function TransactionsPage() {
     setShowDeleteDialog(true);
   };
 
-  const handleEditSave = async (updatedTransaction: Transaction) => {
-    try {
-      await transactionService.updateTransaction(updatedTransaction.id, {
-        amount: updatedTransaction.amount,
-        type: updatedTransaction.type,
-        categoryId: updatedTransaction.categoryId,
-        description: updatedTransaction.description,
-        date: updatedTransaction.date,
-        location: updatedTransaction.location,
-        tags: updatedTransaction.tags
-      });
-      
-      setTransactions(prev => 
-        prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
-      );
-      setShowEditModal(false);
-      setEditingTransaction(null);
-      toast.success('Transaction updated successfully');
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Failed to update transaction');
-    }
+  const handleEditSave = async () => {
+    // The TransactionEditModal handles the actual update internally
+    // We just need to refresh the transactions list when it's done
+    fetchTransactions();
+    setShowEditModal(false);
+    setEditingTransaction(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -177,8 +162,8 @@ export function TransactionsPage() {
       {showEditModal && (
         <TransactionEditModal
           transaction={editingTransaction}
-          onSave={handleEditSave}
-          onCancel={() => {
+          onSaved={handleEditSave}
+          onClose={() => {
             setShowEditModal(false);
             setEditingTransaction(null);
           }}
@@ -188,10 +173,14 @@ export function TransactionsPage() {
       {/* Delete Confirmation */}
       {showDeleteDialog && deletingTransaction && (
         <ConfirmDialog
+          open={showDeleteDialog}
           title="Delete Transaction"
-          message={`Are you sure you want to delete the transaction "${deletingTransaction.description || 'Untitled'}"? This action cannot be undone.`}
+          description={`Are you sure you want to delete the transaction "${deletingTransaction.description || 'Untitled'}"? This action cannot be undone.`}
+          variant="danger"
+          confirmText="Delete"
+          cancelText="Cancel"
           onConfirm={handleDeleteConfirm}
-          onCancel={() => {
+          onClose={() => {
             setShowDeleteDialog(false);
             setDeletingTransaction(null);
           }}

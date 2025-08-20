@@ -62,6 +62,10 @@ export class MonthlyBillsService {
     return filteredBills.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   }
 
+  async getAllBills(): Promise<MonthlyBill[]> {
+    return this.getBills();
+  }
+
   async createBill(data: CreateMonthlyBillData): Promise<MonthlyBill> {
     const newBill: MonthlyBill = {
       id: Date.now().toString(),
@@ -105,6 +109,13 @@ export class MonthlyBillsService {
     return this.updateBill(id, { isPaid: false });
   }
 
+  async markBillAsPaid(billId: string, month?: string): Promise<void> {
+    const bill = this.bills.find(b => b.id === billId);
+    if (bill) {
+      await this.markAsPaid(billId);
+    }
+  }
+
   async getBillsByMonth(month: number, year: number): Promise<MonthlyBill[]> {
     return this.getBills({ month: month.toString(), year: year.toString() });
   }
@@ -126,6 +137,59 @@ export class MonthlyBillsService {
       const dueDate = new Date(bill.dueDate);
       return dueDate < today && !bill.isPaid;
     }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
+
+  getSummary(): { totalMonthly: number; activeCount: number; categories: Record<string, number> } {
+    const activeBills = this.bills.filter(bill => !bill.isPaid);
+    
+    const totalMonthly = activeBills.reduce((sum, bill) => sum + bill.amount, 0);
+    const categories: Record<string, number> = {};
+    
+    activeBills.forEach(bill => {
+      categories[bill.category] = (categories[bill.category] || 0) + bill.amount;
+    });
+
+    return {
+      totalMonthly,
+      activeCount: activeBills.length,
+      categories
+    };
+  }
+
+  getPaymentStatus(billId: string): {
+    isPaid: boolean;
+    currentMonth: string;
+    nextDueMonth: string;
+    lastPaidDate?: string;
+  } {
+    const bill = this.bills.find(b => b.id === billId);
+    
+    if (!bill) {
+      return {
+        isPaid: false,
+        currentMonth: new Date().toISOString().slice(0, 7),
+        nextDueMonth: new Date().toISOString().slice(0, 7)
+      };
+    }
+    
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const isPaid = bill.isPaid;
+    const nextDueMonth = new Date(bill.dueDate).toISOString().slice(0, 7);
+    
+    return {
+      isPaid,
+      currentMonth,
+      nextDueMonth,
+      lastPaidDate: bill.isPaid ? bill.updatedAt : undefined
+    };
+  }
+
+  isBillPaidForMonth(billId: string, month?: string): boolean {
+    const bill = this.bills.find(b => b.id === billId);
+    if (!bill) return false;
+    
+    const currentMonth = month || new Date().toISOString().slice(0, 7);
+    return bill.isPaid;
   }
 
   async getBillsSummary(): Promise<{

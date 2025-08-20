@@ -95,6 +95,20 @@ export interface Transfer {
   updatedAt: string;
 }
 
+export interface MonthlyBill {
+  id: string;
+  userId: string;
+  name: string;
+  amount: number;
+  dueDate: string;
+  category: string;
+  isPaid: boolean;
+  paymentMethod?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Budget {
   id: string;
   userId: string;
