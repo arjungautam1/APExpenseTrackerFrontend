@@ -7,7 +7,7 @@ class ApiService {
     // Use the DigitalOcean App Platform URL for API calls
     const getApiUrl = () => {
       // Use the DigitalOcean App Platform backend URL
-      return 'https://smartexpenseai.com/apexpensetrackerbackend2/api';
+      return 'https://api.smartexpenseai.com/api';
     };
 
     this.api = axios.create({

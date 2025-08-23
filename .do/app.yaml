@@ -48,7 +48,7 @@ services:
 
 
 domains:
-  - domain: smartexpenseai.com
+  - domain: api.smartexpenseai.com
     type: PRIMARY
 
 ingress:
@@ -59,4 +59,4 @@ ingress:
         authority:
           exact: ""
         path:
-          prefix: /apexpensetrackerbackend2
+          prefix: /
