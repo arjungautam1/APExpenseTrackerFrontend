@@ -45,25 +45,7 @@ services:
         scope: RUN_AND_BUILD_TIME
         value: ${GROQ_TEXT}
 
-  - name: apfront
-    source_dir: /
-    github:
-      repo: arjungautam1/APExpenseTrackerFrontend
-      branch: main
-      deploy_on_push: true
-    build_command: npm install && npm run build
-    run_command: node server.js
-    environment_slug: node-js
-    instance_count: 1
-    instance_size_slug: apps-s-1vcpu-0.5gb
-    http_port: 8080
-    envs:
-      - key: VITE_API_URL
-        scope: BUILD_TIME
-        value: https://smartexpenseai.com/apexpensetrackerbackend2/api
-      - key: PORT
-        scope: RUN_AND_BUILD_TIME
-        value: "8080"
+
 
 domains:
   - domain: smartexpenseai.com
@@ -78,10 +60,3 @@ ingress:
           exact: ""
         path:
           prefix: /apexpensetrackerbackend2
-    - component:
-        name: apfront
-      match:
-        authority:
-          exact: ""
-        path:
-          prefix: /
